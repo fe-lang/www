@@ -193,7 +193,7 @@ const base = import.meta.env.BASE_URL;
 37
 38
 39
-</div><code class="language-rust flex-auto relative block text-gray-100 pt-4 pb-4 px-4 overflow-auto">// Events are structs with #[indexed] fields where needed
+</div><code class="language-fe flex-auto relative block text-gray-100 pt-4 pb-4 px-4 overflow-auto">// Events are structs with #[indexed] fields where needed
 struct Signed {"{"}
     #[indexed]
     signer: Address,
@@ -313,7 +313,37 @@ pub contract GuestBook uses (ctx: Ctx, mut log: Log) {"{"}
 
     menuBtn.addEventListener('click', toggleMenu);
   </script>
-  <script src="https://unpkg.com/@highlightjs/cdn-assets@11.9.0/highlight.min.js"></script>
-  <script>hljs.highlightAll();</script>
+  <script is:inline src="https://unpkg.com/@highlightjs/cdn-assets@11.9.0/highlight.min.js"></script>
+  <script is:inline>
+    document.addEventListener('DOMContentLoaded', function() {
+      // Register Fe language (based on Rust with Fe-specific keywords)
+      hljs.registerLanguage('fe', function(hljs) {
+        return {
+          name: 'Fe',
+          keywords: {
+            keyword: 'pub contract struct enum fn let mut if else match return true false self use const impl trait where for in loop break continue msg recv uses init',
+            type: 'u8 u16 u32 u64 u128 u256 i8 i16 i32 i64 i128 i256 bool Address String Map Option Result Self',
+            built_in: 'ctx log Ctx Log Default Add Sub Encode Decode'
+          },
+          contains: [
+            hljs.COMMENT('//', '$'),
+            hljs.COMMENT('/\\*', '\\*/'),
+            hljs.QUOTE_STRING_MODE,
+            {
+              className: 'meta',
+              begin: '#\\[', end: '\\]'
+            },
+            hljs.C_NUMBER_MODE,
+            {
+              className: 'function',
+              beginKeywords: 'fn', end: '\\{',
+              contains: [hljs.TITLE_MODE]
+            }
+          ]
+        };
+      });
+      hljs.highlightAll();
+    });
+  </script>
 </body>
 </html>
