@@ -7,7 +7,7 @@ export default defineConfig({
 	site: 'https://fe-lang.github.io',
 	base: '/www/',
 	redirects: {
-		'/': '/getting-started/what-is-fe/',
+		'/': 'getting-started/what-is-fe/',
 	},
 	integrations: [
 		starlight({
