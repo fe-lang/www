@@ -1,0 +1,57 @@
+/* Fe Guide - Custom Color Scheme */
+
+:root {
+  /* Indigo-based accent colors */
+  --sl-color-accent-low: #1e1b4b;
+  --sl-color-accent: #6366f1;
+  --sl-color-accent-high: #c7d2fe;
+
+  /* Background tones */
+  --sl-color-bg: #0f0f1a;
+  --sl-color-bg-nav: #16162a;
+  --sl-color-bg-sidebar: #16162a;
+
+  /* Text colors */
+  --sl-color-text: #e2e8f0;
+  --sl-color-text-accent: #a5b4fc;
+}
+
+:root[data-theme='light'] {
+  --sl-color-accent-low: #e0e7ff;
+  --sl-color-accent: #4f46e5;
+  --sl-color-accent-high: #312e81;
+
+  --sl-color-bg: #ffffff;
+  --sl-color-bg-nav: #f8fafc;
+  --sl-color-bg-sidebar: #f8fafc;
+
+  --sl-color-text: #1e293b;
+  --sl-color-text-accent: #4338ca;
+}
+
+/* Sidebar styling */
+.sidebar-content {
+  border-right: 1px solid var(--sl-color-gray-5);
+}
+
+/* Link hover states */
+a:hover {
+  color: var(--sl-color-accent);
+}
+
+/* Back to Website link styling */
+.back-to-website {
+  display: flex !important;
+  align-items: center;
+  gap: 0.25rem;
+  font-size: 0.875rem;
+  opacity: 0.8;
+  border-bottom: 1px solid var(--sl-color-gray-5);
+  padding-bottom: 0.75rem !important;
+  margin-bottom: 0.5rem !important;
+}
+
+.back-to-website::before {
+  content: '\2190';  /* Left arrow */
+  font-size: 1rem;
+}

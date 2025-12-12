@@ -1,0 +1,37 @@
+#!/bin/bash
+# Fe compiler wrapper script with platform detection
+# Currently only Linux x86_64 is supported
+
+set -e
+
+SCRIPT_DIR="$(cd "$(dirname "${BASH_SOURCE[0]}")" && pwd)"
+BIN_DIR="$SCRIPT_DIR/../bin"
+
+# Detect platform
+OS="$(uname -s)"
+ARCH="$(uname -m)"
+
+case "$OS-$ARCH" in
+    Linux-x86_64)
+        FE_BINARY="$BIN_DIR/fe-linux-x86_64"
+        ;;
+    *)
+        echo "Error: Fe binary not available for $OS-$ARCH" >&2
+        echo "" >&2
+        echo "Currently only Linux x86_64 is supported." >&2
+        echo "Options:" >&2
+        echo "  1. Use a Linux machine or VM" >&2
+        echo "  2. Use GitHub Codespaces or similar cloud environment" >&2
+        echo "  3. Push changes and let CI validate the examples" >&2
+        echo "" >&2
+        exit 1
+        ;;
+esac
+
+if [[ ! -x "$FE_BINARY" ]]; then
+    echo "Error: Fe binary not found at $FE_BINARY" >&2
+    echo "Please ensure the binary exists and is executable." >&2
+    exit 1
+fi
+
+exec "$FE_BINARY" "$@"

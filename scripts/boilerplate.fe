@@ -1,0 +1,136 @@
+// Common stubs for documentation snippets
+// This file is automatically prepended to all Fe code blocks during type checking
+// Snippets can import what they need with: use _boilerplate::Map
+
+mod _boilerplate {
+    // Re-export StorageMap from core
+    pub use core::StorageMap
+
+    // Re-export intrinsics from core
+    pub use core::{caller, revert, keccak, sload, sstore}
+
+    // Map type stub (for non-storage contexts)
+    pub struct Map<K, V> {}
+    impl<K, V> Map<K, V> {
+        pub fn new() -> Self { Map {} }
+        pub fn get(self, key: K) -> V { todo() }
+        pub fn set(mut self, key: K, value: V) { todo() }
+    }
+
+    // Log effect stub
+    pub struct Log {}
+    impl Log {
+        pub fn emit<T>(self, event: T) { todo() }
+    }
+
+    // Ctx effect stub - provides execution context
+    pub struct Ctx {}
+    impl Ctx {
+        pub fn caller(self) -> Address { todo() }
+        pub fn block_number(self) -> u256 { todo() }
+        pub fn block_timestamp(self) -> u256 { todo() }
+        pub fn block_coinbase(self) -> Address { todo() }
+        pub fn block_difficulty(self) -> u256 { todo() }
+        pub fn block_gaslimit(self) -> u256 { todo() }
+        pub fn chain_id(self) -> u256 { todo() }
+        pub fn origin(self) -> Address { todo() }
+        pub fn gas_price(self) -> u256 { todo() }
+        pub fn gas_remaining(self) -> u256 { todo() }
+        pub fn msg_value(self) -> u256 { todo() }
+        pub fn self_address(self) -> Address { todo() }
+        pub fn balance(self, addr: Address) -> u256 {
+            let _ = addr
+            todo()
+        }
+        pub fn self_balance(self) -> u256 { todo() }
+        pub fn code_size(self, addr: Address) -> u256 {
+            let _ = addr
+            todo()
+        }
+        pub fn code_hash(self, addr: Address) -> u256 {
+            let _ = addr
+            todo()
+        }
+    }
+
+    // High-level intrinsic stubs (not available in core)
+    pub fn self_address() -> u256 { todo() }
+    pub fn block_number() -> u256 { todo() }
+    pub fn block_timestamp() -> u256 { todo() }
+    pub fn self_balance() -> u256 { todo() }
+    pub fn balance(_ addr: Address) -> u256 { todo() }
+    pub fn code_size(_ addr: Address) -> u256 { todo() }
+    pub fn code_hash(_ addr: Address) -> u256 { todo() }
+    pub fn keccak256<T>(_ data: T) -> u256 { todo() }
+    pub fn sha256<T>(_ data: T) -> u256 { todo() }
+    pub fn ripemd160<T>(_ data: T) -> u256 { todo() }
+    pub fn ecrecover(_ hash: u256, _ v: u8, _ r: u256, _ s: u256) -> Address { todo() }
+    pub fn block_hash(_ number: u256) -> u256 { todo() }
+
+    // Address type stub
+    pub struct Address {}
+    impl Address {
+        pub fn zero() -> Self { Address {} }
+    }
+    impl core::ops::Eq for Address {
+        fn eq(self, _ other: Self) -> bool { todo() }
+    }
+
+    // Assert function stub - uses fixed String<256> which can accept smaller string literals
+    pub fn assert(cond: bool, message: String<256>) { todo() }
+
+    // Note: revert is re-exported from core above
+
+    // Option enum for optional values
+    pub enum Option<T> {
+        Some(T),
+        None,
+    }
+
+    // Result enum for error handling
+    pub enum Result<T, E> {
+        Ok(T),
+        Err(E),
+    }
+
+    // Common trait stubs
+    pub trait Hashable {
+        fn hash(self) -> u256
+    }
+
+    pub trait Printable {
+        fn to_string(self) -> String<256>
+    }
+
+    pub trait Clone {
+        fn clone(self) -> Self
+    }
+
+    pub trait Default {
+        fn default() -> Self
+    }
+
+    pub trait Readable {
+        fn read(self) -> u256
+    }
+
+    pub trait Writable {
+        fn write(mut self, value: u256)
+    }
+
+    pub trait Storable {
+        fn key(self) -> u256
+    }
+
+    // Storage effect stub for documentation examples
+    pub struct Storage {}
+    impl Storage {
+        pub fn set<T>(mut self, key: u256, item: T) {
+            let _ = (key, item)
+        }
+        pub fn get<T: Default>(self, key: u256) -> T {
+            let _ = key
+            T::default()
+        }
+    }
+}
