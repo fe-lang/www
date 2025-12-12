@@ -117,27 +117,27 @@ const base = import.meta.env.BASE_URL;
               <svg xmlns="http://www.w3.org/2000/svg" class="h-6 w-6 inline-block align-text-top mr-1 text-indigo-400" viewBox="0 0 20 20" fill="currentColor">
                 <path fill-rule="evenodd" d="M10 18a8 8 0 100-16 8 8 0 000 16zm3.707-9.293a1 1 0 00-1.414-1.414L9 10.586 7.707 9.293a1 1 0 00-1.414 1.414l2 2a1 1 0 001.414 0l4-4z" clip-rule="evenodd" />
               </svg>
-              Static typing
+              Generics &amp; Traits
             </h3>
-            <p class="text-gray-300">Statically typed and equipped with a powerful compiler, Fe guides us to write robust code and avoid bugs.</p>
+            <p class="text-gray-300">Write generic code that works across types with <code class="text-indigo-300">impl&lt;T&gt;</code> blocks and trait bounds. Define shared behavior with traits like <code class="text-indigo-300">Default</code>, <code class="text-indigo-300">Add</code>, and <code class="text-indigo-300">Encode</code>, then let the compiler generate specialized, efficient code. No runtime overhead, no type erasure.</p>
           </div>
           <div class="p-6 bg-gray-700 rounded-lg">
             <h3 class="text-xl font-semibold mb-2 text-white">
               <svg xmlns="http://www.w3.org/2000/svg" class="h-6 w-6 inline-block align-text-top mr-1 text-indigo-400" viewBox="0 0 20 20" fill="currentColor">
                 <path fill-rule="evenodd" d="M10 18a8 8 0 100-16 8 8 0 000 16zm3.707-9.293a1 1 0 00-1.414-1.414L9 10.586 7.707 9.293a1 1 0 00-1.414 1.414l2 2a1 1 0 001.414 0l4-4z" clip-rule="evenodd" />
               </svg>
-              Improved decidability
+              Pattern Matching
             </h3>
-            <p class="text-gray-300">Fe limits dynamic program behavior to improve decidability and allow more precise gas cost estimation.</p>
+            <p class="text-gray-300">Destructure data with powerful <code class="text-indigo-300">match</code> expressions. Handle every case of an enum, extract values from <code class="text-indigo-300">Option&lt;T&gt;</code>, and let the compiler verify you haven't missed anything. No more chains of <code class="text-indigo-300">if-else</code>—just clear, exhaustive pattern matching.</p>
           </div>
           <div class="p-6 bg-gray-700 rounded-lg">
             <h3 class="text-xl font-semibold mb-2 text-white">
               <svg xmlns="http://www.w3.org/2000/svg" class="h-6 w-6 inline-block align-text-top mr-1 text-indigo-400" viewBox="0 0 20 20" fill="currentColor">
                 <path fill-rule="evenodd" d="M10 18a8 8 0 100-16 8 8 0 000 16zm3.707-9.293a1 1 0 00-1.414-1.414L9 10.586 7.707 9.293a1 1 0 00-1.414 1.414l2 2a1 1 0 001.414 0l4-4z" clip-rule="evenodd" />
               </svg>
-              Standard library
+              Standard Library
             </h3>
-            <p class="text-gray-300">Fe aspires to offer a rich standard library to assist with common tasks of smart contract development.</p>
+            <p class="text-gray-300">Fe ships with a standard library—and most of it is written in Fe itself. Expect proper <code class="text-indigo-300">Option&lt;T&gt;</code> with <code class="text-indigo-300">unwrap()</code> and <code class="text-indigo-300">unwrap_or_default()</code>, <code class="text-indigo-300">Map&lt;K, V&gt;</code> with an ergonomic entry API, and traits like <code class="text-indigo-300">Default</code>, <code class="text-indigo-300">Encode</code>, and <code class="text-indigo-300">Decode</code>.</p>
           </div>
         </div>
         <div class="lg:max-w-2xl lg:flex-1 lg:-mr-18">
