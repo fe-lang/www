@@ -32,7 +32,17 @@ export default defineConfig({
 					],
 				},
 				{
-					label: 'Part 3: Compound Types',
+					label: 'Part 3: Ingots & Package Management',
+					items: [
+						{ label: 'What are Ingots?', slug: 'ingots/what-are-ingots' },
+						{ label: 'Project Structure', slug: 'ingots/project-structure' },
+						{ label: 'The Package Manager', slug: 'ingots/package-manager' },
+						{ label: 'Dependencies', slug: 'ingots/dependencies' },
+						{ label: 'Publishing Ingots', slug: 'ingots/publishing' },
+					],
+				},
+				{
+					label: 'Part 4: Compound Types',
 					items: [
 						{ label: 'Tuples', slug: 'compound-types/tuples' },
 						{ label: 'Structs', slug: 'compound-types/structs' },
@@ -41,7 +51,7 @@ export default defineConfig({
 					],
 				},
 				{
-					label: 'Part 4: Effects & the uses Clause',
+					label: 'Part 5: Effects & the uses Clause',
 					items: [
 						{ label: 'What Are Effects?', slug: 'effects/what-are-effects' },
 						{ label: 'Declaring Effects', slug: 'effects/declaring-effects' },
@@ -53,7 +63,7 @@ export default defineConfig({
 					],
 				},
 				{
-					label: 'Part 5: Messages & Receive Blocks',
+					label: 'Part 6: Messages & Receive Blocks',
 					items: [
 						{ label: 'Defining Messages', slug: 'messages/defining-messages' },
 						{ label: 'Message Fields', slug: 'messages/fields' },
@@ -65,7 +75,7 @@ export default defineConfig({
 					],
 				},
 				{
-					label: 'Part 6: Contracts',
+					label: 'Part 7: Contracts',
 					items: [
 						{ label: 'Contract Declaration', slug: 'contracts/declaration' },
 						{ label: 'Contract-Level Effects', slug: 'contracts/effects' },
@@ -76,7 +86,7 @@ export default defineConfig({
 					],
 				},
 				{
-					label: 'Part 7: Structs & Impl Blocks',
+					label: 'Part 8: Structs & Impl Blocks',
 					items: [
 						{ label: 'Struct Definition', slug: 'structs/definition' },
 						{ label: 'Impl Blocks', slug: 'structs/impl-blocks' },
@@ -86,7 +96,7 @@ export default defineConfig({
 					],
 				},
 				{
-					label: 'Part 8: Traits & Generics',
+					label: 'Part 9: Traits & Generics',
 					items: [
 						{ label: 'Trait Definition', slug: 'traits/definition' },
 						{ label: 'Implementing Traits', slug: 'traits/implementing' },
@@ -96,7 +106,7 @@ export default defineConfig({
 					],
 				},
 				{
-					label: 'Part 9: Events & Logging',
+					label: 'Part 10: Events & Logging',
 					items: [
 						{ label: 'Event Structs', slug: 'events/event-structs' },
 						{ label: 'Emitting Events', slug: 'events/emitting' },
@@ -105,7 +115,7 @@ export default defineConfig({
 					],
 				},
 				{
-					label: 'Part 10: Error Handling',
+					label: 'Part 11: Error Handling',
 					items: [
 						{ label: 'Assertions', slug: 'errors/assertions' },
 						{ label: 'Revert Patterns', slug: 'errors/revert' },
@@ -114,7 +124,7 @@ export default defineConfig({
 					],
 				},
 				{
-					label: 'Part 11: Access Control Patterns',
+					label: 'Part 12: Access Control Patterns',
 					items: [
 						{ label: 'Role-Based Access', slug: 'access-control/roles' },
 						{ label: 'Owner Patterns', slug: 'access-control/owner' },
@@ -123,7 +133,7 @@ export default defineConfig({
 					],
 				},
 				{
-					label: 'Part 12: Testing Fe Contracts',
+					label: 'Part 13: Testing Fe Contracts',
 					items: [
 						{ label: 'Unit Testing', slug: 'testing/unit-testing' },
 						{ label: 'Effect Mocking', slug: 'testing/mocking' },
@@ -132,7 +142,7 @@ export default defineConfig({
 					],
 				},
 				{
-					label: 'Part 13: Common Patterns & Recipes',
+					label: 'Part 14: Common Patterns & Recipes',
 					items: [
 						{ label: 'Token Patterns', slug: 'patterns/tokens' },
 						{ label: 'Allowance & Approval', slug: 'patterns/allowance' },
@@ -142,7 +152,7 @@ export default defineConfig({
 					],
 				},
 				{
-					label: 'Part 14: By Example',
+					label: 'Part 15: By Example',
 					items: [
 						{ label: 'Complete ERC20', slug: 'examples/erc20' },
 						{ label: 'NFT Contract', slug: 'examples/erc721' },
