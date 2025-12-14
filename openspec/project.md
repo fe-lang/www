@@ -63,6 +63,8 @@ u8, u16, u32, u64, u128, u256, usize    // Unsigned integers
 String
 ```
 
+**Note on EVM Types**: Types like `Address` and other Solidity-compatibility types are planned for the standard library (`std`) but have not yet been implemented. Currently, EVM addresses are represented as `u256`.
+
 ### Composite Types
 
 - **Structs**: `struct MyStruct { field1: i32, field2: bool }`
