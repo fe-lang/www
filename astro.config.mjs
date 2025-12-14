@@ -10,8 +10,16 @@ export default defineConfig({
 		starlight({
 			title: 'The Fe Guide',
 			customCss: ['./src/styles/custom.css'],
+			components: {
+				SiteTitle: './src/components/SiteTitle.astro',
+			},
 			social: [{ icon: 'github', label: 'GitHub', href: 'https://github.com/fe-lang/fe' }],
 			sidebar: [
+				{
+					label: 'Back to Website',
+					link: '/',
+					attrs: { class: 'back-to-website' },
+				},
 				{
 					label: 'Part 1: Getting Started',
 					items: [
