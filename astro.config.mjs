@@ -124,16 +124,7 @@ export default defineConfig({
 					],
 				},
 				{
-					label: 'Part 12: Access Control Patterns',
-					items: [
-						{ label: 'Role-Based Access', slug: 'access-control/roles' },
-						{ label: 'Owner Patterns', slug: 'access-control/owner' },
-						{ label: 'Multi-Role Systems', slug: 'access-control/multi-role' },
-						{ label: 'Requiring Roles', slug: 'access-control/requiring' },
-					],
-				},
-				{
-					label: 'Part 13: Testing Fe Contracts',
+					label: 'Part 12: Testing Fe Contracts',
 					items: [
 						{ label: 'Unit Testing', slug: 'testing/unit-testing' },
 						{ label: 'Effect Mocking', slug: 'testing/mocking' },
@@ -142,7 +133,7 @@ export default defineConfig({
 					],
 				},
 				{
-					label: 'Part 14: Common Patterns & Recipes',
+					label: 'Part 13: Common Patterns & Recipes',
 					items: [
 						{ label: 'Token Patterns', slug: 'patterns/tokens' },
 						{ label: 'Allowance & Approval', slug: 'patterns/allowance' },
@@ -152,7 +143,7 @@ export default defineConfig({
 					],
 				},
 				{
-					label: 'Part 15: By Example',
+					label: 'Part 14: By Example',
 					items: [
 						{ label: 'Complete ERC20', slug: 'examples/erc20' },
 						{ label: 'NFT Contract', slug: 'examples/erc721' },
