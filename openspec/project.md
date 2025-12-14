@@ -91,6 +91,8 @@ Contracts are the top-level deployable units with:
 - **init**: Initialization block with optional effects
 - **recv**: Multiple receive blocks for message handling
 
+**Important**: Contracts cannot contain regular functions (no `fn` declarations inside contracts). Logic should be defined as free-floating functions or methods on structs, which can then be called from within `recv` blocks.
+
 ```fe
 contract MyContract {
     storage_field: u256
