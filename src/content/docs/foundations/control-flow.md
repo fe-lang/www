@@ -11,7 +11,7 @@ Control flow constructs determine the order in which code executes. Fe provides 
 
 Use `if` to execute code based on a condition:
 
-```fe
+```fe ignore
 if balance > 0 {
     process_withdrawal()
 }
@@ -21,7 +21,7 @@ if balance > 0 {
 
 Add an `else` branch for when the condition is false:
 
-```fe
+```fe ignore
 if balance >= amount {
     withdraw(amount)
 } else {
@@ -33,7 +33,7 @@ if balance >= amount {
 
 Chain multiple conditions with `else if`:
 
-```fe
+```fe ignore
 if score >= 90 {
     grade = "A"
 } else if score >= 80 {
@@ -49,7 +49,7 @@ if score >= 90 {
 
 In Fe, `if` is an expression that returns a value. Both branches must return the same type:
 
-```fe
+```fe ignore
 let max = if a > b { a } else { b }
 
 let status = if is_active {
@@ -61,7 +61,7 @@ let status = if is_active {
 
 This is useful for concise conditional assignment:
 
-```fe
+```fe ignore
 let fee = if is_premium { 0 } else { calculate_fee(amount) }
 ```
 
@@ -71,7 +71,7 @@ let fee = if is_premium { 0 } else { calculate_fee(amount) }
 
 The `match` expression provides powerful pattern matching:
 
-```fe
+```fe ignore
 match value {
     0 => handle_zero()
     1 => handle_one()
@@ -81,7 +81,7 @@ match value {
 
 Like `if`, `match` is an expression that returns a value:
 
-```fe
+```fe ignore
 let description = match count {
     0 => "none"
     1 => "one"
@@ -94,7 +94,7 @@ let description = match count {
 
 Match on enum variants to handle different cases:
 
-```fe
+```fe ignore
 enum Status {
     Pending
     Approved
@@ -112,7 +112,7 @@ let message = match status {
 
 Use patterns to destructure and bind values:
 
-```fe
+```fe ignore
 match point {
     (0, 0) => "origin"
     (0, y) => "on y-axis"
@@ -123,7 +123,7 @@ match point {
 
 Match on struct fields:
 
-```fe
+```fe ignore
 match user {
     User { active: true, role } => process_active(role)
     User { active: false, .. } => handle_inactive()
@@ -134,7 +134,7 @@ match user {
 
 Use `_` to match any value you don't need:
 
-```fe
+```fe ignore
 match result {
     Ok(value) => use_value(value)
     Err(_) => handle_error()  // Ignore the specific error
@@ -145,7 +145,7 @@ match result {
 
 Match expressions must be exhaustive—every possible value must be handled. The wildcard `_` is often used as a catch-all:
 
-```fe
+```fe ignore
 match day {
     1 => "Monday"
     2 => "Tuesday"
@@ -164,7 +164,7 @@ match day {
 
 Use `for` to iterate over a collection:
 
-```fe
+```fe ignore
 for item in items {
     process(item)
 }
@@ -174,7 +174,7 @@ for item in items {
 
 Destructure elements while iterating:
 
-```fe
+```fe ignore
 for (index, value) in indexed_items {
     store_at(index, value)
 }
@@ -190,7 +190,7 @@ for User { name, balance } in users {
 
 Use `while` for condition-based loops:
 
-```fe
+```fe ignore
 while count > 0 {
     process_next()
     count = count - 1
@@ -199,7 +199,7 @@ while count > 0 {
 
 A common pattern for indefinite loops:
 
-```fe
+```fe ignore
 while true {
     if should_stop() {
         break
@@ -214,7 +214,7 @@ while true {
 
 Use `break` to exit a loop early:
 
-```fe
+```fe ignore
 for item in items {
     if item.is_target() {
         found = item
@@ -227,7 +227,7 @@ for item in items {
 
 Use `continue` to skip to the next iteration:
 
-```fe
+```fe ignore
 for item in items {
     if item.should_skip() {
         continue  // Skip this item
@@ -238,7 +238,7 @@ for item in items {
 
 ### Combining Break and Continue
 
-```fe
+```fe ignore
 let mut sum: u256 = 0
 for value in values {
     // Skip negative values
@@ -261,7 +261,7 @@ for value in values {
 
 Use `return` to exit a function early:
 
-```fe
+```fe ignore
 fn find_user(id: u256) -> Option<User> {
     if id == 0 {
         return Option::None  // Early return for invalid ID
@@ -277,7 +277,7 @@ fn find_user(id: u256) -> Option<User> {
 
 Return a specific value from anywhere in the function:
 
-```fe
+```fe ignore
 fn calculate_discount(amount: u256, is_member: bool) -> u256 {
     if amount < 100 {
         return 0  // No discount for small amounts
@@ -299,7 +299,7 @@ Fe functions return the value of their last expression implicitly. Use explicit 
 - Multiple exit points
 - Clarity in complex functions
 
-```fe
+```fe ignore
 // Implicit return - last expression is the return value
 fn double(x: u256) -> u256 {
     x * 2

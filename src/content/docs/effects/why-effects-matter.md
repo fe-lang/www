@@ -11,7 +11,7 @@ Effects provide significant benefits for smart contract development. They make c
 
 Every function declares exactly what it can access:
 
-```fe
+```fe ignore
 fn transfer(from: u256, to: u256, amount: u256) uses mut Balances {
     // Can ONLY modify Balances
     // Cannot access Allowances, Config, or anything else
@@ -24,7 +24,7 @@ This makes security audits easier—you know a function's blast radius just by r
 
 Functions only get the capabilities they need:
 
-```fe
+```fe ignore
 // This function can only read
 fn get_balance(account: u256) uses Balances -> u256 {
     Balances.get(account)
@@ -42,7 +42,7 @@ A bug in `get_balance` cannot corrupt state because it lacks mutation capability
 
 Unlike languages where any function might access global state, Fe functions can only access what they declare:
 
-```fe
+```fe ignore
 // In Fe, this function signature guarantees
 // it cannot access any external state
 fn calculate_fee(amount: u256, rate: u256) -> u256 {
@@ -58,7 +58,7 @@ If a function has no `uses` clause, it's a pure computation.
 
 Effects make mocking straightforward:
 
-```fe
+```fe ignore
 fn process_payment(amount: u256) uses (Config, mut Balances, mut Logger) {
     let fee = amount * Config.fee_rate / 10000
 
@@ -86,7 +86,7 @@ fn test_payment() {
 
 Test functions in isolation by providing only the effects they need:
 
-```fe
+```fe ignore
 fn validate_transfer(from: u256, amount: u256) uses Balances -> bool {
     Balances.get(from) >= amount
 }
@@ -107,7 +107,7 @@ fn test_validate_transfer() {
 
 Pure functions (no effects) need no setup at all:
 
-```fe
+```fe ignore
 fn calculate_shares(amount: u256, total: u256, supply: u256) -> u256 {
     if total == 0 {
         amount
@@ -127,7 +127,7 @@ fn test_calculate_shares() {
 
 ### Function Signatures Tell the Story
 
-```fe
+```fe ignore
 // Just by reading this signature, you know:
 // - It needs caller context
 // - It reads token store
@@ -141,7 +141,7 @@ fn transfer(to: u256, amount: u256)
 
 Effects create explicit dependency graphs:
 
-```fe
+```fe ignore
 fn outer() uses (A, B) {
     inner1()  // Must provide effects A needs
     inner2()  // Must provide effects B needs
@@ -157,7 +157,7 @@ You can trace exactly how effects flow through your code.
 
 When refactoring, the compiler catches missing effects:
 
-```fe
+```fe ignore
 // Before: function was pure
 fn calculate(x: u256) -> u256 {
     x * 2
@@ -183,7 +183,7 @@ All effect checking happens at compile time:
 
 ### No Runtime Surprises
 
-```fe
+```fe ignore
 fn risky_operation() uses mut CriticalState {
     // ...
 }

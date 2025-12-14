@@ -1,0 +1,24 @@
+name: Check Fe Examples
+
+on:
+  push:
+    branches: [main]
+  pull_request:
+    branches: [main]
+
+jobs:
+  check-examples:
+    runs-on: ubuntu-latest
+
+    steps:
+      - name: Checkout repository
+        uses: actions/checkout@v4
+
+      - name: Make scripts executable
+        run: |
+          chmod +x scripts/fe
+          chmod +x scripts/extract-fe-blocks.sh
+          chmod +x scripts/check-examples.sh
+
+      - name: Check Fe code examples
+        run: npm run check:examples:verbose

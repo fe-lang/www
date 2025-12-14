@@ -9,7 +9,7 @@ Receive blocks inside contracts handle incoming messages and have access to the 
 
 In a contract, recv blocks access storage via `with` expressions:
 
-```fe
+```fe ignore
 pub struct TokenStorage {
     pub balances: StorageMap<u256, u256>,
     pub total_supply: u256,
@@ -46,7 +46,7 @@ contract Token {
 
 The `with` expression binds a contract field to an effect type:
 
-```fe
+```fe ignore
 with (TokenStorage = store) {
     // TokenStorage effect is available here
     TokenStorage.balances.get(account)
@@ -62,7 +62,7 @@ This pattern:
 
 Handlers typically delegate to helper functions:
 
-```fe
+```fe ignore
 fn get_balance(account: u256) uses TokenStorage -> u256 {
     TokenStorage.balances.get(account)
 }
@@ -103,7 +103,7 @@ contract Token {
 
 When handlers need multiple storage types:
 
-```fe
+```fe ignore
 pub struct BalanceStorage {
     pub balances: StorageMap<u256, u256>,
 }
@@ -130,7 +130,7 @@ contract Token {
 
 A full ERC20-style token contract:
 
-```fe
+```fe ignore
 pub struct TokenStorage {
     pub balances: StorageMap<u256, u256>,
     pub allowances: StorageMap<u256, StorageMap<u256, u256>>,
@@ -244,7 +244,7 @@ contract Token {
 
 For contracts with many handlers, organize by interface:
 
-```fe
+```fe ignore
 contract Token {
     store: TokenStorage,
 

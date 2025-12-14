@@ -9,7 +9,7 @@ Contracts often need to implement multiple interfaces—for example, an NFT mark
 
 A contract can have multiple recv blocks, each handling a different message type:
 
-```fe
+```fe ignore
 msg Erc20 {
     #[selector = 0xa9059cbb]
     Transfer { to: u256, amount: u256 } -> bool,
@@ -75,7 +75,7 @@ contract Token {
 
 Selectors must be unique across **all** recv blocks in a contract. The compiler will error if two variants share a selector:
 
-```fe
+```fe ignore
 msg InterfaceA {
     #[selector = 0x12345678]
     Operation { } -> bool,
@@ -104,7 +104,7 @@ This ensures the contract can unambiguously route incoming calls.
 
 Multiple recv blocks can share the same contract state:
 
-```fe
+```fe ignore
 pub struct TokenStorage {
     pub balances: StorageMap<u256, u256>,
     pub allowances: StorageMap<u256, StorageMap<u256, u256>>,
@@ -146,7 +146,7 @@ contract Token {
 
 You can mix named recv blocks with a bare recv block:
 
-```fe
+```fe ignore
 contract Hybrid {
     // Named block: implements full ERC20 interface
     recv Erc20 {
@@ -174,7 +174,7 @@ contract Hybrid {
 
 ### ERC721 + Metadata + Enumerable
 
-```fe
+```fe ignore
 contract NFT {
     recv Erc721 {
         OwnerOf { token_id } -> u256 { /* ... */ }
@@ -203,7 +203,7 @@ contract NFT {
 
 ### Token + Governance
 
-```fe
+```fe ignore
 contract GovernanceToken {
     recv Erc20 {
         // Standard token operations
@@ -225,7 +225,7 @@ contract GovernanceToken {
 
 For contracts with many message types, consider organizing handlers logically:
 
-```fe
+```fe ignore
 // Group related helper functions
 fn transfer_tokens(from: u256, to: u256, amount: u256) uses mut TokenStorage -> bool {
     // ...

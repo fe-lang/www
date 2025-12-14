@@ -76,7 +76,7 @@ All Fe source files live in the `src/` directory. The compiler discovers files m
 
 Every ingot must have a `src/lib.fe` file. This is the entrypoint that defines what the ingot exports:
 
-```fe
+```fe ignore
 // src/lib.fe
 
 // Re-export items from other modules
@@ -93,7 +93,7 @@ pub struct Config {
 
 Split code across multiple files for better organization:
 
-```fe
+```fe ignore
 // src/lib.fe
 pub use token::Token
 pub use utils::calculate_fee
@@ -122,7 +122,7 @@ src/
     └── approval.fe
 ```
 
-```fe
+```fe ignore
 // src/messages/mod.fe
 pub use transfer::Transfer
 pub use approval::Approval

@@ -9,7 +9,7 @@ Storage fields hold the persistent state of a contract. In Fe, storage is define
 
 Storage is defined as a struct with storage-compatible fields:
 
-```fe
+```fe ignore
 pub struct TokenStorage {
     pub balances: StorageMap<u256, u256>,
     pub total_supply: u256,
@@ -28,7 +28,7 @@ The contract field `store` holds an instance of `TokenStorage`, which persists b
 
 All primitive types can be stored:
 
-```fe
+```fe ignore
 pub struct Config {
     pub enabled: bool,
     pub count: u256,
@@ -40,7 +40,7 @@ pub struct Config {
 
 For key-value mappings, use `StorageMap`:
 
-```fe
+```fe ignore
 pub struct TokenStorage {
     // Maps account -> balance
     pub balances: StorageMap<u256, u256>,
@@ -58,7 +58,7 @@ The current `StorageMap` is a temporary implementation that will be replaced wit
 
 Storage structs can contain other structs:
 
-```fe
+```fe ignore
 pub struct Metadata {
     pub name_length: u256,
     pub decimals: u8,
@@ -74,7 +74,7 @@ pub struct TokenStorage {
 
 Storage is accessed through effects, not directly:
 
-```fe
+```fe ignore
 fn get_balance(account: u256) uses TokenStorage -> u256 {
     TokenStorage.balances.get(account)
 }
@@ -86,7 +86,7 @@ fn set_balance(account: u256, amount: u256) uses mut TokenStorage {
 
 In handlers, provide the contract field as an effect:
 
-```fe
+```fe ignore
 contract Token {
     store: TokenStorage,
 
@@ -106,7 +106,7 @@ contract Token {
 
 Retrieve a value (returns zero/default if not set):
 
-```fe
+```fe ignore
 let balance = TokenStorage.balances.get(account)
 ```
 
@@ -114,7 +114,7 @@ let balance = TokenStorage.balances.get(account)
 
 Store a value:
 
-```fe
+```fe ignore
 TokenStorage.balances.set(account, new_balance)
 ```
 
@@ -122,7 +122,7 @@ TokenStorage.balances.set(account, new_balance)
 
 For nested mappings, chain the operations:
 
-```fe
+```fe ignore
 pub struct AllowanceStorage {
     // owner -> spender -> amount
     pub allowances: StorageMap<u256, StorageMap<u256, u256>>,
@@ -141,7 +141,7 @@ fn set_allowance(owner: u256, spender: u256, amount: u256) uses mut AllowanceSto
 
 Contracts can have multiple storage fields for logical separation:
 
-```fe
+```fe ignore
 pub struct BalanceStorage {
     pub balances: StorageMap<u256, u256>,
     pub total_supply: u256,

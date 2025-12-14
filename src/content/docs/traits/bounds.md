@@ -9,7 +9,7 @@ Trait bounds specify what capabilities a generic type must have. They let you wr
 
 Add a bound with `: Trait` after the type parameter:
 
-```fe
+```fe ignore
 fn process<T: Hashable>(value: T) -> u256 {
     value.hash()  // Safe: T must implement Hashable
 }
@@ -17,7 +17,7 @@ fn process<T: Hashable>(value: T) -> u256 {
 
 Without the bound, you couldn't call `hash()`:
 
-```fe
+```fe ignore
 fn process<T>(value: T) -> u256 {
     value.hash()  // Error: T might not have hash()
 }
@@ -31,7 +31,7 @@ Bounds enable the compiler to:
 2. **Catch errors early**: Fail at call site, not deep in implementation
 3. **Document requirements**: Show what types are expected
 
-```fe
+```fe ignore
 trait Printable {
     fn to_string(self) -> String
 }
@@ -54,7 +54,7 @@ log(Secret { data: 42 })  // Compile error
 
 Require multiple traits with `+`:
 
-```fe
+```fe ignore
 trait Hashable {
     fn hash(self) -> u256
 }
@@ -71,7 +71,7 @@ fn describe<T: Hashable + Printable>(value: T) -> String {
 
 The type must implement all specified traits:
 
-```fe
+```fe ignore
 struct Token {
     id: u256,
 }
@@ -95,7 +95,7 @@ describe(Token { id: 1 })  // Works: Token implements both
 
 Each type parameter can have its own bounds:
 
-```fe
+```fe ignore
 fn combine<A: Hashable, B: Printable>(a: A, b: B) -> String {
     let hash = a.hash()
     b.to_string()
@@ -111,7 +111,7 @@ fn transform<T: Readable, U: Writable>(input: T, output: U) {
 
 Generic structs can have bounds:
 
-```fe
+```fe ignore
 struct Cache<T: Hashable> {
     item: T,
     hash: u256,
@@ -129,7 +129,7 @@ impl<T: Hashable> Cache<T> {
 
 Impl blocks can add their own bounds:
 
-```fe
+```fe ignore
 struct Wrapper<T> {
     value: T,
 }
@@ -166,7 +166,7 @@ This means:
 
 ### Comparable Types
 
-```fe
+```fe ignore
 trait Comparable {
     fn less_than(self, other: Self) -> bool
     fn equals(self, other: Self) -> bool
@@ -188,7 +188,7 @@ fn find<T: Comparable>(items: Array<T>, target: T) -> bool {
 
 ### Default Values
 
-```fe
+```fe ignore
 trait Default {
     fn default() -> Self
 }
@@ -203,7 +203,7 @@ fn or_default<T: Default>(value: Option<T>) -> T {
 
 ### Cloneable Types
 
-```fe
+```fe ignore
 trait Clone {
     fn clone(self) -> Self
 }
@@ -217,7 +217,7 @@ fn duplicate<T: Clone>(value: T) -> (T, T) {
 
 Bounds and effects work together:
 
-```fe
+```fe ignore
 trait Storable {
     fn key(self) -> u256
 }
@@ -236,7 +236,7 @@ fn load<T: Storable + Default>(key: u256) uses Storage -> T {
 
 When bounds aren't satisfied, you get clear errors:
 
-```fe
+```fe ignore
 trait Hashable {
     fn hash(self) -> u256
 }

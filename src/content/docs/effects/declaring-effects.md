@@ -9,7 +9,7 @@ The `uses` clause declares what effects a function or contract requires. This se
 
 Add a `uses` clause after the parameter list and before the return type:
 
-```fe
+```fe ignore
 fn function_name() uses EffectType {
     // function body
 }
@@ -23,7 +23,7 @@ fn with_params(x: u256) uses EffectType -> u256 {
 
 The simplest form declares a single effect:
 
-```fe
+```fe ignore
 pub struct Storage {
     pub data: u256,
 }
@@ -41,7 +41,7 @@ fn write_data(value: u256) uses mut Storage {
 
 Give an effect a local name for clearer code:
 
-```fe
+```fe ignore
 fn process() uses store: Storage {
     // Access via the name 'store'
     let value = store.data
@@ -61,7 +61,7 @@ Named effects are especially useful when:
 
 Declare multiple effects using parentheses:
 
-```fe
+```fe ignore
 fn complex_operation() uses (Storage, Logger, Config) {
     // Has access to all three effects
 }
@@ -69,7 +69,7 @@ fn complex_operation() uses (Storage, Logger, Config) {
 
 Combine with names and mutability:
 
-```fe
+```fe ignore
 fn transfer() uses (mut balances: Balances, config: Config, mut log: Logger) {
     // balances and log are mutable
     // config is read-only
@@ -80,7 +80,7 @@ fn transfer() uses (mut balances: Balances, config: Config, mut log: Logger) {
 
 Contracts can declare effects in their definition:
 
-```fe
+```fe ignore
 contract Token uses (mut ctx: Context) {
     store: TokenStorage,
 }
@@ -88,7 +88,7 @@ contract Token uses (mut ctx: Context) {
 
 The contract's effects are available within its recv blocks. Helper functions called from recv blocks receive effects explicitly:
 
-```fe
+```fe ignore
 pub struct TokenStorage {
     pub balances: StorageMap<u256, u256>,
 }
@@ -109,7 +109,7 @@ Effects can be any type or trait:
 
 ### Struct Effects
 
-```fe
+```fe ignore
 pub struct AppConfig {
     pub max_value: u256,
     pub enabled: bool,
@@ -122,7 +122,7 @@ fn check_config() uses AppConfig -> bool {
 
 ### Generic Effects
 
-```fe
+```fe ignore
 pub struct Cache<T> {
     pub value: T,
 }
@@ -148,7 +148,7 @@ fn get_cached<T>() uses Cache<T> -> T {
 
 ### Read-Only Helper
 
-```fe
+```fe ignore
 fn get_balance(account: u256) uses Balances -> u256 {
     Balances.get(account)
 }
@@ -156,7 +156,7 @@ fn get_balance(account: u256) uses Balances -> u256 {
 
 ### Mutable Operation
 
-```fe
+```fe ignore
 fn set_balance(account: u256, amount: u256) uses mut Balances {
     Balances.set(account, amount)
 }
@@ -164,7 +164,7 @@ fn set_balance(account: u256, amount: u256) uses mut Balances {
 
 ### Multiple Concerns
 
-```fe
+```fe ignore
 fn logged_transfer(from: u256, to: u256, amount: u256)
     uses (mut balances: Balances, mut log: TransferLog)
 {

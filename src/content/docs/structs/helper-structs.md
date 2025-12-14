@@ -9,7 +9,7 @@ Helper structs are regular (non-storage) structs used to organize data and logic
 
 Group related values into a struct:
 
-```fe
+```fe ignore
 struct TransferParams {
     from: u256,
     to: u256,
@@ -28,7 +28,7 @@ This is clearer than passing many individual parameters.
 
 Use structs to return multiple values:
 
-```fe
+```fe ignore
 struct BalanceInfo {
     balance: u256,
     frozen: bool,
@@ -48,7 +48,7 @@ fn get_account_info(account: u256) uses TokenStorage -> BalanceInfo {
 
 Encapsulate configuration:
 
-```fe
+```fe ignore
 struct FeeConfig {
     base_fee: u256,
     percentage_fee: u256,  // In basis points
@@ -78,7 +78,7 @@ fn process_with_fee(amount: u256, config: FeeConfig) -> u256 {
 
 Create structs for validated data:
 
-```fe
+```fe ignore
 struct ValidatedAmount {
     value: u256,
 }
@@ -106,7 +106,7 @@ fn safe_transfer(to: u256, amount: ValidatedAmount) uses mut TokenStorage -> boo
 
 Create structs for operation results:
 
-```fe
+```fe ignore
 struct TransferResult {
     success: bool,
     new_sender_balance: u256,
@@ -146,7 +146,7 @@ fn transfer_with_result(
 
 Structs with methods for calculations:
 
-```fe
+```fe ignore
 struct Percentage {
     basis_points: u256,
 }
@@ -178,7 +178,7 @@ let fee = fee_rate.apply(1000)  // 30
 
 Use helper structs for complex construction:
 
-```fe
+```fe ignore
 struct TokenConfig {
     name_hash: u256,
     symbol_hash: u256,
@@ -231,7 +231,7 @@ let config = TokenConfig::new()
 
 Group related operations using impl blocks:
 
-```fe
+```fe ignore
 struct MathUtils {
     // Empty struct - just a namespace for functions
 }
@@ -262,7 +262,7 @@ let clamped = MathUtils::clamp(value, 10, 100)
 
 Helper structs can work alongside effects:
 
-```fe
+```fe ignore
 struct TransferRequest {
     from: u256,
     to: u256,

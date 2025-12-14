@@ -9,7 +9,7 @@ Messages define the external interface of a contract—the operations that can b
 
 Define a message group using the `msg` keyword:
 
-```fe
+```fe ignore
 msg TokenMsg {
     #[selector = 0xa9059cbb]
     Transfer { to: u256, amount: u256 } -> bool,
@@ -28,7 +28,7 @@ Each message group contains one or more **variants**—individual operations tha
 
 A variant defines a single callable operation:
 
-```fe
+```fe ignore
 #[selector = 0xa9059cbb]
 Transfer { to: u256, amount: u256 } -> bool
 ```
@@ -43,7 +43,7 @@ Components:
 
 Some operations don't need parameters:
 
-```fe
+```fe ignore
 #[selector = 0x18160ddd]
 TotalSupply -> u256
 ```
@@ -52,7 +52,7 @@ TotalSupply -> u256
 
 Operations that don't return a value omit the return type:
 
-```fe
+```fe ignore
 #[selector = 0x42842e0e]
 SafeTransfer { from: u256, to: u256, token_id: u256 }
 ```
@@ -63,7 +63,7 @@ This implicitly returns `()` (unit).
 
 A simple token message interface:
 
-```fe
+```fe ignore
 msg Erc20 {
     #[selector = 0xa9059cbb]
     Transfer { to: u256, amount: u256 } -> bool,
@@ -98,7 +98,7 @@ Messages provide:
 
 Messages are handled in recv blocks within contracts:
 
-```fe
+```fe ignore
 contract Token {
     // storage fields...
 

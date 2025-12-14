@@ -9,7 +9,7 @@ Events are emitted using a Log effect, which records data to the blockchain that
 
 Emit an event through a Log effect:
 
-```fe
+```fe ignore
 pub struct EventLog {
     // Event logging capability
 }
@@ -33,7 +33,7 @@ The `emit` method takes an event struct instance and records it to the blockchai
 
 Events are typically emitted within message handlers:
 
-```fe
+```fe ignore
 pub struct TokenStorage {
     pub balances: StorageMap<u256, u256>,
 }
@@ -72,7 +72,7 @@ fn do_transfer(from: u256, to: u256, amount: u256)
 
 A critical pattern: emit events after state changes succeed, not before:
 
-```fe
+```fe ignore
 fn transfer(from: u256, to: u256, amount: u256)
     uses (mut TokenStorage, mut EventLog)
     -> bool
@@ -100,7 +100,7 @@ This ensures events reflect actual state changes.
 
 In contracts, bind the EventLog effect like other storage:
 
-```fe
+```fe ignore
 pub struct TokenStorage {
     pub balances: StorageMap<u256, u256>,
 }
@@ -138,7 +138,7 @@ contract Token {
 
 Emit different event types from the same handler:
 
-```fe
+```fe ignore
 struct Transfer {
     #[indexed]
     from: u256,
@@ -189,7 +189,7 @@ fn transfer_from(spender: u256, from: u256, to: u256, amount: u256)
 
 Emit when persistent state changes:
 
-```fe
+```fe ignore
 fn mint(to: u256, amount: u256) uses (mut TokenStorage, mut EventLog) {
     TokenStorage.balances.set(to, TokenStorage.balances.get(to) + amount)
     TokenStorage.total_supply = TokenStorage.total_supply + amount
@@ -209,7 +209,7 @@ fn burn(from: u256, amount: u256) uses (mut TokenStorage, mut EventLog) {
 
 Emit for ownership and configuration changes:
 
-```fe
+```fe ignore
 struct OwnershipTransferred {
     #[indexed]
     previous_owner: u256,
@@ -234,7 +234,7 @@ fn transfer_ownership(new_owner: u256)
 
 Occasionally emit for important queries (use sparingly):
 
-```fe
+```fe ignore
 struct BalanceChecked {
     #[indexed]
     account: u256,
@@ -248,7 +248,7 @@ struct BalanceChecked {
 
 Create helper functions for common events:
 
-```fe
+```fe ignore
 fn emit_transfer(from: u256, to: u256, amount: u256) uses mut EventLog {
     EventLog.emit(Transfer { from, to, amount })
 }
@@ -272,7 +272,7 @@ fn transfer(from: u256, to: u256, amount: u256)
 
 Only emit when something meaningful happens:
 
-```fe
+```fe ignore
 fn set_approval(owner: u256, spender: u256, new_amount: u256)
     uses (mut TokenStorage, mut EventLog)
 {

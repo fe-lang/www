@@ -9,7 +9,7 @@ Handlers are the functions inside recv blocks that process incoming messages. Ea
 
 A handler consists of a pattern, optional return type, and body:
 
-```fe
+```fe ignore
 VariantName { fields } -> ReturnType {
     // handler body
 }
@@ -17,7 +17,7 @@ VariantName { fields } -> ReturnType {
 
 For handlers that don't return a value:
 
-```fe
+```fe ignore
 VariantName { fields } {
     // handler body, implicitly returns ()
 }
@@ -31,7 +31,7 @@ Handlers use pattern matching to destructure message fields:
 
 Extract fields by their names:
 
-```fe
+```fe ignore
 recv TokenMsg {
     Transfer { to, amount } -> bool {
         // 'to' and 'amount' are available as local variables
@@ -44,7 +44,7 @@ recv TokenMsg {
 
 Give fields different local names:
 
-```fe
+```fe ignore
 recv TokenMsg {
     Transfer { to: recipient, amount: value } -> bool {
         // Use 'recipient' and 'value' instead of 'to' and 'amount'
@@ -57,7 +57,7 @@ recv TokenMsg {
 
 Use `_` to ignore specific fields:
 
-```fe
+```fe ignore
 recv TokenMsg {
     Transfer { to, amount: _ } -> bool {
         // Only use 'to', ignore the amount
@@ -68,7 +68,7 @@ recv TokenMsg {
 
 Use `..` to ignore all remaining fields:
 
-```fe
+```fe ignore
 recv TokenMsg {
     TransferFrom { from, .. } -> bool {
         // Only use 'from', ignore 'to' and 'amount'
@@ -81,7 +81,7 @@ recv TokenMsg {
 
 For variants without parameters, omit the braces:
 
-```fe
+```fe ignore
 recv TokenMsg {
     TotalSupply -> u256 {
         get_total_supply()
@@ -95,7 +95,7 @@ recv TokenMsg {
 
 The return type must match the message variant's declaration:
 
-```fe
+```fe ignore
 msg Query {
     #[selector = 0x70a08231]
     BalanceOf { account: u256 } -> u256,
@@ -113,7 +113,7 @@ recv Query {
 
 Handlers without a return type implicitly return `()`:
 
-```fe
+```fe ignore
 msg Commands {
     #[selector = 0x42842e0e]
     SafeTransfer { from: u256, to: u256, token_id: u256 },
@@ -133,7 +133,7 @@ Handler bodies contain the implementation logic. They can use all standard Fe ex
 
 ### Simple Handlers
 
-```fe
+```fe ignore
 recv TokenMsg {
     TotalSupply -> u256 {
         1000000
@@ -153,7 +153,7 @@ recv TokenMsg {
 
 Use `return` for early exits:
 
-```fe
+```fe ignore
 recv TokenMsg {
     Transfer { to, amount } -> bool {
         if amount == 0 {
@@ -171,7 +171,7 @@ recv TokenMsg {
 
 Handlers typically delegate to helper functions:
 
-```fe
+```fe ignore
 fn validate_transfer(to: u256, amount: u256) -> bool {
     to != 0 && amount > 0
 }
@@ -197,7 +197,7 @@ recv TokenMsg {
 
 Handlers access contract state through effects:
 
-```fe
+```fe ignore
 pub struct TokenStorage {
     pub balances: StorageMap<u256, u256>,
     pub total_supply: u256,
@@ -236,7 +236,7 @@ contract Token {
 
 Handlers can access transaction context using built-in functions:
 
-```fe
+```fe ignore
 recv TokenMsg {
     Transfer { to, amount } -> bool {
         let sender = caller()  // Get the message sender

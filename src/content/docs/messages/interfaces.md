@@ -9,7 +9,7 @@ Message groups in Fe serve as interface definitions. They specify what operation
 
 A message group defines a contract interface:
 
-```fe
+```fe ignore
 msg Erc20 {
     #[selector = 0xa9059cbb]
     Transfer { to: u256, amount: u256 } -> bool,
@@ -37,7 +37,7 @@ Any contract with `recv Erc20 { ... }` implements this interface.
 
 Under the hood, each message variant becomes a struct that implements the `MsgVariant` trait:
 
-```fe
+```fe ignore
 // Conceptually, Transfer becomes:
 struct Transfer {
     to: u256,
@@ -58,7 +58,7 @@ The `MsgVariant` trait provides:
 
 When you write:
 
-```fe
+```fe ignore
 msg TokenMsg {
     #[selector = 0xa9059cbb]
     Transfer { to: u256, amount: u256 } -> bool,
@@ -67,7 +67,7 @@ msg TokenMsg {
 
 The compiler generates equivalent code like:
 
-```fe
+```fe ignore
 // The variant as a struct
 struct TokenMsg_Transfer {
     to: u256,
@@ -90,7 +90,7 @@ This desugaring enables:
 
 Define standard interfaces as separate message groups:
 
-```fe
+```fe ignore
 // Core ERC20 operations
 msg Erc20 {
     #[selector = 0xa9059cbb]
@@ -125,7 +125,7 @@ msg Erc20Permit {
 
 Contracts can implement any combination:
 
-```fe
+```fe ignore
 // Basic token
 contract SimpleToken {
     recv Erc20 { /* ... */ }
@@ -149,7 +149,7 @@ contract FullToken {
 
 Create your own interfaces for custom protocols:
 
-```fe
+```fe ignore
 msg Ownable {
     #[selector = 0x8da5cb5b]
     Owner -> u256,
@@ -183,7 +183,7 @@ contract ManagedToken {
 
 Document your interfaces with comments:
 
-```fe
+```fe ignore
 /// Standard ERC20 token interface
 ///
 /// Defines the core operations for fungible tokens:

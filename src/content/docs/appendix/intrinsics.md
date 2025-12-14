@@ -24,7 +24,7 @@ These intrinsics provide information about the execution context:
 
 ### Usage
 
-```fe
+```fe ignore
 fn only_owner(owner: Address) uses ctx: Ctx {
     assert(ctx.caller() == owner, "not owner")
 }
@@ -48,7 +48,7 @@ These intrinsics relate to contract state and identity:
 
 ### Usage
 
-```fe
+```fe ignore
 fn get_contract_balance() -> u256 {
     self_balance()
 }
@@ -71,7 +71,7 @@ Hash functions and cryptographic operations:
 
 ### Usage
 
-```fe
+```fe ignore
 fn hash_value(value: u256) -> u256 {
     keccak256(value)
 }
@@ -100,7 +100,7 @@ Control flow for error handling:
 
 ### Usage
 
-```fe
+```fe ignore
 fn transfer(from: Address, to: Address, amount: u256) {
     assert(from != Address::zero(), "transfer from zero address")
     assert(to != Address::zero(), "transfer to zero address")
@@ -128,7 +128,7 @@ For calling other contracts:
 
 ### Usage
 
-```fe
+```fe ignore
 fn send_eth(to: Address, amount: u256) -> bool {
     let (success, _) = call(to, amount, [])
     success
@@ -172,7 +172,7 @@ Event emission:
 
 ### Usage
 
-```fe
+```fe ignore
 struct TransferEvent {
     #[indexed]
     from: Address,
@@ -194,7 +194,7 @@ fn emit_transfer(from: Address, to: Address, value: u256) uses mut log: Log {
 
 ### Usage
 
-```fe
+```fe ignore
 fn deposit() uses ctx: Ctx {
     let amount = ctx.msg_value()
     // Process deposit...
@@ -209,7 +209,7 @@ fn deposit() uses ctx: Ctx {
 
 ### Usage
 
-```fe
+```fe ignore
 fn get_recent_block_hash(block_num: u256) -> u256 {
     block_hash(block_num)
 }

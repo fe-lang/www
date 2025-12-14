@@ -26,7 +26,7 @@ Use semantic versioning:
 
 Export only what users need in `src/lib.fe`:
 
-```fe
+```fe ignore
 // Export public items
 pub use token::Token
 pub use token::Transfer
@@ -40,7 +40,7 @@ use internal::validate_amount
 
 Add comments explaining public items:
 
-```fe
+```fe ignore
 /// A standard ERC20 token implementation.
 ///
 /// Supports transfer, approve, and transferFrom operations.

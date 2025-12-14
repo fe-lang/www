@@ -9,7 +9,7 @@ Message fields define the parameters that callers pass when invoking a message v
 
 Fields are defined inside curly braces, similar to struct fields:
 
-```fe
+```fe ignore
 Transfer { to: u256, amount: u256 } -> bool
 ```
 
@@ -25,7 +25,7 @@ Message fields support all Fe types:
 
 ### Primitive Types
 
-```fe
+```fe ignore
 msg Example {
     #[selector = 0x00000001]
     WithPrimitives {
@@ -38,7 +38,7 @@ msg Example {
 
 ### Compound Types
 
-```fe
+```fe ignore
 msg Example {
     #[selector = 0x00000002]
     WithTuple { coords: (u256, u256) } -> bool,
@@ -52,7 +52,7 @@ msg Example {
 
 Variants can have no fields:
 
-```fe
+```fe ignore
 msg Query {
     #[selector = 0x18160ddd]
     TotalSupply -> u256,
@@ -66,7 +66,7 @@ msg Query {
 
 Field order is significant for ABI encoding. The order in which fields are defined determines how calldata is decoded:
 
-```fe
+```fe ignore
 // These are different!
 Transfer { to: u256, amount: u256 }
 Transfer { amount: u256, to: u256 }
@@ -78,7 +78,7 @@ When implementing standard interfaces like ERC20, ensure field order matches the
 
 In recv blocks, destructure fields to access their values:
 
-```fe
+```fe ignore
 recv TokenMsg {
     Transfer { to, amount } -> bool {
         // 'to' and 'amount' are available here
@@ -89,7 +89,7 @@ recv TokenMsg {
 
 You can also rename fields during destructuring:
 
-```fe
+```fe ignore
 recv TokenMsg {
     Transfer { to: recipient, amount: value } -> bool {
         // Use 'recipient' and 'value' instead
@@ -102,7 +102,7 @@ recv TokenMsg {
 
 Use `_` to ignore fields you don't need:
 
-```fe
+```fe ignore
 recv TokenMsg {
     Transfer { to, amount: _ } -> bool {
         // Only use 'to', ignore amount
@@ -113,7 +113,7 @@ recv TokenMsg {
 
 Use `..` to ignore remaining fields:
 
-```fe
+```fe ignore
 recv TokenMsg {
     TransferFrom { from, .. } -> bool {
         // Only use 'from', ignore to and amount

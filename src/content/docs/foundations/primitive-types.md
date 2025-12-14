@@ -9,14 +9,14 @@ Fe provides a set of primitive types that form the foundation for all data manip
 
 The `bool` type represents a logical value that can be either `true` or `false`.
 
-```fe
+```fe ignore
 let is_active: bool = true
 let has_permission: bool = false
 ```
 
 Booleans are commonly used in conditional expressions and control flow:
 
-```fe
+```fe ignore
 if is_active {
     // do something
 }
@@ -42,7 +42,7 @@ Unsigned integers can only represent non-negative values (zero and positive numb
 | `u256`  | 256  | 0       | 2²⁵⁶ - 1 |
 | `usize` | *    | 0       | platform-dependent |
 
-```fe
+```fe ignore
 let small: u8 = 255
 let balance: u256 = 1000000000000000000  // 1 ETH in wei
 let count: u32 = 42
@@ -62,7 +62,7 @@ Signed integers can represent both negative and positive values, using two's com
 | `i256`  | 256  | -2²⁵⁵   | 2²⁵⁵ - 1 |
 | `isize` | *    | platform-dependent | platform-dependent |
 
-```fe
+```fe ignore
 let temperature: i32 = -10
 let offset: i256 = -500
 ```
@@ -77,7 +77,7 @@ The Ethereum Virtual Machine (EVM) natively operates on 256-bit words. This mean
 
 For most smart contract development, prefer `u256` for unsigned values and `i256` for signed values unless you have a specific reason to use smaller types.
 
-```fe
+```fe ignore
 // Recommended for most EVM operations
 let amount: u256 = 1000
 let price: u256 = 500
@@ -94,7 +94,7 @@ Fe supports several formats for writing numeric literals:
 
 Standard base-10 numbers:
 
-```fe
+```fe ignore
 let x = 42
 let large = 1000000
 ```
@@ -103,7 +103,7 @@ let large = 1000000
 
 Use underscores to make large numbers more readable. Underscores are ignored by the compiler:
 
-```fe
+```fe ignore
 let wei_per_eth = 1_000_000_000_000_000_000
 let million = 1_000_000
 ```
@@ -112,7 +112,7 @@ let million = 1_000_000
 
 Prefix with `0x` or `0X` for base-16 numbers. Useful for addresses, hashes, and bit patterns:
 
-```fe
+```fe ignore
 let color = 0xff5733
 let mask = 0xFFFFFFFF
 let address_value = 0x742d35Cc6634C0532925a3b844Bc9e7595f5e123
@@ -122,7 +122,7 @@ let address_value = 0x742d35Cc6634C0532925a3b844Bc9e7595f5e123
 
 Prefix with `0b` or `0B` for base-2 numbers. Useful for bit flags and masks:
 
-```fe
+```fe ignore
 let flags = 0b1010
 let permission_mask = 0b11110000
 ```
@@ -131,7 +131,7 @@ let permission_mask = 0b11110000
 
 Prefix with `0o` or `0O` for base-8 numbers:
 
-```fe
+```fe ignore
 let file_mode = 0o755
 let octal_value = 0o177
 ```
@@ -140,14 +140,14 @@ let octal_value = 0o177
 
 The `String` type represents text data.
 
-```fe
+```fe ignore
 let greeting: String = "Hello, Fe!"
 let empty: String = ""
 ```
 
 String literals are enclosed in double quotes. Escape sequences can be used for special characters:
 
-```fe
+```fe ignore
 let with_newline = "Line 1\nLine 2"
 let with_quote = "She said \"Hello\""
 ```
@@ -156,7 +156,7 @@ let with_quote = "She said \"Hello\""
 
 Fe can often infer types from context, so explicit type annotations aren't always required:
 
-```fe
+```fe ignore
 let x = 42          // inferred as integer type
 let flag = true     // inferred as bool
 let name = "Alice"  // inferred as String
@@ -164,7 +164,7 @@ let name = "Alice"  // inferred as String
 
 However, explicit type annotations are recommended when the intended type isn't obvious or when you need a specific integer size:
 
-```fe
+```fe ignore
 let amount: u256 = 100  // explicitly u256, not inferred default
 let small: u8 = 50      // explicitly u8 for storage efficiency
 ```
@@ -175,7 +175,7 @@ Fe's primitive types cover the fundamentals, but EVM-specific types like `Addres
 
 Currently, EVM addresses are represented as `u256` values:
 
-```fe
+```fe ignore
 use core::intrinsic::caller
 
 fn get_sender() -> u256 {

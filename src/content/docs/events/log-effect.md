@@ -9,7 +9,7 @@ In Fe, logging is an effect—a capability that must be explicitly declared. Thi
 
 Unlike languages where logging is implicit, Fe treats it as a tracked capability:
 
-```fe
+```fe ignore
 pub struct EventLog {}
 
 struct Transfer {
@@ -43,13 +43,13 @@ The function signature tells you exactly what the function can do.
 
 Define a Log effect as a struct:
 
-```fe
+```fe ignore
 pub struct EventLog {}
 ```
 
 Use it in function signatures:
 
-```fe
+```fe ignore
 // Read-only logging isn't meaningful, so always use mut
 fn emit_transfer(from: u256, to: u256, amount: u256) uses mut EventLog {
     EventLog.emit(Transfer { from, to, amount })
@@ -62,7 +62,7 @@ fn emit_transfer(from: u256, to: u256, amount: u256) uses mut EventLog {
 
 Function signatures reveal side effects:
 
-```fe
+```fe ignore
 // Looking at this signature, you know:
 // - It reads Config (immutable)
 // - It modifies Balances (mutable)
@@ -78,7 +78,7 @@ In Solidity, you'd need to read the implementation to know if events are emitted
 
 Mock or replace the Log effect in tests:
 
-```fe
+```fe ignore
 pub struct MockEventLog {
     pub events: Vec<u256>,  // Track emitted events
 }
@@ -100,7 +100,7 @@ fn test_transfer() {
 
 Compose functions while controlling which can log:
 
-```fe
+```fe ignore
 // Internal helper - no logging
 fn update_balance(account: u256, delta: i256) uses mut Balances {
     // Pure state update, no events
@@ -119,7 +119,7 @@ fn deposit(account: u256, amount: u256)
 
 Functions calling logging functions must declare the effect:
 
-```fe
+```fe ignore
 fn emit_transfer(from: u256, to: u256, amount: u256) uses mut EventLog {
     EventLog.emit(Transfer { from, to, amount })
 }
@@ -149,7 +149,7 @@ fn broken_transfer(from: u256, to: u256, amount: u256)
 
 Contracts provide the Log effect via `with`:
 
-```fe
+```fe ignore
 pub struct EventLog {}
 
 contract Token {
@@ -170,7 +170,7 @@ contract Token {
 
 Use different Log effects for different event categories:
 
-```fe
+```fe ignore
 pub struct TransferLog {}
 pub struct AdminLog {}
 
@@ -213,7 +213,7 @@ This gives fine-grained control over which functions can emit which events.
 
 Often storage and its events are paired:
 
-```fe
+```fe ignore
 pub struct TokenStorage {
     pub balances: StorageMap<u256, u256>,
     pub total_supply: u256,
@@ -234,7 +234,7 @@ fn mint(to: u256, amount: u256)
 
 Some functions exist solely to emit events:
 
-```fe
+```fe ignore
 fn log_debug(message: u256) uses mut DebugLog {
     DebugLog.emit(DebugMessage { value: message })
 }
@@ -244,7 +244,7 @@ fn log_debug(message: u256) uses mut DebugLog {
 
 Make logging optional by separating concerns:
 
-```fe
+```fe ignore
 // Core logic - no logging
 fn compute_fee(amount: u256) uses Config -> u256 {
     amount * Config.fee_rate / 10000

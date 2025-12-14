@@ -9,7 +9,7 @@ Associated functions are functions defined in an impl block that don't take `sel
 
 Define an associated function by omitting `self`:
 
-```fe
+```fe ignore
 struct Point {
     x: u256,
     y: u256,
@@ -32,13 +32,13 @@ impl Point {
 
 Use `::` syntax to call associated functions on the type:
 
-```fe
+```fe ignore
 let p = Point::origin()  // Creates Point { x: 0, y: 0 }
 ```
 
 Compare with method calls that use `.`:
 
-```fe
+```fe ignore
 let p = Point::origin()           // Associated function: Type::function()
 let d = p.distance_from_origin()  // Method: instance.method()
 ```
@@ -47,7 +47,7 @@ let d = p.distance_from_origin()  // Method: instance.method()
 
 The most common associated function is `new()`, a constructor:
 
-```fe
+```fe ignore
 struct Counter {
     value: u256,
     max: u256,
@@ -64,7 +64,7 @@ let counter = Counter::new(100)
 
 ### Constructor Variations
 
-```fe
+```fe ignore
 struct Config {
     threshold: u256,
     enabled: bool,
@@ -105,7 +105,7 @@ let c3 = Config::create(100, true, 0x123)
 
 Associated functions can create different configurations:
 
-```fe
+```fe ignore
 struct Rectangle {
     width: u256,
     height: u256,
@@ -134,7 +134,7 @@ let unit = Rectangle::unit()
 
 Associated functions can provide utilities related to the type:
 
-```fe
+```fe ignore
 struct Percentage {
     value: u256,  // Stored as basis points (0-10000)
 }
@@ -173,7 +173,7 @@ let result = p.apply(1000)  // 500
 
 A typical struct has both associated functions and methods:
 
-```fe
+```fe ignore
 struct TokenAmount {
     value: u256,
     decimals: u8,
@@ -229,7 +229,7 @@ impl TokenAmount {
 
 Associated functions follow the same visibility rules as methods:
 
-```fe
+```fe ignore
 impl Config {
     // Public - callable from outside
     pub fn new() -> Config {

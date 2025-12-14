@@ -264,6 +264,50 @@ struct ApprovalEvent {
     spender: Address,
     value: u256,
 }
+
+// stubs for missing std lib stuff
+extern {
+    fn assert(_: bool, _: String<64>)
+}
+
+pub struct Address { inner: u256 }
+impl Address {
+    pub fn zero() -> Self {
+        Address { inner: 0 }
+    }
+}
+impl core::ops::Eq for Address {
+    fn eq(self, _ other: Address) -> bool {
+        self.inner == other.inner
+    }
+}
+
+pub struct Map<K, V> {}
+impl<K, V> Map<K, V> {
+    pub fn new() -> Self {
+        Map {}
+    }
+}
+impl<K, V> core::ops::Index<K> for Map<K, V> {
+    type Output = V
+    fn index(self, _ key: K) -> V {
+        todo()
+    }
+}
+
+pub struct Ctx {}
+impl Ctx {
+    pub fn caller(self) -> Address {
+        todo()
+    }
+}
+
+pub struct Log {}
+impl Log {
+    pub fn emit<T>(self, _ event: T) {
+        todo()
+    }
+}
 ```
 
 ## Walkthrough
@@ -272,7 +316,7 @@ struct ApprovalEvent {
 
 The contract declares effects at the contract level:
 
-```fe
+```fe ignore
 pub contract CoolCoin uses (mut ctx: Ctx, mut log: Log) {
     mut store: TokenStore,
     mut auth: AccessControl,
@@ -288,7 +332,7 @@ Key points:
 
 The contract uses two storage structs:
 
-```fe
+```fe ignore
 struct TokenStore {
     total_supply: u256,
     balances: Map<Address, u256>,
@@ -311,7 +355,7 @@ pub struct AccessControl {
 
 Messages define the external interface with ABI-compatible selectors:
 
-```fe
+```fe ignore
 msg Erc20 {
     #[selector = 0x06fdde03]
     Name -> String<32>,
@@ -328,7 +372,7 @@ Each selector matches the standard Solidity function selector, ensuring ABI comp
 
 ### The init Block
 
-```fe
+```fe ignore
 init(initial_supply: u256, owner: Address)
   uses (mut store, mut auth, mut ctx, mut log)
 {
@@ -350,7 +394,7 @@ The constructor:
 
 Each handler declares its specific effect requirements:
 
-```fe
+```fe ignore
 recv Erc20 {
     Transfer { to, amount } -> bool uses (ctx, mut store, mut log) {
         transfer(from: ctx.caller(), to, amount)
@@ -372,7 +416,7 @@ Notice:
 
 Core logic is extracted into standalone functions:
 
-```fe
+```fe ignore
 fn transfer(from: Address, to: Address, amount: u256)
     uses (mut store: TokenStore, mut log: Log)
 {
@@ -401,7 +445,7 @@ The `mint` and `burn` functions follow the same pattern, using `Address::zero()`
 
 Events are structs with `#[indexed]` fields for filtering:
 
-```fe
+```fe ignore
 struct TransferEvent {
     #[indexed]
     from: Address,
@@ -421,7 +465,7 @@ struct ApprovalEvent {
 
 Events are emitted via the Log effect:
 
-```fe
+```fe ignore
 log.emit(TransferEvent { from, to, value: amount })
 ```
 
@@ -429,7 +473,7 @@ log.emit(TransferEvent { from, to, value: amount })
 
 Role-based access control is implemented as a struct with methods:
 
-```fe
+```fe ignore
 const MINTER: u256 = 1
 const BURNER: u256 = 2
 
@@ -446,7 +490,7 @@ impl AccessControl {
 
 Usage in handlers:
 
-```fe
+```fe ignore
 Mint { to, amount } -> bool uses (ctx, mut store, mut log, auth) {
     auth.require(role: MINTER)
     mint(to, amount)

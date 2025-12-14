@@ -9,7 +9,7 @@ Impl blocks let you define methods on structs. Methods are functions associated 
 
 Define methods in an `impl` block:
 
-```fe
+```fe ignore
 struct Counter {
     value: u256,
 }
@@ -29,7 +29,7 @@ impl Counter {
 
 Methods take `self` as their first parameter, giving access to the struct instance:
 
-```fe
+```fe ignore
 struct Point {
     x: u256,
     y: u256,
@@ -49,7 +49,7 @@ let mag_sq = p.magnitude_squared()  // 25
 
 Use `self` for read-only access, `mut self` when you need to modify:
 
-```fe
+```fe ignore
 impl Counter {
     // Read-only: uses self
     fn get(self) -> u256 {
@@ -70,7 +70,7 @@ impl Counter {
 
 The compiler enforces this—you can't modify through a non-mut `self`:
 
-```fe
+```fe ignore
 impl Counter {
     fn broken(self) {
         self.value = 10  // Error: cannot mutate through immutable self
@@ -82,7 +82,7 @@ impl Counter {
 
 Call methods with dot notation:
 
-```fe
+```fe ignore
 let mut counter = Counter { value: 0 }
 
 let v = counter.get()      // 0
@@ -96,7 +96,7 @@ let v3 = counter.get()     // 100
 
 Methods returning `self` enable chaining:
 
-```fe
+```fe ignore
 struct Builder {
     width: u256,
     height: u256,
@@ -130,7 +130,7 @@ let b = Builder { width: 0, height: 0, depth: 0 }
 
 You can split methods across multiple impl blocks:
 
-```fe
+```fe ignore
 struct Token {
     balance: u256,
     frozen: bool,
@@ -167,7 +167,7 @@ impl Token {
 
 Methods can take parameters beyond `self`:
 
-```fe
+```fe ignore
 struct Wallet {
     balance: u256,
 }
@@ -200,7 +200,7 @@ impl Wallet {
 
 Methods can be public or private:
 
-```fe
+```fe ignore
 impl Counter {
     // Public method
     pub fn get(self) -> u256 {
@@ -218,7 +218,7 @@ impl Counter {
 
 Only structs can have impl blocks. Contracts cannot:
 
-```fe
+```fe ignore
 // ✓ This works - struct with impl
 struct Helper {
     data: u256,
@@ -242,7 +242,7 @@ impl Token {  // Error: cannot implement methods on contracts
 
 For contracts, use standalone functions with effects instead:
 
-```fe
+```fe ignore
 fn get_balance(account: u256) uses TokenStorage -> u256 {
     TokenStorage.balances.get(account)
 }

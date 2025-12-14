@@ -9,7 +9,7 @@ Contracts bridge the gap between storage and the effect system. Contract fields 
 
 When you declare a contract field with a storage type, that field can be provided as an effect:
 
-```fe
+```fe ignore
 pub struct TokenStorage {
     pub balances: StorageMap<u256, u256>,
     pub total_supply: u256,
@@ -38,7 +38,7 @@ The `with (TokenStorage = store)` expression:
 
 The primary use of contract-level effects is providing them to helper functions:
 
-```fe
+```fe ignore
 fn get_balance(account: u256) uses TokenStorage -> u256 {
     TokenStorage.balances.get(account)
 }
@@ -72,7 +72,7 @@ contract Token {
 
 Use `mut` when you need to modify storage:
 
-```fe
+```fe ignore
 contract Token {
     store: TokenStorage,
 
@@ -101,7 +101,7 @@ When calling functions that require `mut` effects, the `with` block automaticall
 
 Contracts can have multiple fields for different effects:
 
-```fe
+```fe ignore
 pub struct TokenStorage {
     pub balances: StorageMap<u256, u256>,
     pub total_supply: u256,
@@ -142,7 +142,7 @@ contract Token {
 
 Effects are only available within their `with` block:
 
-```fe
+```fe ignore
 recv TokenMsg {
     Transfer { to, amount } -> bool {
         with (TokenStorage = store) {
@@ -180,7 +180,7 @@ contract Token {
 }
 ```
 
-```fe
+```fe ignore
 // Fe - explicit effect dependency
 fn transfer(to: u256, amount: u256) uses mut TokenStorage -> bool {
     // Clear that this function needs TokenStorage

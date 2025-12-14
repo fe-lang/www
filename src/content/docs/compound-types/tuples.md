@@ -9,7 +9,7 @@ Tuples group multiple values of different types into a single compound value. Th
 
 Declare a tuple type by listing element types in parentheses:
 
-```fe
+```fe ignore
 let point: (i32, i32) = (10, 20)
 let mixed: (u256, bool, String) = (100, true, "hello")
 ```
@@ -18,7 +18,7 @@ let mixed: (u256, bool, String) = (100, true, "hello")
 
 Create tuples by listing values in parentheses:
 
-```fe
+```fe ignore
 let coordinates = (100, 200)
 let user_data = (address, balance, is_active)
 ```
@@ -27,7 +27,7 @@ let user_data = (address, balance, is_active)
 
 A single-element tuple requires a trailing comma to distinguish it from a parenthesized expression:
 
-```fe
+```fe ignore
 let single: (u256,) = (42,)  // This is a tuple
 let not_tuple: u256 = (42)   // This is just 42
 ```
@@ -36,7 +36,7 @@ let not_tuple: u256 = (42)   // This is just 42
 
 The empty tuple `()` is called the "unit" type. It represents the absence of a value:
 
-```fe
+```fe ignore
 let nothing: () = ()
 ```
 
@@ -46,7 +46,7 @@ Functions that don't return a value implicitly return `()`.
 
 Access tuple elements by index using dot notation:
 
-```fe
+```fe ignore
 let point = (10, 20, 30)
 
 let x = point.0  // 10
@@ -60,7 +60,7 @@ Indices start at 0 and must be literal integers—you cannot use a variable as a
 
 Extract all tuple elements at once with pattern matching:
 
-```fe
+```fe ignore
 let point = (100, 200)
 let (x, y) = point
 
@@ -69,7 +69,7 @@ let (x, y) = point
 
 Use `_` to ignore elements you don't need:
 
-```fe
+```fe ignore
 let data = (address, amount, timestamp)
 let (_, amount, _) = data  // Only extract amount
 ```
@@ -78,7 +78,7 @@ let (_, amount, _) = data  // Only extract amount
 
 Destructure tuples directly in function signatures:
 
-```fe
+```fe ignore
 fn process_point((x, y): (i32, i32)) -> i32 {
     x + y
 }
@@ -90,7 +90,7 @@ fn process_point((x, y): (i32, i32)) -> i32 {
 
 Tuples are commonly used to return multiple values from a function:
 
-```fe
+```fe ignore
 fn get_bounds() -> (u256, u256) {
     (0, 1000)
 }
@@ -102,7 +102,7 @@ let (min, max) = get_bounds()
 
 Pass tuples as function arguments:
 
-```fe
+```fe ignore
 fn calculate_distance(start: (i32, i32), end: (i32, i32)) -> i32 {
     let (x1, y1) = start
     let (x2, y2) = end
@@ -114,7 +114,7 @@ fn calculate_distance(start: (i32, i32), end: (i32, i32)) -> i32 {
 
 Tuples can contain other tuples:
 
-```fe
+```fe ignore
 let nested: ((i32, i32), (i32, i32)) = ((0, 0), (100, 100))
 
 let start = nested.0      // (0, 0)
@@ -125,7 +125,7 @@ let start_x = nested.0.0  // 0
 
 Match on tuple patterns:
 
-```fe
+```fe ignore
 let point = (0, 5)
 
 match point {

@@ -20,7 +20,7 @@ Unsigned integers cannot be negative. Fe provides sizes matching EVM word bounda
 
 ### Usage
 
-```fe
+```fe ignore
 let small: u8 = 255
 let balance: u256 = 1000000000000000000  // 1 ETH in wei
 let max_supply: u256 = 21000000
@@ -47,7 +47,7 @@ Signed integers can be negative. They use two's complement representation:
 
 ### Usage
 
-```fe
+```fe ignore
 let delta: i256 = -100
 let temperature: i32 = -40
 let positive: i256 = 1000
@@ -69,7 +69,7 @@ The `bool` type represents true/false values:
 
 ### Usage
 
-```fe
+```fe ignore
 let is_active: bool = true
 let paused: bool = false
 
@@ -97,7 +97,7 @@ Fixed-size strings with a maximum length:
 
 ### Usage
 
-```fe
+```fe ignore
 let name: String<32> = "CoolCoin"
 let symbol: String<8> = "COOL"
 let message: String<64> = "Transfer failed"
@@ -119,7 +119,7 @@ Fixed-size collections of heterogeneous types:
 
 ### Usage
 
-```fe
+```fe ignore
 let pair: (u256, bool) = (100, true)
 let triple: (u256, u256, u256) = (1, 2, 3)
 
@@ -141,7 +141,7 @@ Fixed-size collections of homogeneous types:
 
 ### Usage
 
-```fe
+```fe ignore
 let numbers: [u256; 3] = [1, 2, 3]
 let first = numbers[0]
 ```
@@ -156,7 +156,7 @@ The empty tuple, representing no value:
 
 ### Usage
 
-```fe
+```fe ignore
 fn do_something() {
     // Implicitly returns ()
 }
@@ -176,7 +176,7 @@ Represents an optional value:
 
 ### Usage
 
-```fe
+```fe ignore
 let maybe_value: Option<u256> = Option::Some(42)
 let nothing: Option<u256> = Option::None
 
@@ -196,7 +196,7 @@ Key-value storage mapping:
 
 ### Usage
 
-```fe
+```fe ignore
 struct Storage {
     balances: Map<Address, u256>,
     allowances: Map<(Address, Address), u256>,
@@ -219,7 +219,7 @@ storage.balances[account] = new_balance
 
 Convert between numeric types with `as`:
 
-```fe
+```fe ignore
 let small: u8 = 100
 let big: u256 = small as u256
 

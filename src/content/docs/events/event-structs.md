@@ -9,7 +9,7 @@ Events in Fe are defined as structs with special attributes. When emitted, they 
 
 Define an event as a struct:
 
-```fe
+```fe ignore
 struct Transfer {
     from: u256,
     to: u256,
@@ -29,7 +29,7 @@ These are regular structs that become events when emitted through the Log effect
 
 The `#[indexed]` attribute marks fields that should become EVM log topics, making them filterable:
 
-```fe
+```fe ignore
 struct Transfer {
     #[indexed]
     from: u256,
@@ -48,7 +48,7 @@ With indexed fields:
 
 Indexed fields enable efficient queries:
 
-```fe
+```fe ignore
 struct Transfer {
     #[indexed]
     from: u256,      // Filter: "all transfers FROM this address"
@@ -71,7 +71,7 @@ The EVM allows at most 4 topics per log:
 
 This means you can have at most 3 indexed fields:
 
-```fe
+```fe ignore
 // Valid: 3 indexed fields
 struct ComplexEvent {
     #[indexed]
@@ -102,7 +102,7 @@ struct TooManyIndexed {
 
 Standard token events follow ERC20/ERC721 conventions:
 
-```fe
+```fe ignore
 // ERC20 Transfer
 struct Transfer {
     #[indexed]
@@ -136,7 +136,7 @@ struct NftTransfer {
 
 Events for contract administration:
 
-```fe
+```fe ignore
 struct OwnershipTransferred {
     #[indexed]
     previous_owner: u256,
@@ -157,7 +157,7 @@ struct Unpaused {
 
 Events recording state changes:
 
-```fe
+```fe ignore
 struct Deposit {
     #[indexed]
     account: u256,
@@ -183,7 +183,7 @@ struct ConfigUpdated {
 
 Each event should represent one logical occurrence:
 
-```fe
+```fe ignore
 // Good: specific events
 struct Minted {
     #[indexed]
@@ -209,7 +209,7 @@ struct SupplyChanged {
 
 Index fields you'll filter by:
 
-```fe
+```fe ignore
 struct Trade {
     #[indexed]
     trader: u256,      // Often filtered by trader
@@ -226,7 +226,7 @@ struct Trade {
 
 Events should be self-contained for off-chain processing:
 
-```fe
+```fe ignore
 struct Swap {
     #[indexed]
     sender: u256,

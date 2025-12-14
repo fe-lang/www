@@ -13,7 +13,7 @@ The current `StorageMap` is a minimal implementation that will be replaced with 
 
 `StorageMap<K, V>` stores key-value pairs in contract storage:
 
-```fe
+```fe ignore
 use std::storage::StorageMap
 
 pub struct MyContract {
@@ -28,7 +28,7 @@ Unlike in-memory data structures, storage maps persist on the blockchain between
 
 Declare maps as fields in contract structs:
 
-```fe
+```fe ignore
 pub struct Token {
     balances: StorageMap<u256, u256>,
     total_supply: u256,
@@ -43,7 +43,7 @@ Maps are always stored in contract storage—they cannot be created as local var
 
 Use `get(key)` to read a value:
 
-```fe
+```fe ignore
 impl Token {
     pub fn balance_of(self, account_id: u256) -> u256 {
         self.balances.get(account_id)
@@ -57,7 +57,7 @@ If a key hasn't been set, `get` returns the default value for the value type (ty
 
 Use `set(key, value)` to store a value:
 
-```fe
+```fe ignore
 impl Token {
     pub fn set_balance(mut self, account_id: u256, amount: u256) {
         self.balances.set(account_id, amount)
@@ -71,7 +71,7 @@ Note that the `self` parameter must be `mut` to modify storage.
 
 Use tuples as keys for multi-dimensional mappings:
 
-```fe
+```fe ignore
 pub struct Token {
     // Maps (owner_id, spender_id) to allowance amount
     allowances: StorageMap<(u256, u256), u256>,
@@ -121,7 +121,7 @@ This ensures:
 
 ### Token Balances
 
-```fe
+```fe ignore
 pub struct Token {
     balances: StorageMap<u256, u256>,
 }
@@ -139,7 +139,7 @@ impl Token {
 
 ### Allowance System
 
-```fe
+```fe ignore
 pub struct Token {
     balances: StorageMap<u256, u256>,
     allowances: StorageMap<(u256, u256), u256>,
@@ -172,7 +172,7 @@ impl Token {
 
 ### Role-Based Access
 
-```fe
+```fe ignore
 pub struct AccessControl {
     // Maps (account_id, role_id) to whether role is granted
     roles: StorageMap<(u256, u256), bool>,

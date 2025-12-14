@@ -9,7 +9,7 @@ Generic functions work with multiple types using type parameters. Instead of wri
 
 Define a generic function with type parameters in angle brackets:
 
-```fe
+```fe ignore
 fn identity<T>(value: T) -> T {
     value
 }
@@ -17,7 +17,7 @@ fn identity<T>(value: T) -> T {
 
 `T` is a type parameter—a placeholder for any concrete type. When called, the compiler substitutes the actual type:
 
-```fe
+```fe ignore
 let x = identity(42)        // T is u256
 let y = identity(true)      // T is bool
 ```
@@ -26,7 +26,7 @@ let y = identity(true)      // T is bool
 
 Functions can have multiple type parameters:
 
-```fe
+```fe ignore
 fn pair<A, B>(first: A, second: B) -> (A, B) {
     (first, second)
 }
@@ -38,7 +38,7 @@ let p = pair(1, true)  // (u256, bool)
 
 Usually, you need to constrain what types are allowed. Use trait bounds:
 
-```fe
+```fe ignore
 trait Printable {
     fn to_string(self) -> String
 }
@@ -50,7 +50,7 @@ fn print_value<T: Printable>(value: T) -> String {
 
 Now `print_value` only accepts types that implement `Printable`:
 
-```fe
+```fe ignore
 struct Message {
     text: String,
 }
@@ -69,7 +69,7 @@ print_value(msg)  // Works: Message implements Printable
 
 Structs can also be generic:
 
-```fe
+```fe ignore
 struct Wrapper<T> {
     value: T,
 }
@@ -92,7 +92,7 @@ let v = w.get()  // 42
 
 Methods can introduce their own type parameters:
 
-```fe
+```fe ignore
 struct Container<T> {
     item: T,
 }
@@ -115,7 +115,7 @@ impl<T> Container<T> {
 
 Write once, use with many types:
 
-```fe
+```fe ignore
 // Without generics: separate functions for each type
 fn max_u256(a: u256, b: u256) -> u256 {
     if a > b { a } else { b }
@@ -135,7 +135,7 @@ fn max<T: Comparable>(a: T, b: T) -> T {
 
 Generics preserve type information:
 
-```fe
+```fe ignore
 fn first<T>(items: Array<T>) -> T {
     items[0]
 }
@@ -150,7 +150,7 @@ let n = first(numbers)  // n is u256, not a generic "any" type
 
 Usually the compiler infers types:
 
-```fe
+```fe ignore
 let x = identity(42)  // Compiler infers T = u256
 ```
 
@@ -158,7 +158,7 @@ let x = identity(42)  // Compiler infers T = u256
 
 Sometimes you need to specify types explicitly:
 
-```fe
+```fe ignore
 let x = identity::<u256>(42)
 ```
 
@@ -166,7 +166,7 @@ let x = identity::<u256>(42)
 
 ### Swap Function
 
-```fe
+```fe ignore
 fn swap<T>(a: T, b: T) -> (T, T) {
     (b, a)
 }
@@ -176,7 +176,7 @@ let (x, y) = swap(1, 2)  // (2, 1)
 
 ### Optional/Default Pattern
 
-```fe
+```fe ignore
 fn or_default<T: Default>(value: Option<T>) -> T {
     match value {
         Option::Some(v) => v,
@@ -187,7 +187,7 @@ fn or_default<T: Default>(value: Option<T>) -> T {
 
 ### Transform Pattern
 
-```fe
+```fe ignore
 trait Transform {
     fn transform(self) -> Self
 }
@@ -201,7 +201,7 @@ fn apply_twice<T: Transform>(value: T) -> T {
 
 ### Single Bound
 
-```fe
+```fe ignore
 fn process<T: Hashable>(item: T) -> u256 {
     item.hash()
 }
@@ -209,7 +209,7 @@ fn process<T: Hashable>(item: T) -> u256 {
 
 ### Multiple Bounds
 
-```fe
+```fe ignore
 fn process<T: Hashable + Printable>(item: T) -> String {
     let hash = item.hash()
     item.to_string()
@@ -230,7 +230,7 @@ Generics and effects serve different purposes:
 
 They can be combined:
 
-```fe
+```fe ignore
 fn get_value<T: Readable>(key: u256) uses Storage -> T {
     // Generic return type with storage effect
     Storage.get(key)

@@ -81,7 +81,7 @@ These identifiers have special meaning in certain contexts:
 ## Quick Reference by Category
 
 ### Declarations
-```fe
+```fe ignore
 const MAX_SUPPLY: u256 = 1000000
 let balance = 0
 let mut counter = 0
@@ -95,7 +95,7 @@ msg TokenMsg { }
 ```
 
 ### Control Flow
-```fe
+```fe ignore
 if condition { } else { }
 match value { }
 for item in items { }
@@ -105,14 +105,14 @@ return value
 ```
 
 ### Effects
-```fe
+```fe ignore
 fn foo() uses Storage { }
 fn foo() uses mut Storage { }
 with (Storage = store) { }
 ```
 
 ### Contracts
-```fe
+```fe ignore
 contract Token {
     init() { }
     recv Msg { }

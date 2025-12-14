@@ -9,7 +9,7 @@ Variables are fundamental to any program. Fe provides a straightforward yet powe
 
 Use the `let` keyword to declare a variable:
 
-```fe
+```fe ignore
 let x = 42
 let name = "Alice"
 let is_active = true
@@ -19,7 +19,7 @@ let is_active = true
 
 You can explicitly specify a variable's type using a colon followed by the type:
 
-```fe
+```fe ignore
 let x: u256 = 42
 let name: String = "Alice"
 let balance: u128 = 1000
@@ -31,7 +31,7 @@ Type annotations are optional when the compiler can infer the type from the valu
 - The type isn't obvious from context
 - You want to document the intended type for clarity
 
-```fe
+```fe ignore
 // Without annotation - type is inferred
 let count = 100
 
@@ -43,7 +43,7 @@ let small_count: u8 = 100
 
 You can declare a variable without immediately initializing it:
 
-```fe
+```fe ignore
 let x: u256
 // ... later in the code
 x = 42
@@ -55,7 +55,7 @@ However, Fe will ensure the variable is initialized before it's used.
 
 In Fe, variables are **immutable by default**. Once a value is bound to a name, it cannot be changed:
 
-```fe
+```fe ignore
 let x = 5
 x = 10  // Error: cannot assign to immutable variable
 ```
@@ -70,7 +70,7 @@ This design choice promotes:
 
 When you need a variable whose value can change, use the `mut` keyword:
 
-```fe
+```fe ignore
 let mut counter = 0
 counter = 1      // OK: counter is mutable
 counter = 2      // OK: can reassign multiple times
@@ -82,7 +82,7 @@ The `mut` keyword signals to readers that this variable's value will change duri
 
 Use `mut` when you genuinely need to modify a value:
 
-```fe
+```fe ignore
 let mut total = 0
 for item in items {
     total = total + item.value
@@ -95,7 +95,7 @@ Prefer immutable variables when possible. If you find yourself using `mut` frequ
 
 Fe allows you to declare a new variable with the same name as a previous one. The new declaration *shadows* the previous one:
 
-```fe
+```fe ignore
 let x = 5
 let x = x + 1    // x is now 6, shadows the previous x
 let x = x * 2    // x is now 12, shadows again
@@ -106,7 +106,7 @@ Shadowing is different from mutation:
 - **Shadowing** creates a new variable (can even change the type)
 - **Mutation** modifies an existing variable's value
 
-```fe
+```fe ignore
 // Shadowing allows type changes
 let value = "42"           // value is a String
 let value: u256 = 42       // value is now u256 (new variable)
@@ -125,7 +125,7 @@ Shadowing is useful when:
 - Converting between types while keeping a meaningful name
 - Reusing a name in a new scope without `mut`
 
-```fe
+```fe ignore
 // Transform through steps
 let input = get_raw_input()
 let input = validate(input)
@@ -136,7 +136,7 @@ let input = process(input)
 
 Variables are scoped to the block in which they're declared. A block is code enclosed in curly braces `{}`:
 
-```fe
+```fe ignore
 let outer = 1
 
 {
@@ -152,7 +152,7 @@ let outer = 1
 
 Inner scopes can access variables from outer scopes:
 
-```fe
+```fe ignore
 let x = 10
 
 {
@@ -165,7 +165,7 @@ let x = 10
 
 You can shadow an outer variable within an inner scope:
 
-```fe
+```fe ignore
 let x = 5
 
 {
@@ -182,20 +182,20 @@ The `let` statement supports pattern matching, allowing you to destructure value
 
 ### Tuple Destructuring
 
-```fe
+```fe ignore
 let point = (10, 20)
 let (x, y) = point      // x = 10, y = 20
 ```
 
 You can ignore parts of a tuple with `_`:
 
-```fe
+```fe ignore
 let (x, _) = point      // Only bind x, ignore y
 ```
 
 ### Struct Destructuring
 
-```fe
+```fe ignore
 struct Point {
     x: u256
     y: u256
@@ -207,7 +207,7 @@ let Point { x, y } = point    // x = 10, y = 20
 
 You can also rename bindings:
 
-```fe
+```fe ignore
 let Point { x: horizontal, y: vertical } = point
 // horizontal = 10, vertical = 20
 ```
@@ -216,7 +216,7 @@ let Point { x: horizontal, y: vertical } = point
 
 Use `mut` in patterns to make specific bindings mutable:
 
-```fe
+```fe ignore
 let (mut x, y) = (1, 2)
 x = 10       // OK: x is mutable
 // y = 20    // Error: y is immutable
@@ -224,7 +224,7 @@ x = 10       // OK: x is mutable
 
 In struct patterns:
 
-```fe
+```fe ignore
 let Point { mut x, y } = point
 x = 100      // OK: x is mutable
 ```

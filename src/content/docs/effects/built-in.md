@@ -9,7 +9,7 @@ Unlike some languages with fixed built-in effects, Fe's effects are user-defined
 
 Any struct or trait can serve as an effect:
 
-```fe
+```fe ignore
 // Define your own effect type
 pub struct Logger {
     pub entries: Vec<String>,
@@ -34,7 +34,7 @@ While Fe doesn't prescribe specific built-in effects, certain patterns are commo
 
 A context effect provides execution environment information:
 
-```fe
+```fe ignore
 pub struct Ctx {
     pub caller: u256,
     pub block_number: u256,
@@ -56,7 +56,7 @@ fn get_timestamp() uses Ctx -> u256 {
 
 A storage effect represents contract state:
 
-```fe
+```fe ignore
 pub struct TokenStore {
     pub balances: StorageMap<u256, u256>,
     pub total_supply: u256,
@@ -77,7 +77,7 @@ fn mint(to: u256, amount: u256) uses mut TokenStore {
 
 A logger effect tracks events:
 
-```fe
+```fe ignore
 pub struct EventLog {
     // Event logging state
 }
@@ -91,7 +91,7 @@ fn emit_transfer(from: u256, to: u256, amount: u256) uses mut EventLog {
 
 A configuration effect provides settings:
 
-```fe
+```fe ignore
 pub struct Config {
     pub max_transfer: u256,
     pub fee_rate: u256,
@@ -114,7 +114,7 @@ fn calculate_fee(amount: u256) uses Config -> u256 {
 
 Real contracts often need multiple effects:
 
-```fe
+```fe ignore
 fn transfer(from: u256, to: u256, amount: u256)
     uses (Ctx, mut TokenStore, Config, mut EventLog)
 {
@@ -144,7 +144,7 @@ fn transfer(from: u256, to: u256, amount: u256)
 
 Effects can be generic:
 
-```fe
+```fe ignore
 pub struct Cache<T> {
     pub value: T,
     pub valid: bool,
@@ -168,7 +168,7 @@ fn set_cached<T>(value: T) uses mut Cache<T> {
 
 Traits can also serve as effects, enabling polymorphism:
 
-```fe
+```fe ignore
 trait Validator {
     fn is_valid(self, value: u256) -> bool
 }
@@ -186,7 +186,7 @@ When creating effects, consider:
 
 Keep effects focused on one responsibility:
 
-```fe
+```fe ignore
 // Good: separate concerns
 pub struct Balances { ... }
 pub struct Allowances { ... }
@@ -204,7 +204,7 @@ pub struct TokenState {
 
 Only require `mut` when necessary:
 
-```fe
+```fe ignore
 // Read-only check
 fn has_balance(account: u256, amount: u256) uses Balances -> bool {
     Balances.get(account) >= amount
@@ -221,7 +221,7 @@ fn debit(account: u256, amount: u256) uses mut Balances {
 
 Name effects to reflect their purpose:
 
-```fe
+```fe ignore
 // Clear purpose
 pub struct TokenBalances { ... }
 pub struct AccessControl { ... }

@@ -9,7 +9,7 @@ Receive blocks (`recv`) are where contracts handle incoming messages. They conne
 
 A named recv block handles all variants of a specific message type:
 
-```fe
+```fe ignore
 msg TokenMsg {
     #[selector = 0xa9059cbb]
     Transfer { to: u256, amount: u256 } -> bool,
@@ -37,7 +37,7 @@ contract Token {
 
 Named recv blocks must handle **all** variants of the message type:
 
-```fe
+```fe ignore
 contract Token {
     recv TokenMsg {
         Transfer { to, amount } -> bool {
@@ -54,7 +54,7 @@ The compiler ensures you don't forget any handlers.
 
 A bare recv block handles messages without specifying a message type:
 
-```fe
+```fe ignore
 contract Example {
     recv {
         TokenMsg::Transfer { to, amount } -> bool {
@@ -77,7 +77,7 @@ In bare blocks:
 
 Recv blocks appear inside contract definitions after fields and the init block:
 
-```fe
+```fe ignore
 contract Token {
     // Fields
     total_supply: u256,
@@ -101,7 +101,7 @@ contract Token {
 
 Each handler in a recv block has:
 
-```fe
+```fe ignore
 VariantName { fields } -> ReturnType {
     // handler body
 }
@@ -115,7 +115,7 @@ VariantName { fields } -> ReturnType {
 
 Handlers can use effects to access contract state:
 
-```fe
+```fe ignore
 pub struct TokenStorage {
     pub balances: StorageMap<u256, u256>,
 }
@@ -150,7 +150,7 @@ contract Token {
 
 A contract can have multiple recv blocks for different message types:
 
-```fe
+```fe ignore
 contract MultiInterface {
     recv Erc20 {
         Transfer { to, amount } -> bool { /* ... */ }

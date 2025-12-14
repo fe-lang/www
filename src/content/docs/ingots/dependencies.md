@@ -110,7 +110,7 @@ contracts = { source = "https://github.com/org/monorepo.git", rev = "e7f8a9b0c1d
 
 Once declared, import from dependencies using their name:
 
-```fe
+```fe ignore
 // Import from the 'utils' dependency
 use utils::calculate_fee
 use utils::SafeMath
@@ -132,7 +132,7 @@ The name you give a dependency determines its import path:
 helpers = "../some/path/to/utils"
 ```
 
-```fe
+```fe ignore
 // Import using the name 'helpers', not the directory name
 use helpers::some_function
 ```

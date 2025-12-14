@@ -11,7 +11,7 @@ Fe draws heavy inspiration from Rust. This guide highlights what's familiar and 
 
 Fe structs work like Rust structs:
 
-```fe
+```fe ignore
 struct Point {
     x: u256,
     y: u256,
@@ -25,7 +25,7 @@ let x = p.x
 
 Methods are defined in impl blocks:
 
-```fe
+```fe ignore
 struct Counter {
     value: u256,
 }
@@ -49,7 +49,7 @@ impl Counter {
 
 Traits define shared behavior:
 
-```fe
+```fe ignore
 trait Hashable {
     fn hash(self) -> u256
 }
@@ -65,7 +65,7 @@ impl Hashable for Point {
 
 Type parameters work similarly:
 
-```fe
+```fe ignore
 fn identity<T>(value: T) -> T {
     value
 }
@@ -85,7 +85,7 @@ impl<T> Wrapper<T> {
 
 Constrain generics with trait bounds:
 
-```fe
+```fe ignore
 fn process<T: Hashable>(item: T) -> u256 {
     item.hash()
 }
@@ -99,7 +99,7 @@ fn complex<T: Hashable + Printable>(item: T) {
 
 Enums with match expressions:
 
-```fe
+```fe ignore
 enum Status {
     Pending,
     Active,
@@ -119,7 +119,7 @@ fn handle(status: Status) -> u256 {
 
 Optional values use `Option<T>`:
 
-```fe
+```fe ignore
 let maybe: Option<u256> = Option::Some(42)
 
 match maybe {
@@ -132,7 +132,7 @@ match maybe {
 
 Most constructs are expressions:
 
-```fe
+```fe ignore
 let value = if condition { 10 } else { 20 }
 
 let result = match status {
@@ -145,7 +145,7 @@ let result = match status {
 
 Types are inferred where possible:
 
-```fe
+```fe ignore
 let x = 42          // u256 inferred
 let y: u8 = 42      // Explicit annotation
 ```
@@ -154,7 +154,7 @@ let y: u8 = 42      // Explicit annotation
 
 Variables are immutable by default:
 
-```fe
+```fe ignore
 let x = 10          // Immutable
 let mut y = 10      // Mutable
 y = 20              // OK
@@ -166,7 +166,7 @@ y = 20              // OK
 
 Fe doesn't have Rust's ownership system. All values are copied or have reference semantics based on context:
 
-```fe
+```fe ignore
 // Rust would require borrowing
 fn process(data: MyStruct) {
     // In Fe, no ownership concerns
@@ -181,7 +181,7 @@ process(a)  // Fine in Fe, would be error in Rust
 
 No lifetime annotations needed:
 
-```fe
+```fe ignore
 // Rust: fn longest<'a>(a: &'a str, b: &'a str) -> &'a str
 // Fe: Just works
 fn longest(a: String<32>, b: String<32>) -> String<32> {
@@ -193,7 +193,7 @@ fn longest(a: String<32>, b: String<32>) -> String<32> {
 
 Fe uses an effect system instead of borrowing:
 
-```fe
+```fe ignore
 // Rust: fn modify(data: &mut Storage)
 // Fe: Effect declaration
 fn modify() uses mut Storage {
@@ -217,7 +217,7 @@ Fe has a standard library, but EVM constraints mean some Rust types aren't avail
 
 Fe prefers fixed-size types for EVM efficiency:
 
-```fe
+```fe ignore
 // Rust: String, Vec<u8>
 // Fe: Fixed-size
 let name: String<32> = "Token"
@@ -228,7 +228,7 @@ let data: [u8; 32] = [0; 32]
 
 Currently, Fe has basic loop constructs but not yet the full iterator pattern:
 
-```fe
+```fe ignore
 // Rust: items.iter().map(|x| x + 1).collect()
 // Fe: Currently uses manual loops
 for i in 0..items.len() {
@@ -244,7 +244,7 @@ A trait-based Iterator system similar to Rust's is planned for Fe. This will ena
 
 Error handling primarily uses assertions:
 
-```fe
+```fe ignore
 // Rust: Result<T, E>
 // Fe: Assertions and revert
 assert(balance >= amount, "Insufficient balance")
@@ -254,7 +254,7 @@ assert(balance >= amount, "Insufficient balance")
 
 Fe doesn't support closures:
 
-```fe
+```fe ignore
 // Rust: let add = |a, b| a + b;
 // Fe: Use named functions
 fn add(a: u256, b: u256) -> u256 {
@@ -285,7 +285,7 @@ Fe organizes code into ingots (packages) containing modules, similar to Rust's c
 
 Fe has first-class contract support:
 
-```fe
+```fe ignore
 contract Token {
     store: TokenStorage,
 
@@ -303,7 +303,7 @@ contract Token {
 
 External interfaces are defined separately:
 
-```fe
+```fe ignore
 msg TokenMsg {
     #[selector = 0xa9059cbb]
     Transfer { to: Address, amount: u256 } -> bool,
@@ -314,7 +314,7 @@ msg TokenMsg {
 
 Persistent key-value storage:
 
-```fe
+```fe ignore
 struct Storage {
     balances: Map<Address, u256>,
 }
@@ -324,7 +324,7 @@ struct Storage {
 
 Blockchain events for logging:
 
-```fe
+```fe ignore
 struct Transfer {
     #[indexed]
     from: Address,
@@ -338,7 +338,7 @@ struct Transfer {
 
 Explicit capability tracking:
 
-```fe
+```fe ignore
 fn transfer(from: Address, to: Address, amount: u256)
     uses (mut store: TokenStore, mut log: Log)
 {

@@ -9,7 +9,7 @@ Structs are custom data types that group related values under named fields. They
 
 Define a struct with the `struct` keyword:
 
-```fe
+```fe ignore
 struct Point {
     x: i32,
     y: i32,
@@ -22,7 +22,7 @@ Each field has a name and a type. Fields are separated by commas.
 
 By default, struct fields are private. Use `pub` to make them publicly accessible:
 
-```fe
+```fe ignore
 pub struct User {
     pub name: String,
     pub balance: u256,
@@ -32,7 +32,7 @@ pub struct User {
 
 The struct itself can also be public or private:
 
-```fe
+```fe ignore
 pub struct PublicStruct {
     pub field: u256,
 }
@@ -46,7 +46,7 @@ struct PrivateStruct {
 
 Create a struct instance by specifying values for all fields:
 
-```fe
+```fe ignore
 struct Point {
     x: i32,
     y: i32,
@@ -62,7 +62,7 @@ All fields must be initialized—there are no default values.
 
 When a variable has the same name as a field, use shorthand syntax:
 
-```fe
+```fe ignore
 let x = 10
 let y = 20
 
@@ -73,7 +73,7 @@ let point = Point { x, y }  // Same as Point { x: x, y: y }
 
 Access struct fields with dot notation:
 
-```fe
+```fe ignore
 let point = Point { x: 10, y: 20 }
 
 let x_value = point.x  // 10
@@ -84,7 +84,7 @@ let y_value = point.y  // 20
 
 For mutable struct instances, update fields directly:
 
-```fe
+```fe ignore
 let mut point = Point { x: 0, y: 0 }
 
 point.x = 10
@@ -95,7 +95,7 @@ point.y = 20
 
 Structs can have generic type parameters:
 
-```fe
+```fe ignore
 struct Pair<T> {
     first: T,
     second: T,
@@ -109,7 +109,7 @@ let bool_pair = Pair { first: true, second: false }
 
 Use multiple generic parameters for different field types:
 
-```fe
+```fe ignore
 struct KeyValue<K, V> {
     key: K,
     value: V,
@@ -122,7 +122,7 @@ let entry = KeyValue { key: "name", value: 42 }
 
 Constrain generic types with trait bounds:
 
-```fe
+```fe ignore
 struct Container<T: Default> {
     item: T,
 }
@@ -132,7 +132,7 @@ struct Container<T: Default> {
 
 Structs can contain other structs:
 
-```fe
+```fe ignore
 struct Point {
     x: i32,
     y: i32,
@@ -155,7 +155,7 @@ let x = rect.top_left.x  // 0
 
 Destructure structs in patterns:
 
-```fe
+```fe ignore
 let point = Point { x: 10, y: 20 }
 
 let Point { x, y } = point
@@ -164,7 +164,7 @@ let Point { x, y } = point
 
 Use `..` to ignore remaining fields:
 
-```fe
+```fe ignore
 struct User {
     name: String,
     balance: u256,
@@ -178,7 +178,7 @@ let User { name, .. } = user  // Only extract name
 
 Match on struct patterns:
 
-```fe
+```fe ignore
 match point {
     Point { x: 0, y: 0 } => "origin"
     Point { x: 0, y } => "on y-axis"
@@ -191,7 +191,7 @@ match point {
 
 Combine structs and tuples:
 
-```fe
+```fe ignore
 struct Line {
     start: (i32, i32),
     end: (i32, i32),

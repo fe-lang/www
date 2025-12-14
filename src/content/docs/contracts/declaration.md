@@ -9,7 +9,7 @@ Contracts are the primary building blocks of Fe smart contract development. They
 
 Declare a contract with the `contract` keyword:
 
-```fe
+```fe ignore
 contract Token {
     // Contract body
 }
@@ -20,7 +20,7 @@ A contract can contain:
 - **Init block**: Constructor logic (optional)
 - **Recv blocks**: Message handlers
 
-```fe
+```fe ignore
 contract Token {
     // Fields
     store: TokenStorage,
@@ -41,7 +41,7 @@ contract Token {
 
 Fields declare the contract's storage and effect dependencies:
 
-```fe
+```fe ignore
 pub struct TokenStorage {
     pub balances: StorageMap<u256, u256>,
     pub total_supply: u256,
@@ -62,7 +62,7 @@ Unlike structs, contracts have specific restrictions:
 - **No associated functions**: Contracts don't have `fn` declarations inside them
 - **No direct field access**: Storage is accessed through effects, not `self.field`
 
-```fe
+```fe ignore
 // WRONG: Contracts cannot have impl blocks
 contract Token {
     store: TokenStorage,
@@ -75,7 +75,7 @@ impl Token {  // Error!
 
 Instead, use standalone functions with effects:
 
-```fe
+```fe ignore
 // CORRECT: Use functions with effects
 fn get_balance(account: u256) uses TokenStorage -> u256 {
     TokenStorage.balances.get(account)
@@ -98,7 +98,7 @@ contract Token {
 
 The canonical structure of a Fe contract:
 
-```fe
+```fe ignore
 // 1. Storage struct definition
 pub struct TokenStorage {
     pub balances: StorageMap<u256, u256>,
@@ -155,7 +155,7 @@ contract Token {
 
 A single Fe file can define multiple contracts:
 
-```fe
+```fe ignore
 contract TokenA {
     store: TokenStorage,
     // ...

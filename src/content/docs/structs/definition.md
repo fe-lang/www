@@ -9,7 +9,7 @@ Structs are custom data types that group related values together. They're one of
 
 Define a struct with the `struct` keyword:
 
-```fe
+```fe ignore
 struct Point {
     x: u256,
     y: u256,
@@ -22,7 +22,7 @@ Each field has a name and a type, separated by a colon.
 
 By default, struct fields are private. Use `pub` to make them publicly accessible:
 
-```fe
+```fe ignore
 struct Token {
     pub name: String,       // Public - accessible from outside
     pub symbol: String,     // Public
@@ -35,7 +35,7 @@ struct Token {
 
 Make the entire struct public with `pub struct`:
 
-```fe
+```fe ignore
 pub struct TokenInfo {
     pub name: String,
     pub total_supply: u256,
@@ -48,13 +48,13 @@ A `pub struct` can be used by other modules, but its fields still need individua
 
 Create struct instances using struct literal syntax:
 
-```fe
+```fe ignore
 let point = Point { x: 10, y: 20 }
 ```
 
 All fields must be provided:
 
-```fe
+```fe ignore
 struct Rectangle {
     width: u256,
     height: u256,
@@ -70,7 +70,7 @@ let rect = Rectangle {
 
 Access fields with dot notation:
 
-```fe
+```fe ignore
 let p = Point { x: 10, y: 20 }
 let x_value = p.x  // 10
 let y_value = p.y  // 20
@@ -80,7 +80,7 @@ let y_value = p.y  // 20
 
 Structs are immutable by default. To modify, use `mut`:
 
-```fe
+```fe ignore
 let mut p = Point { x: 10, y: 20 }
 p.x = 30  // Now p is { x: 30, y: 20 }
 ```
@@ -89,7 +89,7 @@ p.x = 30  // Now p is { x: 30, y: 20 }
 
 Structs can contain other structs:
 
-```fe
+```fe ignore
 struct Bounds {
     min: Point,
     max: Point,
@@ -107,7 +107,7 @@ let min_x = bounds.min.x  // 0
 
 Structs can hold any Fe type:
 
-```fe
+```fe ignore
 struct GameState {
     score: u256,
     position: (u256, u256),       // Tuple
@@ -124,7 +124,7 @@ struct Registry {
 
 Extract fields with pattern matching:
 
-```fe
+```fe ignore
 let p = Point { x: 10, y: 20 }
 
 // Destructure into variables

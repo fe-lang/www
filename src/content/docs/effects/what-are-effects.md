@@ -14,7 +14,7 @@ In many languages, functions can access global state, modify storage, or call ex
 - **Testing difficulties**: Mocking hidden dependencies is awkward
 - **Security risks**: In smart contracts, hidden state access can lead to vulnerabilities
 
-```fe
+```fe ignore
 // In languages without effects, this signature tells you nothing
 // about what resources the function accesses
 fn transfer(from: u256, to: u256, amount: u256)
@@ -24,7 +24,7 @@ fn transfer(from: u256, to: u256, amount: u256)
 
 Fe's effect system requires functions to declare their capabilities upfront using the `uses` clause:
 
-```fe
+```fe ignore
 fn transfer(from: u256, to: u256, amount: u256) uses mut Balances {
     // This function can only access Balances
     // and can modify it (mut)
@@ -40,7 +40,7 @@ Now the function signature tells you exactly what it can do:
 
 Here's how effects work in practice:
 
-```fe
+```fe ignore
 // Define an effect type
 pub struct Counter {
     pub value: u256,

@@ -9,7 +9,7 @@ Enums (enumerations) define a type that can be one of several distinct variants.
 
 Define an enum with the `enum` keyword:
 
-```fe
+```fe ignore
 enum Direction {
     North
     South
@@ -20,7 +20,7 @@ enum Direction {
 
 Use `pub` for public visibility:
 
-```fe
+```fe ignore
 pub enum Status {
     Active
     Inactive
@@ -36,7 +36,7 @@ Fe supports three kinds of enum variants:
 
 Variants with no associated data:
 
-```fe
+```fe ignore
 enum Color {
     Red
     Green
@@ -50,7 +50,7 @@ let color = Color::Red
 
 Variants with unnamed fields:
 
-```fe
+```fe ignore
 enum Message {
     Quit
     Move(i32, i32)
@@ -67,7 +67,7 @@ Access tuple variant data through pattern matching.
 
 Variants with named fields:
 
-```fe
+```fe ignore
 enum Event {
     Click { x: i32, y: i32 }
     KeyPress { code: u32, shift: bool }
@@ -83,7 +83,7 @@ let event = Event::Click { x: 100, y: 200 }
 
 Use the `EnumName::VariantName` syntax:
 
-```fe
+```fe ignore
 enum Option<T> {
     Some(T)
     None
@@ -97,7 +97,7 @@ let absent = Option::None
 
 Match expressions extract data from enum variants:
 
-```fe
+```fe ignore
 enum Result<T, E> {
     Ok(T)
     Err(E)
@@ -119,7 +119,7 @@ fn handle_result(result: Result<u256, String>) {
 
 Match expressions must handle all variants. The compiler enforces this:
 
-```fe
+```fe ignore
 enum Status {
     Active
     Inactive
@@ -135,7 +135,7 @@ match status {
 
 Use the wildcard `_` to match remaining variants:
 
-```fe
+```fe ignore
 match status {
     Status::Active => "running"
     _ => "not running"  // Matches Inactive and Pending
@@ -148,7 +148,7 @@ match status {
 
 Bind variant data to variables:
 
-```fe
+```fe ignore
 enum Message {
     Text(String)
     Number(u256)
@@ -168,7 +168,7 @@ match message {
 
 Match on struct variant fields:
 
-```fe
+```fe ignore
 enum Event {
     Click { x: i32, y: i32 }
 }
@@ -182,7 +182,7 @@ match event {
 
 Use `..` to ignore some fields:
 
-```fe
+```fe ignore
 match event {
     Event::Click { x, .. } => {
         // Only use x, ignore y
@@ -194,7 +194,7 @@ match event {
 
 Match nested structures:
 
-```fe
+```fe ignore
 enum Outer {
     Inner(Option<u256>)
 }
@@ -213,7 +213,7 @@ match outer {
 
 Enums can have type parameters:
 
-```fe
+```fe ignore
 enum Option<T> {
     Some(T)
     None
@@ -227,7 +227,7 @@ enum Result<T, E> {
 
 ### Using Generic Enums
 
-```fe
+```fe ignore
 fn find_user(id: u256) -> Option<User> {
     if id == 0 {
         return Option::None
@@ -247,7 +247,7 @@ fn divide(a: u256, b: u256) -> Result<u256, String> {
 
 Constrain generic types:
 
-```fe
+```fe ignore
 enum Container<T: Clone> {
     Single(T)
     Pair(T, T)
@@ -258,7 +258,7 @@ enum Container<T: Clone> {
 
 Match is an expression that returns a value:
 
-```fe
+```fe ignore
 let description = match status {
     Status::Active => "System is running"
     Status::Inactive => "System is stopped"
@@ -274,7 +274,7 @@ All match arms must return the same type.
 
 Represent optional values:
 
-```fe
+```fe ignore
 enum Option<T> {
     Some(T)
     None
@@ -293,7 +293,7 @@ fn get_balance(account_id: u256) -> Option<u256> {
 
 Represent success or failure:
 
-```fe
+```fe ignore
 enum Result<T, E> {
     Ok(T)
     Err(E)

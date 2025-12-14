@@ -18,7 +18,7 @@ Arithmetic operators work on numeric types.
 | `%` | Modulo (remainder) | `a % b` |
 | `**` | Exponentiation | `a ** b` |
 
-```fe
+```fe ignore
 let sum = 10 + 5        // 15
 let diff = 10 - 5       // 5
 let product = 10 * 5    // 50
@@ -31,7 +31,7 @@ let power = 2 ** 8      // 256
 
 Division between integers performs integer division, truncating toward zero:
 
-```fe
+```fe ignore
 let result = 7 / 2   // 3, not 3.5
 let neg = -7 / 2     // -3
 ```
@@ -49,7 +49,7 @@ Comparison operators return `bool` values.
 | `>` | Greater than | `a > b` |
 | `>=` | Greater than or equal | `a >= b` |
 
-```fe
+```fe ignore
 let x = 5
 let y = 10
 
@@ -71,7 +71,7 @@ Logical operators work on `bool` values.
 | `\|\|` | Logical OR | `a \|\| b` |
 | `!` | Logical NOT | `!a` |
 
-```fe
+```fe ignore
 let a = true
 let b = false
 
@@ -87,7 +87,7 @@ Logical operators use short-circuit evaluation:
 - `&&` stops evaluating if the left operand is `false`
 - `||` stops evaluating if the left operand is `true`
 
-```fe
+```fe ignore
 // If is_valid is false, expensive_check() won't be called
 if is_valid && expensive_check() {
     // ...
@@ -110,7 +110,7 @@ Bitwise operators manipulate individual bits of integer values.
 | `<<` | Left shift | `a << n` |
 | `>>` | Right shift | `a >> n` |
 
-```fe
+```fe ignore
 let a: u8 = 0b1100
 let b: u8 = 0b1010
 
@@ -125,7 +125,7 @@ let shifted_right = a >> 2  // 0b0011 (3)
 
 ### Common Bitwise Patterns
 
-```fe
+```fe ignore
 // Check if a bit is set
 let has_flag = (value & FLAG) != 0
 
@@ -150,7 +150,7 @@ Unary operators take a single operand.
 | `!` | Logical NOT | `!flag` |
 | `~` | Bitwise NOT | `~bits` |
 
-```fe
+```fe ignore
 let x: i256 = 42
 let negative = -x      // -42
 let positive = +x      // 42 (no change)
@@ -168,7 +168,7 @@ let flipped = ~bits    // 0b0000_1111
 
 Use `=` to assign a value to a mutable variable:
 
-```fe
+```fe ignore
 let mut x = 10
 x = 20  // x is now 20
 ```
@@ -190,7 +190,7 @@ Compound assignment operators combine an operation with assignment:
 | `<<=` | `x = x << y` | Left shift and assign |
 | `>>=` | `x = x >> y` | Right shift and assign |
 
-```fe
+```fe ignore
 let mut count = 10
 count += 5   // count is now 15
 count -= 3   // count is now 12
@@ -210,7 +210,7 @@ Fe is an expression-oriented language. Most constructs produce values.
 
 A block `{ }` is an expression that evaluates to its last expression:
 
-```fe
+```fe ignore
 let result = {
     let a = 10
     let b = 20
@@ -223,7 +223,7 @@ let result = {
 
 Call functions with parentheses:
 
-```fe
+```fe ignore
 let value = compute(10, 20)
 let result = process(data, flag: true)  // with labeled argument
 ```
@@ -232,7 +232,7 @@ let result = process(data, flag: true)  // with labeled argument
 
 Call methods on values using dot notation:
 
-```fe
+```fe ignore
 let length = my_string.len()
 let doubled = counter.multiply(by: 2)
 ```
@@ -241,7 +241,7 @@ let doubled = counter.multiply(by: 2)
 
 Access struct fields with dot notation:
 
-```fe
+```fe ignore
 let x = point.x
 let name = user.profile.name
 ```
@@ -250,7 +250,7 @@ let name = user.profile.name
 
 Access array and tuple elements by index:
 
-```fe
+```fe ignore
 let first = arr[0]
 let third = arr[2]
 
@@ -262,7 +262,7 @@ let y = tuple.1
 
 Create tuples with parentheses:
 
-```fe
+```fe ignore
 let point = (10, 20)
 let triple = (1, true, "hello")
 let unit = ()  // empty tuple (unit type)
@@ -272,7 +272,7 @@ let unit = ()  // empty tuple (unit type)
 
 Create arrays with brackets:
 
-```fe
+```fe ignore
 let numbers = [1, 2, 3, 4, 5]
 let flags = [true, false, true]
 
@@ -284,7 +284,7 @@ let zeros = [0; 10]  // array of 10 zeros
 
 `if` is an expression that returns a value:
 
-```fe
+```fe ignore
 let max = if a > b { a } else { b }
 
 let description = if count == 0 {
@@ -300,7 +300,7 @@ let description = if count == 0 {
 
 `match` is an expression for pattern matching:
 
-```fe
+```fe ignore
 let result = match value {
     0 => "zero"
     1 => "one"
@@ -312,7 +312,7 @@ let result = match value {
 
 Use parentheses to control evaluation order:
 
-```fe
+```fe ignore
 let result = (a + b) * c
 let complex = ((x + y) * z) / w
 ```
@@ -339,7 +339,7 @@ Operators are evaluated according to their precedence. Higher precedence operato
 
 When in doubt, use parentheses to make your intent clear:
 
-```fe
+```fe ignore
 // These are equivalent, but the second is clearer
 let result = a + b * c
 let result = a + (b * c)

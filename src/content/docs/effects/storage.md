@@ -9,7 +9,7 @@ Contract storage in Fe is modeled through effects. This makes storage access exp
 
 Define storage as a struct that serves as an effect:
 
-```fe
+```fe ignore
 pub struct TokenStorage {
     pub balances: StorageMap<u256, u256>,
     pub total_supply: u256,
@@ -18,7 +18,7 @@ pub struct TokenStorage {
 
 Functions that need storage access declare it explicitly:
 
-```fe
+```fe ignore
 fn get_balance(account: u256) uses TokenStorage -> u256 {
     TokenStorage.balances.get(account)
 }
@@ -32,7 +32,7 @@ fn get_total_supply() uses TokenStorage -> u256 {
 
 Use `mut` when the function modifies storage:
 
-```fe
+```fe ignore
 // Read-only access
 fn get_balance(account: u256) uses TokenStorage -> u256 {
     TokenStorage.balances.get(account)
@@ -54,7 +54,7 @@ fn mint(to: u256, amount: u256) uses mut TokenStorage {
 
 Contracts declare storage fields and provide them as effects to recv blocks:
 
-```fe
+```fe ignore
 pub struct TokenStorage {
     pub balances: StorageMap<u256, u256>,
     pub total_supply: u256,
@@ -67,7 +67,7 @@ contract Token {
 
 Inside recv blocks, use `with` to provide the storage effect:
 
-```fe
+```fe ignore
 // Helper functions with explicit storage effects
 fn do_transfer(from: u256, to: u256, amount: u256) uses mut TokenStorage {
     let from_balance = TokenStorage.balances.get(from)
@@ -86,7 +86,7 @@ fn get_balance(account: u256) uses TokenStorage -> u256 {
 
 Separate different concerns into distinct storage effects:
 
-```fe
+```fe ignore
 pub struct Balances {
     pub data: StorageMap<u256, u256>,
 }
@@ -137,7 +137,7 @@ Making storage access explicit provides:
 
 ### Clear Dependencies
 
-```fe
+```fe ignore
 // This signature tells you exactly what storage is accessed
 fn do_transfer(from: u256, to: u256, amount: u256) uses mut Balances {
     // ...
@@ -146,7 +146,7 @@ fn do_transfer(from: u256, to: u256, amount: u256) uses mut Balances {
 
 ### Enforced Separation
 
-```fe
+```fe ignore
 // This function cannot accidentally modify Allowances
 fn transfer(from: u256, to: u256, amount: u256) uses mut Balances {
     // Compiler error if you try to access Allowances here
@@ -155,7 +155,7 @@ fn transfer(from: u256, to: u256, amount: u256) uses mut Balances {
 
 ### Easy Testing
 
-```fe
+```fe ignore
 fn test_transfer() {
     let mut balances = Balances {
         data: mock_storage_map()

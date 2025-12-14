@@ -9,7 +9,7 @@ Effects distinguish between read-only and mutable access. This distinction is en
 
 By default, effects are read-only:
 
-```fe
+```fe ignore
 fn get_value() uses Config -> u256 {
     Config.value  // Can read
 }
@@ -22,7 +22,7 @@ Read-only effects:
 
 Attempting to modify a read-only effect is a compile error:
 
-```fe
+```fe ignore
 fn try_modify() uses Config {
     Config.value = 100  // Error: cannot modify immutable effect
 }
@@ -32,7 +32,7 @@ fn try_modify() uses Config {
 
 Add `mut` to allow modification:
 
-```fe
+```fe ignore
 fn set_value(new_value: u256) uses mut Config {
     Config.value = new_value  // Can modify
 }
@@ -51,7 +51,7 @@ When calling a function that requires an effect, the caller must provide a compa
 
 A mutable effect can satisfy an immutable requirement:
 
-```fe
+```fe ignore
 fn read_only() uses Data {
     // reads Data
 }
@@ -65,7 +65,7 @@ fn caller() uses mut Data {
 
 An immutable effect cannot satisfy a mutable requirement:
 
-```fe
+```fe ignore
 fn needs_mut() uses mut Data {
     // modifies Data
 }
@@ -79,7 +79,7 @@ fn caller() uses Data {
 
 When providing an effect with `with`, the binding's mutability determines the effect's mutability:
 
-```fe
+```fe ignore
 fn needs_mut() uses mut Counter {
     Counter.value = Counter.value + 1
 }
@@ -107,7 +107,7 @@ fn example() {
 - You want to prevent accidental modification
 - You're implementing a getter or query
 
-```fe
+```fe ignore
 fn total_supply() uses TokenStore -> u256 {
     TokenStore.supply
 }
@@ -123,7 +123,7 @@ fn is_valid(amount: u256) uses Config -> bool {
 - You're implementing a setter or state change
 - The operation has side effects
 
-```fe
+```fe ignore
 fn mint(amount: u256) uses mut TokenStore {
     TokenStore.supply = TokenStore.supply + amount
 }
@@ -137,7 +137,7 @@ fn update_config(new_max: u256) uses mut Config {
 
 Named effects follow the same rules:
 
-```fe
+```fe ignore
 fn process() uses (data: Data, mut cache: Cache) {
     // data is read-only
     // cache is mutable
@@ -153,7 +153,7 @@ fn process() uses (data: Data, mut cache: Cache) {
 
 A common pattern separates read and write operations:
 
-```fe
+```fe ignore
 pub struct Balances {
     pub data: StorageMap<u256, u256>,
 }

@@ -25,7 +25,7 @@ Log Entry
 
 Topic 0 is always the keccak256 hash of the event signature:
 
-```fe
+```fe ignore
 struct Transfer {
     #[indexed]
     from: u256,
@@ -45,7 +45,7 @@ This matches Solidity's event encoding, ensuring tools recognize your events.
 
 Each `#[indexed]` field becomes a topic:
 
-```fe
+```fe ignore
 struct Transfer {
     #[indexed]
     from: u256,      // → topics[1]
@@ -68,7 +68,7 @@ When emitting `Transfer { from: 0x123, to: 0x456, amount: 1000 }`:
 
 Fields without `#[indexed]` are ABI-encoded into the data section:
 
-```fe
+```fe ignore
 struct Swap {
     #[indexed]
     sender: u256,
@@ -99,7 +99,7 @@ Fe types map to Solidity/ABI types:
 
 To emit ERC20-compatible events:
 
-```fe
+```fe ignore
 // ERC20 Transfer event
 // Solidity: event Transfer(address indexed from, address indexed to, uint256 value)
 struct Transfer {
@@ -177,7 +177,7 @@ Note: The signature includes all parameter types, not just indexed ones.
 
 To emit events compatible with existing Solidity contracts:
 
-```fe
+```fe ignore
 // Match Solidity: event Transfer(address indexed from, address indexed to, uint256 value)
 struct Transfer {
     #[indexed]
@@ -211,7 +211,7 @@ Large values in indexed fields are hashed:
 
 Match established conventions:
 
-```fe
+```fe ignore
 // ERC20 standard names
 struct Transfer { ... }
 struct Approval { ... }
@@ -225,7 +225,7 @@ struct ApprovalForAll { ... }
 
 Field order affects the signature:
 
-```fe
+```fe ignore
 // Order: indexed fields first, then data fields
 struct Transfer {
     #[indexed]
@@ -241,7 +241,7 @@ struct Transfer {
 
 Include signatures in your documentation:
 
-```fe
+```fe ignore
 /// Transfer event
 /// Signature: Transfer(uint256,uint256,uint256)
 /// Topic 0: 0xddf252ad1be2c89b69c2b068fc378daa952ba7f163c4a11628f55a4df523b3ef

@@ -9,7 +9,7 @@ Functions are the building blocks of Fe programs. They encapsulate reusable logi
 
 Declare a function using the `fn` keyword:
 
-```fe
+```fe ignore
 fn greet() {
     // function body
 }
@@ -17,7 +17,7 @@ fn greet() {
 
 A function with parameters and a return type:
 
-```fe
+```fe ignore
 fn add(a: u256, b: u256) -> u256 {
     a + b
 }
@@ -29,7 +29,7 @@ fn add(a: u256, b: u256) -> u256 {
 
 Parameters are declared with a name and type:
 
-```fe
+```fe ignore
 fn process(value: u256, flag: bool) {
     // use value and flag
 }
@@ -39,7 +39,7 @@ fn process(value: u256, flag: bool) {
 
 Fe supports **labeled parameters** for improved call-site clarity. A label is the name used when calling the function, while the parameter name is used inside the function body:
 
-```fe
+```fe ignore
 fn transfer(from sender: u256, to recipient: u256, amount: u256) {
     // Inside the function, use: sender, recipient, amount
 }
@@ -54,7 +54,7 @@ This makes function calls self-documenting and reduces errors when functions hav
 
 Use `_` as the label when you don't want to require a label at the call site:
 
-```fe
+```fe ignore
 fn square(_ x: u256) -> u256 {
     x * x
 }
@@ -65,7 +65,7 @@ let result = square(5)
 
 You can mix labeled and unlabeled parameters:
 
-```fe
+```fe ignore
 fn create_point(_ x: u256, _ y: u256, named: bool) -> Point {
     // x and y are positional, named requires a label
 }
@@ -78,7 +78,7 @@ create_point(10, 20, named: true)
 
 Use `mut` to declare a parameter that can be modified within the function:
 
-```fe
+```fe ignore
 fn increment(mut value: u256) -> u256 {
     value = value + 1
     value
@@ -91,7 +91,7 @@ Note that this creates a mutable local copy; it doesn't modify the caller's vari
 
 Functions that operate on a type instance use `self` as their first parameter, making them **methods**:
 
-```fe
+```fe ignore
 struct Counter {
     value: u256
 }
@@ -111,7 +111,7 @@ impl Counter {
 
 Methods are called using dot notation:
 
-```fe
+```fe ignore
 let mut counter = Counter { value: 0 }
 counter.increment()
 let current = counter.get()
@@ -128,7 +128,7 @@ let current = counter.get()
 
 Specify a return type with `->` after the parameters:
 
-```fe
+```fe ignore
 fn calculate(x: u256) -> u256 {
     x * 2
 }
@@ -138,7 +138,7 @@ fn calculate(x: u256) -> u256 {
 
 The last expression in a function is implicitly returned (without a semicolon):
 
-```fe
+```fe ignore
 fn double(x: u256) -> u256 {
     x * 2  // implicitly returned
 }
@@ -148,7 +148,7 @@ fn double(x: u256) -> u256 {
 
 Use `return` for early returns or explicit clarity:
 
-```fe
+```fe ignore
 fn abs(x: i256) -> i256 {
     if x < 0 {
         return -x
@@ -161,7 +161,7 @@ fn abs(x: i256) -> i256 {
 
 Functions without `->` return the unit type (similar to `void` in other languages):
 
-```fe
+```fe ignore
 fn log_value(value: u256) {
     // no return value
 }
@@ -175,7 +175,7 @@ Functions are **private by default**, accessible only within their module.
 
 Use `pub` to make a function accessible from other modules:
 
-```fe
+```fe ignore
 pub fn public_function() {
     // accessible from other modules
 }
@@ -194,7 +194,7 @@ In Fe, contracts cannot contain regular functions. Contracts only have:
 
 Functions are defined separately—either as free-floating functions or as methods on structs. Code inside `recv` blocks can call these external functions:
 
-```fe
+```fe ignore
 // Free-floating helper function
 fn calculate_fee(amount: u256) -> u256 {
     amount / 100
@@ -232,7 +232,7 @@ This separation keeps contracts focused on state and message handling, while log
 
 Functions can be generic over types using angle brackets:
 
-```fe
+```fe ignore
 fn identity<T>(value: T) -> T {
     value
 }
@@ -240,7 +240,7 @@ fn identity<T>(value: T) -> T {
 
 With trait bounds:
 
-```fe
+```fe ignore
 fn print_value<T: Display>(value: T) {
     // T must implement Display
 }
@@ -252,7 +252,7 @@ For comprehensive coverage of generics and trait bounds, see the [Traits & Gener
 
 Fe uses an effect system to track side effects. Functions declare their effects with the `uses` clause:
 
-```fe
+```fe ignore
 fn read_storage() uses Storage {
     // can read from storage
 }

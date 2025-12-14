@@ -21,7 +21,7 @@ Fe uses the same selector mechanism as Solidity, ensuring contracts can interope
 
 Specify selectors using the `#[selector]` attribute:
 
-```fe
+```fe ignore
 msg TokenMsg {
     #[selector = 0xa9059cbb]
     Transfer { to: u256, amount: u256 } -> bool,
@@ -35,7 +35,7 @@ msg TokenMsg {
 
 Selectors are specified as hexadecimal values:
 
-```fe
+```fe ignore
 #[selector = 0xa9059cbb]  // Hex format (preferred)
 #[selector = 2835717307]  // Decimal format (also valid)
 ```
@@ -46,7 +46,7 @@ The value must fit in 4 bytes (u32).
 
 Every message variant must have a selector:
 
-```fe
+```fe ignore
 msg Example {
     // Error: missing selector
     NoSelector { value: u256 } -> bool,
@@ -61,7 +61,7 @@ msg Example {
 
 Selectors must be unique across all recv blocks in a contract:
 
-```fe
+```fe ignore
 msg MsgA {
     #[selector = 0x12345678]
     Operation { } -> bool,
@@ -131,7 +131,7 @@ cast sig "transfer(address,uint256)"
 :::note[Future: Compile-Time Selector Computation]
 Fe will provide a `sol_sig` const function for computing selectors at compile time:
 
-```fe
+```fe ignore
 msg TokenMsg {
     #[selector = sol_sig("balanceOf(address)")]
     BalanceOf { account: u256 } -> u256,
@@ -145,7 +145,7 @@ This will allow you to define selectors using the Solidity signature string dire
 
 For non-standard interfaces, you can use any unique 4-byte value:
 
-```fe
+```fe ignore
 msg CustomProtocol {
     #[selector = 0x00000001]
     Initialize { config: u256 },
@@ -172,7 +172,7 @@ Fe requires explicit selectors rather than auto-generating them because:
 
 For example, you can name your variant `BalanceOf` or `balance_of`—it doesn't matter because the selector `0x70a08231` (derived from `balanceOf(address)`) is what the EVM uses for routing:
 
-```fe
+```fe ignore
 msg Erc20 {
     // Fe-style naming, but ABI-compatible with ERC20's balanceOf(address)
     #[selector = 0x70a08231]

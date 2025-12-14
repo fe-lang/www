@@ -88,7 +88,7 @@ When calculating selectors, use these canonical type names:
 
 In Fe, you specify selectors explicitly in message definitions:
 
-```fe
+```fe ignore
 msg Erc20 {
     #[selector = 0xa9059cbb]
     Transfer { to: Address, amount: u256 } -> bool,
@@ -149,7 +149,7 @@ Many online tools can compute selectors:
 :::note[Planned Feature]
 Fe will provide a `sol_sig` const function for computing selectors at compile time:
 
-```fe
+```fe ignore
 msg TokenMsg {
     #[selector = sol_sig("balanceOf(address)")]
     BalanceOf { account: Address } -> u256,

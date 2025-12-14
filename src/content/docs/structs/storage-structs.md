@@ -9,7 +9,7 @@ Storage structs are structs designed to hold persistent blockchain state. They s
 
 A storage struct contains fields that persist on-chain:
 
-```fe
+```fe ignore
 pub struct TokenStorage {
     pub balances: StorageMap<u256, u256>,
     pub total_supply: u256,
@@ -27,7 +27,7 @@ Key characteristics:
 
 Storage structs become effect types. Functions declare them in `uses`:
 
-```fe
+```fe ignore
 pub struct TokenStorage {
     pub balances: StorageMap<u256, u256>,
     pub total_supply: u256,
@@ -48,7 +48,7 @@ fn set_balance(account: u256, amount: u256) uses mut TokenStorage {
 
 Contracts hold storage structs as fields and provide them as effects:
 
-```fe
+```fe ignore
 contract Token {
     store: TokenStorage,
 
@@ -76,7 +76,7 @@ The `with (TokenStorage = store)` binds the contract field to the effect type.
 
 For simple contracts, one storage struct is sufficient:
 
-```fe
+```fe ignore
 pub struct CounterStorage {
     pub value: u256,
 }
@@ -94,7 +94,7 @@ fn increment() uses mut CounterStorage {
 
 For complex contracts, split storage by concern:
 
-```fe
+```fe ignore
 // Token balances
 pub struct BalanceStorage {
     pub balances: StorageMap<u256, u256>,
@@ -120,7 +120,7 @@ pub struct PauseStorage {
 
 Each becomes an independent effect:
 
-```fe
+```fe ignore
 fn transfer(from: u256, to: u256, amount: u256)
     uses mut BalanceStorage, PauseStorage -> bool
 {
@@ -135,7 +135,7 @@ fn transfer(from: u256, to: u256, amount: u256)
 
 `StorageMap` is the primary collection type for storage:
 
-```fe
+```fe ignore
 pub struct Registry {
     // Simple mapping: key -> value
     pub entries: StorageMap<u256, u256>,
@@ -147,7 +147,7 @@ pub struct Registry {
 
 Access patterns:
 
-```fe
+```fe ignore
 fn get_entry(key: u256) uses Registry -> u256 {
     Registry.entries.get(key)
 }
@@ -173,7 +173,7 @@ The current `StorageMap` is a temporary implementation that will be replaced wit
 
 Storage structs and their fields are typically public:
 
-```fe
+```fe ignore
 pub struct TokenStorage {
     pub balances: StorageMap<u256, u256>,  // Public for effect access
     pub total_supply: u256,
@@ -196,7 +196,7 @@ The `pub` on fields allows `TokenStorage.balances` syntax in functions using the
 
 A full token with storage structs:
 
-```fe
+```fe ignore
 // Storage definitions
 pub struct TokenStorage {
     pub balances: StorageMap<u256, u256>,

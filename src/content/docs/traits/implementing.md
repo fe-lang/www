@@ -9,7 +9,7 @@ Once a trait is defined, types can implement it to provide the required behavior
 
 Implement a trait for a struct:
 
-```fe
+```fe ignore
 trait Greetable {
     fn greet(self) -> String
 }
@@ -27,7 +27,7 @@ impl Greetable for Person {
 
 Now `Person` has the `greet` method:
 
-```fe
+```fe ignore
 let person = Person { name: "Alice" }
 let greeting = person.greet()  // "Alice"
 ```
@@ -36,7 +36,7 @@ let greeting = person.greet()  // "Alice"
 
 You must implement every method declared in the trait:
 
-```fe
+```fe ignore
 trait Shape {
     fn area(self) -> u256
     fn perimeter(self) -> u256
@@ -60,7 +60,7 @@ impl Shape for Rectangle {
 
 Missing any method causes a compile error:
 
-```fe
+```fe ignore
 impl Shape for Rectangle {
     fn area(self) -> u256 {
         self.width * self.height
@@ -73,7 +73,7 @@ impl Shape for Rectangle {
 
 Different types can implement the same trait:
 
-```fe
+```fe ignore
 trait Area {
     fn area(self) -> u256
 }
@@ -116,7 +116,7 @@ impl Area for Triangle {
 
 A type can implement multiple traits:
 
-```fe
+```fe ignore
 trait Printable {
     fn to_string(self) -> String
 }
@@ -157,7 +157,7 @@ impl Comparable for Token {
 
 For methods with `mut self`, the implementation can modify the struct:
 
-```fe
+```fe ignore
 trait Counter {
     fn count(self) -> u256
     fn increment(mut self)
@@ -187,7 +187,7 @@ impl Counter for SimpleCounter {
 
 `Self` in the implementation refers to the concrete type:
 
-```fe
+```fe ignore
 trait Duplicatable {
     fn duplicate(self) -> Self
 }
@@ -211,7 +211,7 @@ impl Duplicatable for Point {
 
 A type can have both trait methods and regular methods:
 
-```fe
+```fe ignore
 struct Wallet {
     balance: u256,
 }
@@ -241,7 +241,7 @@ impl Printable for Wallet {
 
 Both are available on the type:
 
-```fe
+```fe ignore
 let mut wallet = Wallet::new(100)  // Associated function
 wallet.deposit(50)                  // Regular method
 let s = wallet.to_string()          // Trait method
@@ -251,7 +251,7 @@ let s = wallet.to_string()          // Trait method
 
 Trait implementations follow the trait's visibility:
 
-```fe
+```fe ignore
 // Public trait
 pub trait Serializable {
     fn serialize(self) -> u256

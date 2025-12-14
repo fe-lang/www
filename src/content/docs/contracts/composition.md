@@ -12,7 +12,7 @@ Unlike Solidity's inheritance, Fe uses composition through:
 - **Modular storage structs** for logical separation
 - **Multiple recv blocks** for interface organization
 
-```fe
+```fe ignore
 // Modular storage
 pub struct BalanceStorage { /* ... */ }
 pub struct OwnerStorage { /* ... */ }
@@ -33,7 +33,7 @@ contract Token {
 
 Extract business logic into functions that declare their effect dependencies:
 
-```fe
+```fe ignore
 pub struct TokenStorage {
     pub balances: StorageMap<u256, u256>,
     pub total_supply: u256,
@@ -73,7 +73,7 @@ fn transfer(from: u256, to: u256, amount: u256) uses mut TokenStorage -> bool {
 
 Split storage into logical units:
 
-```fe
+```fe ignore
 // Core token state
 pub struct BalanceStorage {
     pub balances: StorageMap<u256, u256>,
@@ -126,7 +126,7 @@ contract Token {
 
 Implement access control as a reusable module:
 
-```fe
+```fe ignore
 pub struct OwnerStorage {
     pub owner: u256,
 }
@@ -174,7 +174,7 @@ contract OwnableToken {
 
 ## Pausable Pattern
 
-```fe
+```fe ignore
 pub struct PauseStorage {
     pub paused: bool,
 }
@@ -229,7 +229,7 @@ contract PausableToken {
 
 Functions can require multiple effects:
 
-```fe
+```fe ignore
 fn guarded_transfer(
     from: u256,
     to: u256,

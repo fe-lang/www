@@ -11,7 +11,7 @@ When function A calls function B, and B requires an effect, A must either:
 1. Have that effect in its own `uses` clause
 2. Provide the effect using a `with` expression
 
-```fe
+```fe ignore
 fn inner() uses Storage {
     // Uses Storage
 }
@@ -23,7 +23,7 @@ fn outer() uses Storage {
 
 If an effect is missing, the compiler reports an error:
 
-```fe
+```fe ignore
 fn inner() uses Storage {
     // Uses Storage
 }
@@ -37,7 +37,7 @@ fn outer() {
 
 The `with` expression provides effects to a scope:
 
-```fe
+```fe ignore
 fn needs_storage() uses Storage {
     // ...
 }
@@ -53,7 +53,7 @@ fn main() {
 
 ### Syntax
 
-```fe
+```fe ignore
 with (EffectType = value) {
     // Effect is available here
 }
@@ -68,7 +68,7 @@ with (Effect1 = val1, Effect2 = val2) {
 
 Effects from `with` are only available inside the block:
 
-```fe
+```fe ignore
 fn example() {
     let data = Data { value: 0 }
 
@@ -84,7 +84,7 @@ fn example() {
 
 Effects propagate through any depth of calls:
 
-```fe
+```fe ignore
 fn level3() uses Config {
     // Uses Config
 }
@@ -110,7 +110,7 @@ fn entry() {
 
 `with` expressions can be nested, creating layered scopes:
 
-```fe
+```fe ignore
 fn needs_both() uses (A, B) {
     // ...
 }
@@ -134,7 +134,7 @@ fn example() {
 
 Or provide multiple effects at once:
 
-```fe
+```fe ignore
 with (A = a, B = b) {
     needs_both()
 }
@@ -144,7 +144,7 @@ with (A = a, B = b) {
 
 Inner scopes can shadow outer effects:
 
-```fe
+```fe ignore
 fn read_value() uses Data -> u256 {
     Data.value
 }
@@ -169,7 +169,7 @@ fn example() {
 
 Functions can have their own effects and also provide additional effects:
 
-```fe
+```fe ignore
 fn helper() uses (Config, mut Logger) {
     // Needs both effects
 }
@@ -191,7 +191,7 @@ The compiler provides clear error messages for effect issues:
 
 ### Missing Effect
 
-```fe
+```fe ignore
 fn needs_data() uses Data { }
 
 fn caller() {
@@ -203,7 +203,7 @@ fn caller() {
 
 ### Mutability Mismatch
 
-```fe
+```fe ignore
 fn needs_mut() uses mut Data { }
 
 fn caller() uses Data {

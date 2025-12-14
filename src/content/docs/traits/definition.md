@@ -9,7 +9,7 @@ Traits define shared behavior that types can implement. They're Fe's way of expr
 
 Define a trait with the `trait` keyword:
 
-```fe
+```fe ignore
 trait Drawable {
     fn draw(self)
 }
@@ -21,7 +21,7 @@ This defines a trait called `Drawable` with one required method `draw`.
 
 Traits declare methods that implementing types must provide:
 
-```fe
+```fe ignore
 trait Summary {
     fn summarize(self) -> String
 }
@@ -45,7 +45,7 @@ Each method signature specifies:
 
 In trait definitions, `Self` refers to the implementing type:
 
-```fe
+```fe ignore
 trait Cloneable {
     fn clone(self) -> Self  // Returns the same type that implements this trait
 }
@@ -59,7 +59,7 @@ trait Addable {
 
 Traits can require multiple methods:
 
-```fe
+```fe ignore
 trait Token {
     fn balance_of(self, account: u256) -> u256
     fn transfer(mut self, to: u256, amount: u256) -> bool
@@ -77,7 +77,7 @@ trait Owned {
 
 Make traits public with `pub`:
 
-```fe
+```fe ignore
 pub trait Serializable {
     fn serialize(self) -> Array<u8>
     fn deserialize(data: Array<u8>) -> Self
@@ -90,7 +90,7 @@ Public traits can be implemented by types in other modules.
 
 Trait methods can have various parameter types:
 
-```fe
+```fe ignore
 trait Calculator {
     // Only self
     fn value(self) -> u256
@@ -112,7 +112,7 @@ trait Calculator {
 
 Each trait should represent one capability:
 
-```fe
+```fe ignore
 // Good: focused traits
 trait Readable {
     fn read(self) -> u256
@@ -133,7 +133,7 @@ trait ReadWritable {
 
 Design traits that can be combined:
 
-```fe
+```fe ignore
 trait Identifiable {
     fn id(self) -> u256
 }
@@ -154,7 +154,7 @@ trait Timestamped {
 
 ### Defining Interfaces
 
-```fe
+```fe ignore
 trait ERC20 {
     fn total_supply(self) -> u256
     fn balance_of(self, account: u256) -> u256
@@ -167,7 +167,7 @@ trait ERC20 {
 
 ### Enabling Polymorphism
 
-```fe
+```fe ignore
 trait Validator {
     fn is_valid(self) -> bool
 }
@@ -180,7 +180,7 @@ fn process<T: Validator>(item: T) -> bool {
 
 ### Standardizing Behavior
 
-```fe
+```fe ignore
 trait Hashable {
     fn hash(self) -> u256
 }

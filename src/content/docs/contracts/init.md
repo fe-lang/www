@@ -9,7 +9,7 @@ The `init` block is Fe's constructor—it runs once when the contract is deploye
 
 Declare an init block inside a contract:
 
-```fe
+```fe ignore
 contract Token {
     store: TokenStorage,
 
@@ -25,7 +25,7 @@ The init block runs automatically during deployment.
 
 Init blocks can accept parameters passed during deployment:
 
-```fe
+```fe ignore
 contract Token {
     store: TokenStorage,
 
@@ -42,7 +42,7 @@ These parameters are encoded in the deployment transaction's calldata.
 
 The primary purpose of init is setting up storage:
 
-```fe
+```fe ignore
 pub struct TokenStorage {
     pub balances: StorageMap<u256, u256>,
     pub total_supply: u256,
@@ -67,7 +67,7 @@ contract Token {
 
 Unlike recv handlers, the init block can access storage fields directly:
 
-```fe
+```fe ignore
 init(supply: u256) {
     store.total_supply = supply  // Direct access allowed in init
 }
@@ -79,7 +79,7 @@ This is because init runs in a special context during deployment, before normal 
 
 Contracts can have parameter-less init blocks:
 
-```fe
+```fe ignore
 contract Counter {
     store: CounterStorage,
 
@@ -93,7 +93,7 @@ contract Counter {
 
 The init block is optional. Contracts without init have default-initialized storage (zeros):
 
-```fe
+```fe ignore
 contract Simple {
     store: SimpleStorage,
     // No init block - storage starts at default values
@@ -108,7 +108,7 @@ contract Simple {
 
 Init can perform multiple setup operations:
 
-```fe
+```fe ignore
 pub struct TokenStorage {
     pub balances: StorageMap<u256, u256>,
     pub allowances: StorageMap<u256, StorageMap<u256, u256>>,
@@ -148,7 +148,7 @@ The init block has some restrictions:
 
 While init can access storage directly, it doesn't use the effect system in the same way as handlers:
 
-```fe
+```fe ignore
 // In init: direct access
 init(supply: u256) {
     store.total_supply = supply

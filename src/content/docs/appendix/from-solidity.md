@@ -24,7 +24,7 @@ contract Token {
 
 **Fe**: Functions must declare what state they access via effects.
 
-```fe
+```fe ignore
 fn transfer(from: Address, to: Address, amount: u256)
     uses mut store: TokenStore  // Explicit declaration
 {
@@ -47,7 +47,7 @@ contract Token {
 
 **Fe**: External interface is defined separately via messages.
 
-```fe
+```fe ignore
 msg TokenMsg {
     #[selector = 0xa9059cbb]
     Transfer { to: Address, amount: u256 } -> bool,
@@ -72,7 +72,7 @@ balances[msg.sender] = 100;
 
 **Fe**: Access through effect-bound storage.
 
-```fe
+```fe ignore
 // In recv block
 with (TokenStorage = store) {
     TokenStorage.balances[caller()] = 100
@@ -113,7 +113,7 @@ function add(uint256 a, uint256 b) public pure returns (uint256) {
 ```
 
 **Fe**:
-```fe
+```fe ignore
 fn add(a: u256, b: u256) -> u256 {
     a + b
 }
@@ -144,7 +144,7 @@ for (uint i = 0; i < 10; i++) {
 ```
 
 **Fe**:
-```fe
+```fe ignore
 if x > 0 {
     return true
 } else {
@@ -168,7 +168,7 @@ function transfer(...) {
 ```
 
 **Fe**:
-```fe
+```fe ignore
 struct Transfer {
     #[indexed]
     from: Address,
@@ -191,7 +191,7 @@ revert("Error message");
 ```
 
 **Fe**:
-```fe
+```fe ignore
 assert(balance >= amount, "Insufficient balance")
 revert
 ```
@@ -206,7 +206,7 @@ constructor(uint256 initialSupply) {
 ```
 
 **Fe**:
-```fe
+```fe ignore
 contract Token {
     init(initial_supply: u256) uses mut store {
         store.total_supply = initial_supply
@@ -230,7 +230,7 @@ function transfer(address to, uint256 amount) public returns (bool) {
 ```
 
 **Fe**:
-```fe
+```fe ignore
 Transfer { to, amount } -> bool uses (ctx, mut store, mut log) {
     let from = ctx.caller()
     assert(store.balances[from] >= amount, "Insufficient balance")
@@ -256,7 +256,7 @@ function mint(address to, uint256 amount) public onlyOwner {
 ```
 
 **Fe**:
-```fe
+```fe ignore
 fn require_owner(owner: Address) uses ctx: Ctx {
     assert(ctx.caller() == owner, "Not owner")
 }
@@ -278,7 +278,7 @@ uint256 allowed = allowances[owner][spender];
 ```
 
 **Fe**:
-```fe
+```fe ignore
 struct Storage {
     allowances: Map<(Address, Address), u256>,
 }
@@ -293,7 +293,7 @@ let allowed = store.allowances[(owner, spender)]
 
 Fe doesn't have contract inheritance. Use composition instead:
 
-```fe
+```fe ignore
 // Instead of: contract Token is Ownable, Pausable
 contract Token {
     auth: AccessControl,    // Composition
@@ -305,7 +305,7 @@ contract Token {
 
 Fe doesn't have function modifiers. Use helper functions:
 
-```fe
+```fe ignore
 fn require_not_paused(paused: bool) {
     assert(!paused, "Contract is paused")
 }
@@ -318,7 +318,7 @@ require_not_paused(store.paused)
 
 Fe requires explicit ABI selectors:
 
-```fe
+```fe ignore
 msg TokenMsg {
     #[selector = 0xa9059cbb]  // Must specify
     Transfer { to: Address, amount: u256 } -> bool,
@@ -329,7 +329,7 @@ msg TokenMsg {
 
 Fe doesn't support function overloading. Use different names:
 
-```fe
+```fe ignore
 // Instead of transfer(address) and transfer(address, uint256)
 fn transfer_to(to: Address) { ... }
 fn transfer_amount(to: Address, amount: u256) { ... }
@@ -339,7 +339,7 @@ fn transfer_amount(to: Address, amount: u256) { ... }
 
 Fe infers types where possible:
 
-```fe
+```fe ignore
 let x = 10        // u256 inferred
 let y: u8 = 10    // Explicit when needed
 ```
