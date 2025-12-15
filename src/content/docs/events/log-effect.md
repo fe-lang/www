@@ -11,14 +11,9 @@ Unlike languages where logging is implicit, Fe treats it as a tracked capability
 
 ```fe
 //<hide>
-use _boilerplate::Map
+use _boilerplate::{Map, Log}
 pub struct TokenStorage { pub balances: Map<u256, u256> }
 //</hide>
-
-pub struct Log {}
-impl Log {
-    pub fn emit<T>(self, event: T) { todo() }
-}
 
 struct Transfer {
     #[indexed]
@@ -48,19 +43,6 @@ fn transfer_silent(from: u256, to: u256, amount: u256)
     //<hide>
     let _ = (from, to, amount, store)
     //</hide>
-}
-```
-
-The function signature tells you exactly what the function can do.
-
-## Declaring Log Effects
-
-Define a Log effect as a struct:
-
-```fe
-pub struct Log {}
-impl Log {
-    pub fn emit<T>(self, event: T) { todo() }
 }
 ```
 

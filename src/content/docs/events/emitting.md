@@ -10,10 +10,10 @@ Events are emitted using a Log effect, which records data to the blockchain that
 Emit an event through a Log effect:
 
 ```fe
-pub struct Log {}
-impl Log {
-    pub fn emit<T>(self, event: T) { todo() }
-}
+//<hide>
+use _boilerplate::{Log}
+//</hide>
+
 
 struct Transfer {
     #[indexed]
