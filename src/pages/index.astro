@@ -101,7 +101,7 @@ const base = import.meta.env.BASE_URL;
       </div>
       <div class="text-center px-4 py-12">
         <p class="text-2xl text-gray-800 leading-7">Explore some advanced contracts written in Fe</p>
-        <a class="w-full mt-6 inline-block bg-indigo-600 rounded-lg px-6 py-3 text-lg text-white sm:w-auto hover:bg-indigo-700 transition duration-200 ease-in-out shadow-lg" href="/www/examples/erc20/">See examples &rarr;</a>
+        <a class="w-full mt-6 inline-block bg-indigo-600 rounded-lg px-6 py-3 text-lg text-white sm:w-auto hover:bg-indigo-700 transition duration-200 ease-in-out shadow-lg" href={`${base}examples/erc20/`}>See examples &rarr;</a>
       </div>
     </section>
 
@@ -248,7 +248,7 @@ pub contract GuestBook uses (ctx: Ctx, mut log: Log) {"{"}
             <h5 class="text-2xl tracking-tight mb-2 font-semibold">Learn Fe</h5>
             <p class="text-gray-600 leading-5">From first contract to advanced patterns</p>
           </a>
-          <a href="/www/examples/erc20/" title="See it in action" class="p-6 bg-gray-50 text-gray-900 rounded-xl hover:bg-indigo-50 hover:border-indigo-200 border border-gray-100 transition-colors">
+          <a href={`${base}examples/erc20/`} title="See it in action" class="p-6 bg-gray-50 text-gray-900 rounded-xl hover:bg-indigo-50 hover:border-indigo-200 border border-gray-100 transition-colors">
             <h5 class="text-2xl tracking-tight mb-2 font-semibold">See it in action</h5>
             <p class="text-gray-600 leading-5">Real contracts, real code</p>
           </a>
@@ -276,7 +276,7 @@ pub contract GuestBook uses (ctx: Ctx, mut log: Log) {"{"}
           <ul>
             <li><a class="block py-1 text-gray-400 hover:text-indigo-400 transition-colors" href={`${base}getting-started/installation/`} title="Installation">Installation</a></li>
             <li><a class="block py-1 text-gray-400 hover:text-indigo-400 transition-colors" href={`${base}getting-started/what-is-fe/`} title="Documentation">Documentation</a></li>
-            <li><a class="block py-1 text-gray-400 hover:text-indigo-400 transition-colors" href="/www/examples/erc20/" title="Examples">Examples</a></li>
+            <li><a class="block py-1 text-gray-400 hover:text-indigo-400 transition-colors" href={`${base}examples/erc20/`} title="Examples">Examples</a></li>
           </ul>
         </div>
         <div>
