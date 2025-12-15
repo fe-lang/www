@@ -142,6 +142,39 @@ while IFS=: read -r fe_file md_file block_start_line; do
     fi
 done < "$MAPPINGS_FILE"
 
+# Check standalone .fe files in src/examples/
+EXAMPLES_DIR="$PROJECT_ROOT/src/examples"
+if [[ -d "$EXAMPLES_DIR" ]] && [[ ${#FILES[@]} -eq 0 ]]; then
+    for fe_file in "$EXAMPLES_DIR"/*.fe; do
+        [[ -f "$fe_file" ]] || continue
+        : $((CHECKED++))
+
+        rel_fe="${fe_file#$PROJECT_ROOT/}"
+        if [[ "$VERBOSE" == true ]]; then
+            echo -n "Checking $rel_fe... "
+        fi
+
+        FE_OUTPUT=$("$SCRIPT_DIR/fe" check "$fe_file" 2>&1) || true
+
+        if [[ -z "$FE_OUTPUT" ]]; then
+            : $((PASSED++))
+            if [[ "$VERBOSE" == true ]]; then
+                echo -e "${GREEN}OK${NC}"
+            fi
+        else
+            : $((FAILED++))
+            if [[ "$VERBOSE" == true ]]; then
+                echo -e "${RED}FAILED${NC}"
+            fi
+            while IFS= read -r error_line; do
+                if [[ -n "$error_line" ]]; then
+                    ERRORS+=("$rel_fe: $error_line")
+                fi
+            done <<< "$FE_OUTPUT"
+        fi
+    done
+fi
+
 # Print summary
 echo ""
 echo "======================================"

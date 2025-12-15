@@ -1,0 +1,57 @@
+// Events are structs with #[indexed] fields where needed
+struct Signed {
+    #[indexed]
+    signer: Address,
+    book_msg: String<100>,
+}
+
+// Storage is defined as a struct
+struct GuestBookStore {
+    messages: Map<Address, String<100>>,
+}
+
+// Message interface - defines the public ABI
+msg GuestBookMsg {
+    #[selector = 0x7f49a6b2]
+    Sign { book_msg: String<100> },
+
+    #[selector = 0x3a5c5d9e]
+    GetMsg { addr: Address } -> String<100>,
+}
+
+// Contract with explicit effects from environment
+pub contract GuestBook uses (ctx: Ctx, mut log: Log) {
+    mut store: GuestBookStore,
+
+    // Handle incoming messages with per-handler effects
+    recv GuestBookMsg {
+        Sign { book_msg } uses (ctx, mut store, mut log) {
+            let signer = ctx.caller()
+            store.messages[signer] = book_msg
+            log.emit(Signed { signer, book_msg })
+        }
+
+        GetMsg { addr } -> String<100> uses (store) {
+            store.messages[addr]
+        }
+    }
+}
+
+// Stubs for type checking (not shown on landing page)
+pub struct Address { inner: u256 }
+pub struct Ctx {}
+impl Ctx {
+    pub fn caller(self) -> Address { todo() }
+}
+pub struct Log {}
+impl Log {
+    pub fn emit<T>(self, event: T) { let _ = event }
+}
+pub struct Map<K, V> {}
+impl<K, V> core::ops::Index<K> for Map<K, V> {
+    type Output = V
+    fn index(self, _ key: K) -> V {
+        let _ = key
+        todo()
+    }
+}

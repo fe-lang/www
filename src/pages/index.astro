@@ -1,5 +1,25 @@
 ---
+import exampleCodeRaw from '../examples/landing-page.fe?raw';
+
 const base = import.meta.env.BASE_URL;
+
+// Extract only the display portion (before stubs comment)
+const stubsMarker = '// Stubs for type checking';
+const displayCode = exampleCodeRaw.split(stubsMarker)[0].trim();
+
+// HTML-escape the code for safe rendering
+function escapeHtml(text: string): string {
+  return text
+    .replace(/&/g, '&amp;')
+    .replace(/</g, '&lt;')
+    .replace(/>/g, '&gt;')
+    .replace(/"/g, '&quot;')
+    .replace(/'/g, '&#039;');
+}
+
+const escapedCode = escapeHtml(displayCode);
+const lineCount = displayCode.split('\n').length;
+const lineNumbers = Array.from({ length: lineCount }, (_, i) => i + 1).join('\n');
 ---
 <!doctype html>
 <html lang="en" class="text-gray-900 antialiased bg-white">
@@ -154,83 +174,7 @@ const base = import.meta.env.BASE_URL;
                 <div class="hidden md:block absolute inset-y-0 left-0 bg-gray-800" style="width: 50px;"></div>
                 <div class="w-full flex-auto flex min-h-0 overflow-auto">
                   <div class="w-full relative flex-auto">
-                    <pre class="flex min-h-full text-sm md:text-sm"><div aria-hidden="true" class="hidden md:block text-gray-500 flex-none py-4 pr-4 text-right select-none" style="width: 50px;">1
-2
-3
-4
-5
-6
-7
-8
-9
-10
-11
-12
-13
-14
-15
-16
-17
-18
-19
-20
-21
-22
-23
-24
-25
-26
-27
-28
-29
-30
-31
-32
-33
-34
-35
-36
-37
-38
-39
-</div><code class="language-fe flex-auto relative block text-gray-100 pt-4 pb-4 px-4 overflow-auto">// Events are structs with #[indexed] fields where needed
-struct Signed {"{"}
-    #[indexed]
-    signer: Address,
-    book_msg: String&lt;100&gt;,
-{"}"}
-
-// Storage is defined as a struct
-struct GuestBookStore {"{"}
-    messages: Map&lt;Address, String&lt;100&gt;&gt;,
-{"}"}
-
-// Message interface - defines the public ABI
-msg GuestBook {"{"}
-    #[selector = 0x7f49a6b2]
-    Sign {"{"} book_msg: String&lt;100&gt; {"}"},
-
-    #[selector = 0x3a5c5d9e]
-    GetMsg {"{"} addr: Address {"}"} -&gt; String&lt;100&gt;,
-{"}"}
-
-// Contract with explicit effects from environment
-pub contract GuestBook uses (ctx: Ctx, mut log: Log) {"{"}
-    mut store: GuestBookStore,
-
-    // Handle incoming messages with per-handler effects
-    recv GuestBook {"{"}
-        Sign {"{"} book_msg {"}"} uses (ctx, mut store, mut log) {"{"}
-            let signer = ctx.caller()
-            store.messages[signer] = book_msg
-            log.emit(Signed {"{"} signer, book_msg {"}"})
-        {"}"}
-
-        GetMsg {"{"} addr {"}"} -&gt; String&lt;100&gt; uses (store) {"{"}
-            store.messages[addr]
-        {"}"}
-    {"}"}
-{"}"}</code></pre>
+                    <pre class="flex min-h-full text-sm md:text-sm"><div aria-hidden="true" class="hidden md:block text-gray-500 flex-none py-4 pr-4 text-right select-none" style="width: 50px;" set:html={lineNumbers}></div><code class="language-fe flex-auto relative block text-gray-100 pt-4 pb-4 px-4 overflow-auto" set:html={escapedCode}></code></pre>
                   </div>
                 </div>
               </div>
@@ -290,7 +234,7 @@ pub contract GuestBook uses (ctx: Ctx, mut log: Log) {"{"}
         <div>
           <h4 class="font-semibold mb-4 text-white">Project</h4>
           <ul>
-            <li><a class="block py-1 text-gray-400 hover:text-indigo-400 transition-colors" href="https://github.com/fe-lang/fe/blob/master/LICENSE.md" title="License">License</a></li>
+            <li><a class="block py-1 text-gray-400 hover:text-indigo-400 transition-colors" href="https://github.com/argotorg/fe/blob/master/LICENSE-APACHE" title="License">License</a></li>
           </ul>
         </div>
       </div>
