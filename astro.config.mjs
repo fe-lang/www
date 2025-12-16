@@ -13,6 +13,16 @@ export default defineConfig({
 	integrations: [
 		starlight({
 			title: 'The Fe Guide',
+			head: [
+				{
+					tag: 'script',
+					attrs: {
+						defer: true,
+						src: 'https://cloud.umami.is/script.js',
+						'data-website-id': '3a2884db-bde9-480f-99b0-d43feee064f9',
+					},
+				},
+			],
 			customCss: ['./src/styles/custom.css'],
 			components: {
 				SiteTitle: './src/components/SiteTitle.astro',
