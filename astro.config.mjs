@@ -5,8 +5,8 @@ import remarkHideDirective from './src/plugins/remark-hide-directive.js';
 
 // https://astro.build/config
 export default defineConfig({
-	site: 'https://fe-lang.github.io',
-	base: '/www/',
+	site: 'https://fe-lang.org',
+	base: '/',
 	markdown: {
 		remarkPlugins: [remarkHideDirective],
 	},

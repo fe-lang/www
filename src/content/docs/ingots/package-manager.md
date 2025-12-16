@@ -73,4 +73,4 @@ Use these messages to locate and fix issues in your code.
 
 ## Next Steps
 
-See [Dependencies](/www/ingots/dependencies/) to learn how to add external ingots to your project.
+See [Dependencies](/ingots/dependencies/) to learn how to add external ingots to your project.

@@ -19,7 +19,7 @@ This explicitness provides key benefits:
 
 When you see a function's `uses` clause, you know exactly what that function can do. No surprises.
 
-[Learn more about Effects →](/www/effects/what-are-effects/)
+[Learn more about Effects →](/effects/what-are-effects/)
 
 ## Messages
 
@@ -35,7 +35,7 @@ This message-based approach provides:
 - **ABI compatibility**: Selectors ensure interoperability with existing tooling
 - **Organized handlers**: Related operations are grouped logically
 
-[Learn more about Messages →](/www/messages/defining-messages/)
+[Learn more about Messages →](/messages/defining-messages/)
 
 ## Contracts
 
@@ -54,7 +54,7 @@ This unified model means contracts are:
 - **Composable**: Storage structs and access control can be reused
 - **Auditable**: Every handler's scope is visible in its signature
 
-[Learn more about Contracts →](/www/contracts/declaration/)
+[Learn more about Contracts →](/contracts/declaration/)
 
 ## Structs, Traits, and Generics
 
@@ -70,4 +70,4 @@ Together, these features support:
 - **Reusability**: Write generic code that works with many types
 - **Type safety**: The compiler verifies trait bounds at compile time
 
-[Learn more about Structs →](/www/structs/definition/) · [Traits →](/www/traits/definition/)
+[Learn more about Structs →](/structs/definition/) · [Traits →](/traits/definition/)
