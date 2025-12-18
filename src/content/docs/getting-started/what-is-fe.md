@@ -6,7 +6,7 @@ description: Philosophy, goals, and Rust-inspired safety for smart contracts
 Fe is a statically typed language for the Ethereum Virtual Machine (EVM) that blends Rust-like syntax with an innovative message-passing paradigm tailored to the platform. It offers a complete, batteries-included toolchain, featuring a built-in package manager, formatter, and robust language server to streamline development. Designed for safety and correctness, Fe empowers developers with features like generics, traits, pattern matching, and even higher-kinded types, while ensuring a smooth, modern developer experience. It serves as a secure foundation for building the next generation of decentralized applications.
 
 :::caution[Pre-Release Software]
-Fe has undergone intensive development over the past two years. The last published release is outdated and should not be used. This documentation covers the upcoming release currently in development. Follow progress on [GitHub](https://github.com/fe-lang/fe).
+Fe has undergone intensive development over the past two years. The last published release is outdated and should not be used. This documentation covers the upcoming release currently in development. Follow progress on [GitHub](https://github.com/argotorg/fe).
 :::
 
 ## Philosophy

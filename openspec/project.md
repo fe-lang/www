@@ -62,7 +62,7 @@ This local compiler should be used instead of any system-installed version to en
 
 2. **Fe compiler source**: For behavior not covered in docs or to verify accuracy:
    - Set `FE_SOURCE_PATH` environment variable to your local clone
-   - Fallback: https://github.com/fe-lang/fe
+   - Fallback: https://github.com/argotorg/fe
 
 Fe is a statically typed smart contract language for the EVM.
 
@@ -88,4 +88,4 @@ The Fe compiler consists of these main crates:
 ## External Dependencies
 - **GitHub Pages**: Hosting platform
 - **GitHub Actions**: CI/CD pipeline
-- **Fe Language Repository**: https://github.com/fe-lang/fe
+- **Fe Language Repository**: https://github.com/argotorg/fe

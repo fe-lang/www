@@ -22,7 +22,7 @@ This documentation covers these upcoming features.
 
 Until a new release is available, you can follow Fe's development:
 
-- **GitHub Repository**: [github.com/fe-lang/fe](https://github.com/fe-lang/fe) - Watch for releases and follow development
+- **GitHub Repository**: [github.com/argotorg/fe](https://github.com/argotorg/fe) - Watch for releases and follow development
 - **Build from Source**: Advanced users can build the compiler from the repository's main branch
 
 ## What's Next

@@ -1,6 +1,6 @@
 # The Fe Guide
 
-The official documentation for [Fe](https://github.com/fe-lang/fe), a statically typed smart contract programming language for the Ethereum Virtual Machine (EVM).
+The official documentation for [Fe](https://github.com/argotorg/fe), a statically typed smart contract programming language for the Ethereum Virtual Machine (EVM).
 
 **Live site**: https://fe-lang.github.io/www/
 
@@ -89,6 +89,6 @@ See [CONTRIBUTING.md](CONTRIBUTING.md) for detailed guidelines on:
 
 ## Resources
 
-- [Fe Language Repository](https://github.com/fe-lang/fe)
+- [Fe Language Repository](https://github.com/argotorg/fe)
 - [Starlight Documentation](https://starlight.astro.build/)
 - [Astro Documentation](https://docs.astro.build)

@@ -153,7 +153,7 @@ When writing new sections, consult existing documentation for patterns:
 - `foundations/` - Core language concepts
 - `effects/` - Effect system patterns
 
-For language behavior not covered in docs, consult the [Fe compiler source](https://github.com/fe-lang/fe).
+For language behavior not covered in docs, consult the [Fe compiler source](https://github.com/argotorg/fe).
 
 ## Updating the Fe Binary
 

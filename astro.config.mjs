@@ -28,7 +28,7 @@ export default defineConfig({
 				SiteTitle: './src/components/SiteTitle.astro',
 				Banner: './src/components/Banner.astro',
 			},
-			social: [{ icon: 'github', label: 'GitHub', href: 'https://github.com/fe-lang/fe' }],
+			social: [{ icon: 'github', label: 'GitHub', href: 'https://github.com/argotorg/fe' }],
 			sidebar: [
 				{
 					label: 'Back to Website',
