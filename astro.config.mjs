@@ -61,6 +61,7 @@ export default defineConfig({
 						{ label: 'Project Structure', slug: 'ingots/project-structure' },
 						{ label: 'The Package Manager', slug: 'ingots/package-manager' },
 						{ label: 'Dependencies', slug: 'ingots/dependencies' },
+						{ label: 'Workspaces', slug: 'ingots/workspaces' },
 						{ label: 'Publishing Ingots', slug: 'ingots/publishing' },
 					],
 				},
