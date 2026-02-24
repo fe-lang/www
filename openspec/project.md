@@ -13,20 +13,25 @@
 
 ## Fe Compiler
 
-The Fe compiler binary is located in the `bin/` directory. A platform-detecting wrapper script is available at `scripts/fe`:
+Use the wrapper script at `scripts/fe` for all compiler invocations. The wrapper downloads the latest Fe release on demand, caches it in `bin/`, and reuses cached metadata to avoid repeated GitHub API calls.
 
 ```bash
 # Type-check a Fe file using the wrapper (recommended)
 ./scripts/fe check path/to/file.fe
 
-# Or use the binary directly (Linux x86_64 only)
-./bin/fe-linux-x86_64 check path/to/file.fe
-
 # Validate all documentation code snippets
 bash scripts/check-examples.sh
+
+# Optional: force a latest-release check immediately
+FE_FORCE_LATEST_CHECK=1 ./scripts/fe check path/to/file.fe
 ```
 
-This local compiler should be used instead of any system-installed version to ensure consistency with the documented language features.
+Environment variables:
+- `GITHUB_TOKEN`: used for authenticated GitHub API requests (recommended in CI to avoid low unauthenticated rate limits)
+- `FE_LATEST_TTL_SECONDS`: freshness window for latest-release checks (default: `21600`)
+- `FE_FORCE_LATEST_CHECK=1`: bypass freshness window and force a latest check
+
+This local compiler wrapper should be used instead of any system-installed version to ensure consistency with the documented language features.
 
 ## Project Conventions
 

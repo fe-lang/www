@@ -276,7 +276,7 @@ The `let` statement supports pattern matching, allowing you to destructure value
 fn example() {
 //</hide>
 let point: (u256, u256) = (10, 20)
-let (x, y) = point      // x = 10, y = 20
+let (x, y) = ref point      // x = 10, y = 20
 //<hide>
 let _ = (x, y)
 }
@@ -309,7 +309,7 @@ struct Point {
 fn example() {
 //</hide>
 let point = Point { x: 10, y: 20 }
-let Point { x, y } = point    // x = 10, y = 20
+let Point { x, y } = ref point    // x = 10, y = 20
 //<hide>
 let _ = (x, y)
 }
@@ -326,9 +326,9 @@ struct Point {
 }
 
 fn example() {
-let point = Point { x: 10, y: 20 }
 //</hide>
-let Point { x: horizontal, y: vertical } = point
+let point = Point { x: 10, y: 20 }
+let Point { x: horizontal, y: vertical } = ref point
 // horizontal = 10, vertical = 20
 //<hide>
 let _ = (horizontal, vertical)
@@ -363,9 +363,9 @@ struct Point {
 }
 
 fn example() {
-let point = Point { x: 10, y: 20 }
 //</hide>
-let Point { mut x, y } = point
+let point = Point { x: 10, y: 20 }
+let Point { mut x, y } = Point { x: point.x, y: point.y }
 x = 100      // OK: x is mutable
 //<hide>
 let _ = (x, y)

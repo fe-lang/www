@@ -3,11 +3,12 @@
 // Snippets can import what they need with: use _boilerplate::Map
 
 mod _boilerplate {
-    // Re-export StorageMap from core
-    pub use core::StorageMap
-
-    // Re-export intrinsics from core
-    pub use core::{caller, revert, keccak, sload, sstore}
+    // Intrinsic compatibility shims for docs snippets.
+    pub fn caller() -> u256 { todo() }
+    pub fn revert(_ offset: u256, _ size: u256) { todo() }
+    pub fn keccak<T>(_ data: T) -> u256 { todo() }
+    pub fn sload(_ slot: u256) -> u256 { todo() }
+    pub fn sstore(_ slot: u256, _ value: u256) { todo() }
 
     // Map type stub (for non-storage contexts)
     pub struct Map<K, V> {}
@@ -68,10 +69,24 @@ mod _boilerplate {
     pub fn block_hash(_ number: u256) -> u256 { todo() }
 
     // Address type stub
-    pub struct Address {}
+    pub struct Address { inner: u256 }
     impl Address {
-        pub fn zero() -> Self { Address {} }
+        pub fn zero() -> Self { Address { inner: 0 } }
+        pub fn encode<E>(own self, _ e: mut E) { todo() }
+        pub fn decode<D>(_ d: mut D) -> Self { todo() }
+        pub fn as_topic(self) -> u256 { self.inner }
     }
+    impl core::abi::Encode<std::abi::Sol> for Address {
+        fn encode<E: core::abi::AbiEncoder<std::abi::Sol>>(own self, _ e: mut E) { todo() }
+    }
+    impl core::abi::Decode<std::abi::Sol> for Address {
+        fn decode<D: core::abi::AbiDecoder<std::abi::Sol>>(_ d: mut D) -> Self { todo() }
+    }
+    impl std::abi::SolCompat for Address {
+        type S = String<7>
+        const SOL_TYPE: Self::S = "address"
+    }
+    impl Copy for Address {}
     impl core::ops::Eq for Address {
         fn eq(self, _ other: Self) -> bool { todo() }
     }

@@ -15,6 +15,7 @@ use _boilerplate::{Log}
 //</hide>
 
 
+#[event]
 struct Transfer {
     #[indexed]
     from: u256,
@@ -23,7 +24,7 @@ struct Transfer {
     amount: u256,
 }
 
-fn emit_transfer(from: u256, to: u256, amount: u256) uses (mut log: Log) {
+fn emit_transfer(from: u256, to: u256, amount: u256) uses (log: mut Log) {
     log.emit(Transfer { from, to, amount })
 }
 ```
@@ -43,6 +44,7 @@ pub struct TokenStorage {
     pub balances: Map<u256, u256>,
 }
 
+#[event]
 struct Transfer {
     #[indexed]
     from: u256,
@@ -52,7 +54,7 @@ struct Transfer {
 }
 
 fn do_transfer(from: u256, to: u256, amount: u256)
-    -> bool uses (mut store: TokenStorage, mut log: Log)
+    -> bool uses (store: mut TokenStorage, log: mut Log)
 {
     let from_bal = store.balances.get(from)
     if from_bal < amount {
@@ -78,6 +80,7 @@ A critical pattern: emit events after state changes succeed, not before:
 //<hide>
 use _boilerplate::{Map, Log}
 pub struct TokenStorage { pub balances: Map<u256, u256> }
+#[event]
 struct Transfer {
     #[indexed]
     from: u256,
@@ -88,7 +91,7 @@ struct Transfer {
 //</hide>
 
 fn transfer(from: u256, to: u256, amount: u256)
-    -> bool uses (mut store: TokenStorage, mut log: Log)
+    -> bool uses (store: mut TokenStorage, log: mut Log)
 {
     // 1. Validate
     let from_bal = store.balances.get(from)
@@ -116,7 +119,7 @@ In contracts, declare storage and log as contract fields, then access them via `
 ```fe
 //<hide>
 use _boilerplate::{Map, Log, caller}
-fn do_transfer(c: u256, to: u256, amount: u256) -> bool uses (mut store: TokenStorage, mut log: Log) {
+fn do_transfer(c: u256, to: u256, amount: u256) -> bool uses (store: mut TokenStorage, log: mut Log) {
     let _ = (c, to, amount, store, log)
     true
 }
@@ -126,6 +129,7 @@ pub struct TokenStorage {
     pub balances: Map<u256, u256>,
 }
 
+#[event]
 struct TransferEvent {
     #[indexed]
     from: u256,
@@ -164,6 +168,7 @@ pub struct TokenStorage {
 }
 //</hide>
 
+#[event]
 struct Transfer {
     #[indexed]
     from: u256,
@@ -172,6 +177,7 @@ struct Transfer {
     amount: u256,
 }
 
+#[event]
 struct Approval {
     #[indexed]
     owner: u256,
@@ -181,7 +187,7 @@ struct Approval {
 }
 
 fn transfer_from(spender: u256, from: u256, to: u256, amount: u256)
-    -> bool uses (mut store: TokenStorage, mut log: Log)
+    -> bool uses (store: mut TokenStorage, log: mut Log)
 {
     // Check and update allowance
     let allowed = store.allowances.get(from).get(spender)
@@ -220,6 +226,7 @@ pub struct TokenStorage {
     pub balances: Map<u256, u256>,
     pub total_supply: u256,
 }
+#[event]
 struct Transfer {
     #[indexed]
     from: u256,
@@ -229,14 +236,14 @@ struct Transfer {
 }
 //</hide>
 
-fn mint(to: u256, amount: u256) uses (mut store: TokenStorage, mut log: Log) {
+fn mint(to: u256, amount: u256) uses (store: mut TokenStorage, log: mut Log) {
     store.balances.set(to, store.balances.get(to) + amount)
     store.total_supply = store.total_supply + amount
 
     log.emit(Transfer { from: 0, to, amount })
 }
 
-fn burn(from: u256, amount: u256) uses (mut store: TokenStorage, mut log: Log) {
+fn burn(from: u256, amount: u256) uses (store: mut TokenStorage, log: mut Log) {
     store.balances.set(from, store.balances.get(from) - amount)
     store.total_supply = store.total_supply - amount
 
@@ -254,6 +261,7 @@ use _boilerplate::Log
 pub struct AdminStorage { pub owner: u256 }
 //</hide>
 
+#[event]
 struct OwnershipTransferred {
     #[indexed]
     previous_owner: u256,
@@ -262,7 +270,7 @@ struct OwnershipTransferred {
 }
 
 fn transfer_ownership(new_owner: u256)
-    uses (mut admin: AdminStorage, mut log: Log)
+    uses (admin: mut AdminStorage, log: mut Log)
 {
     let previous = admin.owner
     admin.owner = new_owner
@@ -279,6 +287,7 @@ fn transfer_ownership(new_owner: u256)
 Occasionally emit for important queries (use sparingly):
 
 ```fe
+#[event]
 struct BalanceChecked {
     #[indexed]
     account: u256,
@@ -296,6 +305,7 @@ Create helper functions for common events:
 //<hide>
 use _boilerplate::{Map, Log}
 pub struct TokenStorage { pub balances: Map<u256, u256> }
+#[event]
 struct Transfer {
     #[indexed]
     from: u256,
@@ -303,6 +313,7 @@ struct Transfer {
     to: u256,
     amount: u256,
 }
+#[event]
 struct Approval {
     #[indexed]
     owner: u256,
@@ -312,16 +323,16 @@ struct Approval {
 }
 //</hide>
 
-fn emit_transfer(from: u256, to: u256, amount: u256) uses (mut log: Log) {
+fn emit_transfer(from: u256, to: u256, amount: u256) uses (log: mut Log) {
     log.emit(Transfer { from, to, amount })
 }
 
-fn emit_approval(owner: u256, spender: u256, amount: u256) uses (mut log: Log) {
+fn emit_approval(owner: u256, spender: u256, amount: u256) uses (log: mut Log) {
     log.emit(Approval { owner, spender, amount })
 }
 
 fn transfer(from: u256, to: u256, amount: u256)
-    -> bool uses (mut store: TokenStorage, mut log: Log)
+    -> bool uses (store: mut TokenStorage, log: mut Log)
 {
     // ... transfer logic ...
     //<hide>
@@ -341,6 +352,7 @@ Only emit when something meaningful happens:
 //<hide>
 use _boilerplate::{Map, Log}
 pub struct TokenStorage { pub allowances: Map<u256, Map<u256, u256>> }
+#[event]
 struct Approval {
     #[indexed]
     owner: u256,
@@ -351,7 +363,7 @@ struct Approval {
 //</hide>
 
 fn set_approval(owner: u256, spender: u256, new_amount: u256)
-    uses (mut store: TokenStorage, mut log: Log)
+    uses (store: mut TokenStorage, log: mut Log)
 {
     let current = store.allowances.get(owner).get(spender)
 

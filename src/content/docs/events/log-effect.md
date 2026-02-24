@@ -15,6 +15,7 @@ use _boilerplate::{Map, Log}
 pub struct TokenStorage { pub balances: Map<u256, u256> }
 //</hide>
 
+#[event]
 struct Transfer {
     #[indexed]
     from: u256,
@@ -25,7 +26,7 @@ struct Transfer {
 
 // This function CAN emit events
 fn transfer_with_event(from: u256, to: u256, amount: u256)
-    uses (mut store: TokenStorage, mut log: Log)
+    uses (store: mut TokenStorage, log: mut Log)
 {
     // ... transfer logic ...
     //<hide>
@@ -36,7 +37,7 @@ fn transfer_with_event(from: u256, to: u256, amount: u256)
 
 // This function CANNOT emit events
 fn transfer_silent(from: u256, to: u256, amount: u256)
-    uses (mut store: TokenStorage)
+    uses (store: mut TokenStorage)
 {
     // ... transfer logic only ...
     // log.emit(...) would be a compile error here
@@ -51,6 +52,7 @@ Use it in function signatures:
 ```fe
 //<hide>
 use _boilerplate::Log
+#[event]
 struct Transfer {
     #[indexed]
     from: u256,
@@ -61,7 +63,7 @@ struct Transfer {
 //</hide>
 
 // Read-only logging isn't meaningful, so always use mut
-fn emit_transfer(from: u256, to: u256, amount: u256) uses (mut log: Log) {
+fn emit_transfer(from: u256, to: u256, amount: u256) uses (log: mut Log) {
     log.emit(Transfer { from, to, amount })
 }
 ```
@@ -84,7 +86,7 @@ pub struct Balances { pub data: u256 }
 // - It modifies Balances (mutable)
 // - It emits events (mutable Log)
 fn process_payment(amount: u256)
-    -> bool uses (config: Config, mut balances: Balances, mut log: Log)
+    -> bool uses (config: Config, balances: mut Balances, log: mut Log)
 {
     //<hide>
     let _ = (amount, config, balances, log)
@@ -125,6 +127,7 @@ Compose functions while controlling which can log:
 //<hide>
 use _boilerplate::Log
 pub struct Balances { pub data: u256 }
+#[event]
 struct Deposit {
     #[indexed]
     account: u256,
@@ -133,7 +136,7 @@ struct Deposit {
 //</hide>
 
 // Internal helper - no logging
-fn update_balance(account: u256, delta: u256) uses (mut balances: Balances) {
+fn update_balance(account: u256, delta: u256) uses (balances: mut Balances) {
     // Pure state update, no events
     //<hide>
     let _ = (account, delta, balances)
@@ -142,7 +145,7 @@ fn update_balance(account: u256, delta: u256) uses (mut balances: Balances) {
 
 // Public interface - with logging
 fn deposit(account: u256, amount: u256)
-    uses (mut balances: Balances, mut log: Log)
+    uses (balances: mut Balances, log: mut Log)
 {
     update_balance(account, amount)
     log.emit(Deposit { account, amount })
@@ -157,6 +160,7 @@ Functions calling logging functions must declare the effect:
 //<hide>
 use _boilerplate::{Map, Log}
 pub struct TokenStorage { pub balances: Map<u256, u256> }
+#[event]
 struct Transfer {
     #[indexed]
     from: u256,
@@ -166,13 +170,13 @@ struct Transfer {
 }
 //</hide>
 
-fn emit_transfer(from: u256, to: u256, amount: u256) uses (mut log: Log) {
+fn emit_transfer(from: u256, to: u256, amount: u256) uses (log: mut Log) {
     log.emit(Transfer { from, to, amount })
 }
 
 // Must declare Log because it calls emit_transfer
 fn do_transfer(from: u256, to: u256, amount: u256)
-    -> bool uses (mut store: TokenStorage, mut log: Log)
+    -> bool uses (store: mut TokenStorage, log: mut Log)
 {
     // ... transfer logic ...
     //<hide>
@@ -186,7 +190,7 @@ fn do_transfer(from: u256, to: u256, amount: u256)
 ```fe ignore
 // Compile error: missing Log effect
 fn broken_transfer(from: u256, to: u256, amount: u256)
-    uses (mut store: TokenStorage)
+    uses (store: mut TokenStorage)
     -> bool
 {
     // ... transfer logic ...
@@ -203,7 +207,7 @@ Contracts provide the Log effect via the `uses` clause on handlers:
 //<hide>
 use _boilerplate::{Map, Log, caller}
 pub struct TokenStorage { pub balances: Map<u256, u256> }
-fn do_transfer(c: u256, to: u256, amount: u256) -> bool uses (mut store: TokenStorage, mut log: Log) {
+fn do_transfer(c: u256, to: u256, amount: u256) -> bool uses (store: mut TokenStorage, log: mut Log) {
     let _ = (c, to, amount, store, log)
     true
 }
@@ -246,6 +250,7 @@ impl AdminLog {
     pub fn emit<T>(self, event: T) { todo() }
 }
 
+#[event]
 struct Transfer {
     #[indexed]
     from: u256,
@@ -254,6 +259,7 @@ struct Transfer {
     amount: u256,
 }
 
+#[event]
 struct OwnershipTransferred {
     #[indexed]
     previous_owner: u256,
@@ -262,7 +268,7 @@ struct OwnershipTransferred {
 }
 
 fn transfer(from: u256, to: u256, amount: u256)
-    uses (mut store: TokenStorage, mut log: TransferLog)
+    uses (store: mut TokenStorage, log: mut TransferLog)
 {
     // ... transfer logic ...
     //<hide>
@@ -272,7 +278,7 @@ fn transfer(from: u256, to: u256, amount: u256)
 }
 
 fn transfer_ownership(new_owner: u256)
-    uses (mut admin: AdminStorage, mut log: AdminLog)
+    uses (admin: mut AdminStorage, log: mut AdminLog)
 {
     let previous = admin.owner
     admin.owner = new_owner
@@ -291,6 +297,7 @@ Often storage and its events are paired:
 ```fe
 //<hide>
 use _boilerplate::Map
+#[event]
 struct Transfer {
     #[indexed]
     from: u256,
@@ -311,7 +318,7 @@ impl TokenEvents {
 }
 
 fn mint(to: u256, amount: u256)
-    uses (mut store: TokenStorage, mut log: TokenEvents)
+    uses (store: mut TokenStorage, log: mut TokenEvents)
 {
     store.balances.set(to, store.balances.get(to) + amount)
     store.total_supply = store.total_supply + amount
@@ -333,7 +340,7 @@ struct DebugMessage {
     value: u256,
 }
 
-fn log_debug(message: u256) uses (mut log: DebugLog) {
+fn log_debug(message: u256) uses (log: mut DebugLog) {
     log.emit(DebugMessage { value: message })
 }
 ```
@@ -360,7 +367,7 @@ fn compute_fee(amount: u256) -> u256 uses (config: Config) {
 
 // With logging wrapper
 fn compute_fee_logged(amount: u256)
-    -> u256 uses (config: Config, mut log: Log)
+    -> u256 uses (config: Config, log: mut Log)
 {
     let fee = compute_fee(amount)
     log.emit(FeeComputed { amount, fee })
@@ -372,7 +379,7 @@ fn compute_fee_logged(amount: u256)
 
 | Aspect | Fe (Explicit) | Implicit Logging |
 |--------|---------------|------------------|
-| Signature | Shows `uses (mut log: Log)` | No indication |
+| Signature | Shows `uses (log: mut Log)` | No indication |
 | Testing | Easy to mock | Harder to intercept |
 | Composition | Fine-grained control | All-or-nothing |
 | Refactoring | Compiler catches missing effects | Silent failures |
@@ -382,7 +389,7 @@ fn compute_fee_logged(amount: u256)
 | Concept | Description |
 |---------|-------------|
 | `pub struct Log {}` | Define a log effect type |
-| `uses (mut log: Log)` | Declare logging capability |
+| `uses (log: mut Log)` | Declare logging capability |
 | `log.emit(...)` | Emit an event |
 | Effect propagation | Callers must declare effects of callees |
 | Handler `uses` | Bind effect in contract handlers |

@@ -11,8 +11,7 @@ A contract can have multiple recv blocks, each handling a different message type
 
 ```fe
 //<hide>
-use core::StorageMap
-
+use _boilerplate::Map as StorageMap
 pub struct TokenStorage {
     pub balances: StorageMap<u256, u256>,
     pub total_supply: u256,
@@ -23,7 +22,7 @@ impl Ctx {
     pub fn caller(self) -> u256 { todo() }
 }
 
-fn do_transfer(from: u256, to: u256, amount: u256) -> bool uses (mut store: TokenStorage) {
+fn do_transfer(from: u256, to: u256, amount: u256) -> bool uses (store: mut TokenStorage) {
     let bal = store.balances.get(from)
     if bal < amount { return false }
     store.balances.set(from, bal - amount)
@@ -118,14 +117,13 @@ Multiple recv blocks can share the same contract state:
 
 ```fe
 //<hide>
-use core::StorageMap
-
+use _boilerplate::Map as StorageMap
 pub struct Ctx {}
 impl Ctx {
     pub fn caller(self) -> u256 { todo() }
 }
 
-fn do_transfer(from: u256, to: u256, amount: u256) -> bool uses (mut store: TokenStorage) {
+fn do_transfer(from: u256, to: u256, amount: u256) -> bool uses (store: mut TokenStorage) {
     let bal = store.balances.get(from)
     if bal < amount { return false }
     store.balances.set(from, bal - amount)
@@ -261,11 +259,11 @@ For contracts with many message types, consider organizing handlers logically:
 
 ```fe ignore
 // Group related helper functions
-fn transfer_tokens(from: u256, to: u256, amount: u256) -> bool uses (mut store: TokenStorage) {
+fn transfer_tokens(from: u256, to: u256, amount: u256) -> bool uses (store: mut TokenStorage) {
     // ...
 }
 
-fn update_allowance(owner: u256, spender: u256, amount: u256) uses (mut store: TokenStorage) {
+fn update_allowance(owner: u256, spender: u256, amount: u256) uses (store: mut TokenStorage) {
     // ...
 }
 

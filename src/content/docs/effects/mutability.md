@@ -42,7 +42,7 @@ Add `mut` to allow modification:
 pub struct Config { pub value: u256 }
 //</hide>
 
-fn set_value(new_value: u256) uses (mut config: Config) {
+fn set_value(new_value: u256) uses (config: mut Config) {
     config.value = new_value  // Can modify
 }
 ```
@@ -72,7 +72,7 @@ fn read_only() uses (data: Data) {
     //</hide>
 }
 
-fn outer() uses (mut data: Data) {
+fn outer() uses (data: mut Data) {
     read_only()  // OK: mut Data satisfies Data
     //<hide>
     let _ = data
@@ -86,7 +86,7 @@ An immutable effect cannot satisfy a mutable requirement:
 
 ```fe ignore
 // This would be a compile error:
-fn needs_mut() uses (mut data: Data) {
+fn needs_mut() uses (data: mut Data) {
     // modifies Data
 }
 
@@ -102,7 +102,7 @@ When providing an effect with `with`, the binding's mutability determines the ef
 ```fe
 pub struct Counter { pub value: u256 }
 
-fn needs_mut() uses (mut counter: Counter) {
+fn needs_mut() uses (counter: mut Counter) {
     counter.value = counter.value + 1
 }
 
@@ -157,11 +157,11 @@ pub struct TokenStore { pub supply: u256 }
 pub struct Config { pub max_amount: u256 }
 //</hide>
 
-fn mint(amount: u256) uses (mut store: TokenStore) {
+fn mint(amount: u256) uses (store: mut TokenStore) {
     store.supply = store.supply + amount
 }
 
-fn update_config(new_max: u256) uses (mut config: Config) {
+fn update_config(new_max: u256) uses (config: mut Config) {
     config.max_amount = new_max
 }
 ```
@@ -179,7 +179,7 @@ impl Cache {
 }
 //</hide>
 
-fn process() uses (data: Data, mut cache: Cache) {
+fn process() uses (data: Data, cache: mut Cache) {
     // data is read-only
     // cache is mutable
 
@@ -209,12 +209,12 @@ fn get_balance(account: u256) -> u256 uses (balances: Balances) {
 }
 
 // Mutable: changes state
-fn set_balance(account: u256, amount: u256) uses (mut balances: Balances) {
+fn set_balance(account: u256, amount: u256) uses (balances: mut Balances) {
     balances.data.set(account, amount)
 }
 
 // Mutable: combines read and write
-fn transfer(from: u256, to: u256, amount: u256) uses (mut balances: Balances) {
+fn transfer(from: u256, to: u256, amount: u256) uses (balances: mut Balances) {
     let from_balance = get_balance(from)  // Calls read-only function
     let to_balance = get_balance(to)
 
@@ -228,7 +228,7 @@ fn transfer(from: u256, to: u256, amount: u256) uses (mut balances: Balances) {
 | Declaration | Can Read | Can Modify |
 |------------|----------|------------|
 | `uses (e: Effect)` | Yes | No |
-| `uses (mut e: Effect)` | Yes | Yes |
+| `uses (e: mut Effect)` | Yes | Yes |
 
 | Caller Has | Callee Needs | Result |
 |------------|--------------|--------|

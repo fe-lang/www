@@ -1,37 +1,236 @@
-#!/bin/bash
-# Fe compiler wrapper script with platform detection
-# Currently only Linux x86_64 is supported
+#!/usr/bin/env bash
+# Fe compiler wrapper with dynamic release resolution and local caching.
 
-set -e
+set -euo pipefail
 
 SCRIPT_DIR="$(cd "$(dirname "${BASH_SOURCE[0]}")" && pwd)"
 BIN_DIR="$SCRIPT_DIR/../bin"
 
-# Detect platform
-OS="$(uname -s)"
-ARCH="$(uname -m)"
+REPO="argotorg/fe"
+RELEASE_API_URL="https://api.github.com/repos/$REPO/releases/latest"
+RELEASE_DOWNLOAD_BASE_URL="https://github.com/$REPO/releases/download"
+RELEASE_DOWNLOAD_LATEST_URL="https://github.com/$REPO/releases/latest/download"
 
-case "$OS-$ARCH" in
-    Linux-x86_64)
-        FE_BINARY="$BIN_DIR/fe-linux-x86_64"
-        ;;
-    *)
-        echo "Error: Fe binary not available for $OS-$ARCH" >&2
-        echo "" >&2
-        echo "Currently only Linux x86_64 is supported." >&2
-        echo "Options:" >&2
-        echo "  1. Use a Linux machine or VM" >&2
-        echo "  2. Use GitHub Codespaces or similar cloud environment" >&2
-        echo "  3. Push changes and let CI validate the examples" >&2
-        echo "" >&2
-        exit 1
-        ;;
-esac
+FE_BINARY="$BIN_DIR/fe"
+VERSION_FILE="$BIN_DIR/.fe-version"
+LAST_CHECK_FILE="$BIN_DIR/.fe-last-check"
 
-if [[ ! -x "$FE_BINARY" ]]; then
-    echo "Error: Fe binary not found at $FE_BINARY" >&2
-    echo "Please ensure the binary exists and is executable." >&2
+DEFAULT_TTL_SECONDS=21600
+TTL_SECONDS="${FE_LATEST_TTL_SECONDS:-$DEFAULT_TTL_SECONDS}"
+FORCE_LATEST_CHECK="${FE_FORCE_LATEST_CHECK:-0}"
+
+warn() {
+    echo "Warning: $*" >&2
+}
+
+die() {
+    echo "Error: $*" >&2
     exit 1
-fi
+}
 
-exec "$FE_BINARY" "$@"
+require_command() {
+    local cmd="$1"
+    if ! command -v "$cmd" >/dev/null 2>&1; then
+        die "Required command '$cmd' is not available."
+    fi
+}
+
+detect_asset_name() {
+    local os arch
+    os="$(uname -s)"
+    arch="$(uname -m)"
+
+    case "$os-$arch" in
+        Linux-x86_64)
+            FE_ASSET_NAME="fe_amd64"
+            ;;
+        Darwin-x86_64|Darwin-arm64)
+            FE_ASSET_NAME="fe_mac"
+            ;;
+        *)
+            die "Fe binary is not supported on $os-$arch. Supported platforms: Linux x86_64, macOS x86_64/arm64."
+            ;;
+    esac
+}
+
+is_positive_integer() {
+    local value="$1"
+    [[ "$value" =~ ^[0-9]+$ ]]
+}
+
+has_cached_binary() {
+    [[ -x "$FE_BINARY" ]]
+}
+
+is_metadata_fresh() {
+    local now last_check
+
+    if [[ ! -f "$LAST_CHECK_FILE" ]]; then
+        return 1
+    fi
+
+    last_check="$(tr -d '[:space:]' < "$LAST_CHECK_FILE")"
+    if ! is_positive_integer "$last_check"; then
+        return 1
+    fi
+
+    now="$(date +%s)"
+    (( now - last_check < TTL_SECONDS ))
+}
+
+mark_last_check_now() {
+    date +%s > "$LAST_CHECK_FILE"
+}
+
+current_cached_tag() {
+    if [[ -f "$VERSION_FILE" ]]; then
+        tr -d '[:space:]' < "$VERSION_FILE"
+    fi
+}
+
+curl_headers() {
+    local -a headers
+    headers=(
+        -H "Accept: application/vnd.github+json"
+        -H "X-GitHub-Api-Version: 2022-11-28"
+        -H "User-Agent: fe-guide-wrapper"
+    )
+
+    if [[ -n "${GITHUB_TOKEN:-}" ]]; then
+        headers+=(-H "Authorization: token ${GITHUB_TOKEN}")
+    fi
+
+    printf '%s\n' "${headers[@]}"
+}
+
+fetch_latest_tag() {
+    local response tag
+    local -a headers
+    mapfile -t headers < <(curl_headers)
+
+    if ! response="$(curl --silent --show-error --fail --location "${headers[@]}" "$RELEASE_API_URL")"; then
+        return 1
+    fi
+
+    tag="$(printf '%s\n' "$response" | sed -n 's/^[[:space:]]*"tag_name":[[:space:]]*"\([^"]\+\)".*/\1/p' | head -n1)"
+    if [[ -z "$tag" ]]; then
+        return 1
+    fi
+
+    printf '%s\n' "$tag"
+}
+
+download_binary_for_tag() {
+    local tag="$1"
+    local url
+    url="$RELEASE_DOWNLOAD_BASE_URL/$tag/$FE_ASSET_NAME"
+    download_binary_from_url "$url"
+}
+
+download_binary_from_latest_alias() {
+    local url
+    url="$RELEASE_DOWNLOAD_LATEST_URL/$FE_ASSET_NAME"
+    download_binary_from_url "$url"
+}
+
+download_binary_from_url() {
+    local url="$1"
+    local tmp_file
+    local -a headers
+    mapfile -t headers < <(curl_headers)
+
+    tmp_file="$(mktemp "$BIN_DIR/.fe-download.XXXXXX")"
+
+    if ! curl --silent --show-error --fail --location "${headers[@]}" --output "$tmp_file" "$url"; then
+        rm -f "$tmp_file"
+        return 1
+    fi
+
+    chmod +x "$tmp_file"
+    mv "$tmp_file" "$FE_BINARY"
+}
+
+stamp_fallback_metadata() {
+    if [[ ! -s "$VERSION_FILE" ]]; then
+        printf '%s\n' "__unknown__" > "$VERSION_FILE"
+    fi
+    mark_last_check_now
+}
+
+should_check_latest() {
+    if [[ "$FORCE_LATEST_CHECK" == "1" ]]; then
+        return 0
+    fi
+
+    if ! has_cached_binary; then
+        return 0
+    fi
+
+    if [[ ! -s "$VERSION_FILE" ]]; then
+        return 0
+    fi
+
+    if ! is_metadata_fresh; then
+        return 0
+    fi
+
+    return 1
+}
+
+main() {
+    local latest_tag cached_tag
+
+    require_command curl
+    require_command sed
+    detect_asset_name
+
+    if ! is_positive_integer "$TTL_SECONDS"; then
+        warn "FE_LATEST_TTL_SECONDS='$TTL_SECONDS' is invalid. Falling back to $DEFAULT_TTL_SECONDS."
+        TTL_SECONDS="$DEFAULT_TTL_SECONDS"
+    fi
+
+    mkdir -p "$BIN_DIR"
+
+    if ! should_check_latest; then
+        exec "$FE_BINARY" "$@"
+    fi
+
+    if ! latest_tag="$(fetch_latest_tag)"; then
+        if has_cached_binary; then
+            warn "Failed to resolve latest Fe release tag. Falling back to cached binary."
+            stamp_fallback_metadata
+            exec "$FE_BINARY" "$@"
+        fi
+
+        warn "Failed to resolve latest Fe release tag. Trying direct latest-download fallback."
+        if ! download_binary_from_latest_alias; then
+            die "Failed to resolve latest Fe release tag and no cached binary is available."
+        fi
+
+        printf '%s\n' "__unknown__" > "$VERSION_FILE"
+        mark_last_check_now
+        exec "$FE_BINARY" "$@"
+    fi
+
+    cached_tag="$(current_cached_tag || true)"
+    if [[ "$cached_tag" == "$latest_tag" ]] && has_cached_binary; then
+        mark_last_check_now
+        exec "$FE_BINARY" "$@"
+    fi
+
+    if ! download_binary_for_tag "$latest_tag"; then
+        if has_cached_binary; then
+            warn "Failed to download Fe release '$latest_tag'. Falling back to cached binary."
+            stamp_fallback_metadata
+            exec "$FE_BINARY" "$@"
+        fi
+        die "Failed to download Fe release '$latest_tag' and no cached binary is available."
+    fi
+
+    printf '%s\n' "$latest_tag" > "$VERSION_FILE"
+    mark_last_check_now
+
+    exec "$FE_BINARY" "$@"
+}
+
+main "$@"

@@ -309,7 +309,7 @@ fn validate_transfer(to: u256, amount: u256) -> bool {
     to != 0 && amount > 0
 }
 
-fn execute_transfer(to: u256, amount: u256) -> bool uses (mut store: TokenStorage) {
+fn execute_transfer(to: u256, amount: u256) -> bool uses (store: mut TokenStorage) {
     // transfer logic using storage effect
     //<hide>
     let _ = store
@@ -358,7 +358,7 @@ fn get_balance(account: u256) -> u256 uses (store: TokenStorage) {
     store.balances.get(account)
 }
 
-fn add_balance(account: u256, amount: u256) uses (mut store: TokenStorage) {
+fn add_balance(account: u256, amount: u256) uses (store: mut TokenStorage) {
     let current = store.balances.get(account)
     store.balances.set(account, current + amount)
 }

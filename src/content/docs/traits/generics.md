@@ -10,7 +10,7 @@ Generic functions work with multiple types using type parameters. Instead of wri
 Define a generic function with type parameters in angle brackets:
 
 ```fe
-fn identity<T>(value: T) -> T {
+fn identity<T>(value: own T) -> T {
     value
 }
 ```
@@ -19,7 +19,7 @@ fn identity<T>(value: T) -> T {
 
 ```fe
 //<hide>
-fn identity<T>(value: T) -> T {
+fn identity<T>(value: own T) -> T {
     value
 }
 
@@ -38,7 +38,7 @@ let _ = (x, y)
 Functions can have multiple type parameters:
 
 ```fe
-fn pair<A, B>(first: A, second: B) -> (A, B) {
+fn pair<A, B>(first: own A, second: own B) -> (A, B) {
     (first, second)
 }
 
@@ -97,11 +97,11 @@ struct Wrapper<T> {
 }
 
 impl<T> Wrapper<T> {
-    fn new(value: T) -> Wrapper<T> {
+    fn new(value: own T) -> Wrapper<T> {
         Wrapper { value }
     }
 
-    fn get(self) -> T {
+    fn get(own self) -> T {
         self.value
     }
 }
@@ -127,7 +127,7 @@ struct Container<T> {
 }
 
 impl<T> Container<T> {
-    fn get(self) -> T {
+    fn get(own self) -> T {
         self.item
     }
 
@@ -196,7 +196,7 @@ let x = identity::<u256>(42)
 ### Swap Function
 
 ```fe
-fn swap<T>(a: T, b: T) -> (T, T) {
+fn swap<T>(a: own T, b: own T) -> (T, T) {
     (b, a)
 }
 
@@ -216,7 +216,7 @@ let _ = (x, y)
 //<hide>
 use _boilerplate::{Option, Default}
 //</hide>
-fn or_default<T: Default>(value: Option<T>) -> T {
+fn or_default<T: Default>(value: own Option<T>) -> T {
     match value {
         Option::Some(v) => v,
         Option::None => T::default(),

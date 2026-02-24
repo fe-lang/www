@@ -66,7 +66,7 @@ msg Query {
     TotalSupply -> u256,
 
     #[selector = 0x06fdde03]
-    Name -> String,
+    Name -> String<256>,
 }
 ```
 

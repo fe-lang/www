@@ -16,7 +16,7 @@ pub struct Logger {
 }
 
 // Use it as an effect
-fn log_message(value: u256) uses (mut logger: Logger) {
+fn log_message(value: u256) uses (logger: mut Logger) {
     logger.entries = value
 }
 ```
@@ -72,7 +72,7 @@ fn balance_of(account: u256) -> u256 uses (store: TokenStore) {
     store.balances.get(account)
 }
 
-fn mint(to: u256, amount: u256) uses (mut store: TokenStore) {
+fn mint(to: u256, amount: u256) uses (store: mut TokenStore) {
     let current = store.balances.get(to)
     store.balances.set(to, current + amount)
     store.total_supply = store.total_supply + amount
@@ -89,7 +89,7 @@ pub struct EventLog {
     pub data: u256,
 }
 
-fn emit_transfer(from: u256, to: u256, amount: u256) uses (mut log: EventLog) {
+fn emit_transfer(from: u256, to: u256, amount: u256) uses (log: mut EventLog) {
     // Emit transfer event
     //<hide>
     let _ = (from, to, amount, log)
@@ -135,14 +135,14 @@ impl<K, V> Map<K, V> {
     pub fn set(mut self, key: K, value: V) { todo() }
 }
 pub struct TokenStore { pub balances: Map<u256, u256> }
-fn emit_transfer(from: u256, to: u256, amount: u256) uses (mut log: EventLog) {
+fn emit_transfer(from: u256, to: u256, amount: u256) uses (log: mut EventLog) {
     let _ = (from, to, amount, log)
 }
 fn require(cond: bool) { if cond { } else { todo() } }
 //</hide>
 
 fn transfer(from: u256, to: u256, amount: u256)
-    uses (ctx: Ctx, mut store: TokenStore, config: Config, mut log: EventLog)
+    uses (ctx: Ctx, store: mut TokenStore, config: Config, log: mut EventLog)
 {
     // Check caller authorization
     require(ctx.caller == from)
@@ -187,7 +187,7 @@ fn get_cached<T>() -> Option<T> uses (cache: Cache<T>) {
     }
 }
 
-fn set_cached<T>(value: T) uses (mut cache: Cache<T>) {
+fn set_cached<T>(value: own T) uses (cache: mut Cache<T>) {
     cache.value = value
     cache.valid = true
 }
@@ -259,7 +259,7 @@ fn has_balance(account: u256, amount: u256) -> bool uses (balances: Balances) {
 }
 
 // Only this needs mut
-fn debit(account: u256, amount: u256) uses (mut balances: Balances) {
+fn debit(account: u256, amount: u256) uses (balances: mut Balances) {
     let current = balances.get(account)
     balances.set(account, current - amount)
 }

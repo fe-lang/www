@@ -30,6 +30,7 @@ These are regular structs that become events when emitted through the Log effect
 The `#[indexed]` attribute marks fields that should become EVM log topics, making them filterable:
 
 ```fe
+#[event]
 struct Transfer {
     #[indexed]
     from: u256,
@@ -49,6 +50,7 @@ With indexed fields:
 Indexed fields enable efficient queries:
 
 ```fe
+#[event]
 struct Transfer {
     #[indexed]
     from: u256,      // Filter: "all transfers FROM this address"
@@ -73,6 +75,7 @@ This means you can have at most 3 indexed fields:
 
 ```fe
 // Valid: 3 indexed fields
+#[event]
 struct ComplexEvent {
     #[indexed]
     field1: u256,
@@ -86,6 +89,7 @@ struct ComplexEvent {
 
 ```fe ignore
 // Invalid: too many indexed fields
+#[event]
 struct TooManyIndexed {
     #[indexed]
     a: u256,
@@ -106,6 +110,7 @@ Standard token events follow ERC20/ERC721 conventions:
 
 ```fe
 // ERC20 Transfer
+#[event]
 struct Transfer {
     #[indexed]
     from: u256,
@@ -115,6 +120,7 @@ struct Transfer {
 }
 
 // ERC20 Approval
+#[event]
 struct Approval {
     #[indexed]
     owner: u256,
@@ -124,6 +130,7 @@ struct Approval {
 }
 
 // ERC721 Transfer
+#[event]
 struct NftTransfer {
     #[indexed]
     from: u256,
@@ -139,6 +146,7 @@ struct NftTransfer {
 Events for contract administration:
 
 ```fe
+#[event]
 struct OwnershipTransferred {
     #[indexed]
     previous_owner: u256,
@@ -160,12 +168,14 @@ struct Unpaused {
 Events recording state changes:
 
 ```fe
+#[event]
 struct Deposit {
     #[indexed]
     account: u256,
     amount: u256,
 }
 
+#[event]
 struct Withdrawal {
     #[indexed]
     account: u256,
@@ -187,12 +197,14 @@ Each event should represent one logical occurrence:
 
 ```fe
 // Good: specific events
+#[event]
 struct Minted {
     #[indexed]
     to: u256,
     amount: u256,
 }
 
+#[event]
 struct Burned {
     #[indexed]
     from: u256,
@@ -212,6 +224,7 @@ struct SupplyChanged {
 Index fields you'll filter by:
 
 ```fe
+#[event]
 struct Trade {
     #[indexed]
     trader: u256,      // Often filtered by trader
@@ -229,6 +242,7 @@ struct Trade {
 Events should be self-contained for off-chain processing:
 
 ```fe
+#[event]
 struct Swap {
     #[indexed]
     sender: u256,

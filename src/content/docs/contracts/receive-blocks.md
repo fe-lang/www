@@ -12,7 +12,7 @@ In a contract, recv blocks access storage via `uses` clauses:
 ```fe
 //<hide>
 use _boilerplate::{Map, caller}
-fn do_transfer(from: u256, to: u256, amount: u256) -> bool uses (mut store: TokenStorage) {
+fn do_transfer(from: u256, to: u256, amount: u256) -> bool uses (store: mut TokenStorage) {
     let _ = (from, to, amount, store)
     true
 }
@@ -97,7 +97,7 @@ fn get_balance(account: u256) -> u256 uses (store: TokenStorage) {
     store.balances.get(account)
 }
 
-fn do_transfer(from: u256, to: u256, amount: u256) -> bool uses (mut store: TokenStorage) {
+fn do_transfer(from: u256, to: u256, amount: u256) -> bool uses (store: mut TokenStorage) {
     let from_bal = store.balances.get(from)
     if from_bal < amount {
         return false
@@ -133,7 +133,7 @@ When handlers need multiple storage types:
 //<hide>
 use _boilerplate::{Map, caller}
 fn do_transfer_from(c: u256, from: u256, to: u256, amount: u256) -> bool
-    uses (mut balances: BalanceStorage, mut allowances: AllowanceStorage)
+    uses (balances: mut BalanceStorage, allowances: mut AllowanceStorage)
 {
     let _ = (c, from, to, amount, balances, allowances)
     true

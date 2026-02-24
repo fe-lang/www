@@ -1,8 +1,8 @@
 // Events are structs with #[indexed] fields where needed
+#[event]
 struct Signed {
     #[indexed]
     signer: Address,
-    book_msg: String<100>,
 }
 
 // Storage is defined as a struct
@@ -20,7 +20,7 @@ msg GuestBookMsg {
 }
 
 // Contract with explicit effects from environment
-pub contract GuestBook uses (ctx: Ctx, mut log: Log) {
+pub contract GuestBook uses (ctx: Ctx, log: mut Log) {
     mut store: GuestBookStore,
 
     // Handle incoming messages with per-handler effects
@@ -28,7 +28,7 @@ pub contract GuestBook uses (ctx: Ctx, mut log: Log) {
         Sign { book_msg } uses (ctx, mut store, mut log) {
             let signer = ctx.caller()
             store.messages[signer] = book_msg
-            log.emit(Signed { signer, book_msg })
+            log.emit(Signed { signer })
         }
 
         GetMsg { addr } -> String<100> uses (store) {
@@ -38,7 +38,8 @@ pub contract GuestBook uses (ctx: Ctx, mut log: Log) {
 }
 
 // Stubs for type checking (not shown on landing page)
-pub struct Address { inner: u256 }
+use _boilerplate::Address
+
 pub struct Ctx {}
 impl Ctx {
     pub fn caller(self) -> Address { todo() }

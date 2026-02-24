@@ -207,10 +207,8 @@ struct Point {
 //<hide>
 fn destructure_point() {
 //</hide>
-let p = Point { x: 10, y: 20 }
-
 // Destructure into variables
-let Point { x, y } = p
+let Point { x, y } = Point { x: 10, y: 20 }
 //<hide>
     let _ = (x, y)
 //</hide>

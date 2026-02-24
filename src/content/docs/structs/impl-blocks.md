@@ -142,19 +142,28 @@ struct Builder {
 }
 
 impl Builder {
-    fn with_width(mut self, w: u256) -> Builder {
-        self.width = w
-        self
+    fn with_width(self, w: u256) -> Builder {
+        Builder {
+            width: w,
+            height: self.height,
+            depth: self.depth,
+        }
     }
 
-    fn with_height(mut self, h: u256) -> Builder {
-        self.height = h
-        self
+    fn with_height(self, h: u256) -> Builder {
+        Builder {
+            width: self.width,
+            height: h,
+            depth: self.depth,
+        }
     }
 
-    fn with_depth(mut self, d: u256) -> Builder {
-        self.depth = d
-        self
+    fn with_depth(self, d: u256) -> Builder {
+        Builder {
+            width: self.width,
+            height: self.height,
+            depth: d,
+        }
     }
 }
 

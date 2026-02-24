@@ -96,7 +96,7 @@ fn get_balance(account: u256) -> u256 uses (store: TokenStorage) {
     store.balances.get(account)
 }
 
-fn set_balance(account: u256, amount: u256) uses (mut store: TokenStorage) {
+fn set_balance(account: u256, amount: u256) uses (store: mut TokenStorage) {
     store.balances.set(account, amount)
 }
 ```
@@ -151,7 +151,7 @@ Store a value:
 //<hide>
 use _boilerplate::Map
 pub struct TokenStorage { pub balances: Map<u256, u256> }
-fn example(account: u256, new_balance: u256) uses (mut store: TokenStorage) {
+fn example(account: u256, new_balance: u256) uses (store: mut TokenStorage) {
 //</hide>
 store.balances.set(account, new_balance)
 //<hide>
@@ -177,7 +177,7 @@ fn get_allowance(owner: u256, spender: u256) -> u256 uses (store: AllowanceStora
     store.allowances.get(owner).get(spender)
 }
 
-fn set_allowance(owner: u256, spender: u256, amount: u256) uses (mut store: AllowanceStorage) {
+fn set_allowance(owner: u256, spender: u256, amount: u256) uses (store: mut AllowanceStorage) {
     store.allowances.get(owner).set(spender, amount)
 }
 ```
@@ -189,11 +189,11 @@ Contracts can have multiple storage fields for logical separation:
 ```fe
 //<hide>
 use _boilerplate::{Map, caller}
-fn do_transfer(from: u256, to: u256, amount: u256) -> bool uses (mut tokens: BalanceStorage) {
+fn do_transfer(from: u256, to: u256, amount: u256) -> bool uses (tokens: mut BalanceStorage) {
     let _ = (from, to, amount, tokens)
     true
 }
-fn initiate_transfer(new_owner: u256) uses (mut ownership: OwnerStorage) {
+fn initiate_transfer(new_owner: u256) uses (ownership: mut OwnerStorage) {
     let _ = (new_owner, ownership)
 }
 msg TokenMsg {

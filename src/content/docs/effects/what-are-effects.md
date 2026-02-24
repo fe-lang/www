@@ -35,7 +35,7 @@ pub struct Balances {
 }
 //</hide>
 
-fn transfer(from: u256, to: u256, amount: u256) uses (mut balances: Balances) {
+fn transfer(from: u256, to: u256, amount: u256) uses (balances: mut Balances) {
     // This function can only access Balances
     // and can modify it (mut)
     //<hide>
@@ -60,7 +60,7 @@ pub struct Counter {
 }
 
 // This function requires the Counter effect
-fn increment() uses (mut counter: Counter) {
+fn increment() uses (counter: mut Counter) {
     counter.value = counter.value + 1
 }
 

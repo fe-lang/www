@@ -76,7 +76,7 @@ impl Hashable for Point {
 Type parameters work similarly:
 
 ```fe
-fn identity<T>(value: T) -> T {
+fn identity<T>(value: own T) -> T {
     value
 }
 
@@ -85,7 +85,7 @@ struct Wrapper<T> {
 }
 
 impl<T> Wrapper<T> {
-    fn get(self) -> T {
+    fn get(own self) -> T {
         self.value
     }
 }
@@ -223,7 +223,7 @@ use _boilerplate::Storage
 //</hide>
 // Rust: fn modify(data: &mut Storage)
 // Fe: Effect declaration
-fn modify() uses (mut storage: Storage) {
+fn modify() uses (storage: mut Storage) {
     //<hide>
     let _ = storage
     //</hide>
@@ -356,6 +356,7 @@ struct Storage {
 Blockchain events for logging:
 
 ```fe ignore
+#[event]
 struct Transfer {
     #[indexed]
     from: Address,
@@ -371,7 +372,7 @@ Explicit capability tracking:
 
 ```fe ignore
 fn transfer(from: Address, to: Address, amount: u256)
-    uses (mut store: TokenStore, mut log: Log)
+    uses (store: mut TokenStore, log: mut Log)
 {
     // Function declares what it accesses
 }
