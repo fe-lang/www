@@ -59,11 +59,11 @@ fn get_balance(account: u256) -> u256 uses (store: TokenStorage) {
 }
 
 // Mutable access
-fn set_balance(account: u256, amount: u256) uses (mut store: TokenStorage) {
+fn set_balance(account: u256, amount: u256) uses (store: mut TokenStorage) {
     store.balances.set(account, amount)
 }
 
-fn mint(to: u256, amount: u256) uses (mut store: TokenStorage) {
+fn mint(to: u256, amount: u256) uses (store: mut TokenStorage) {
     let current = store.balances.get(to)
     store.balances.set(to, current + amount)
     store.total_supply = store.total_supply + amount
@@ -101,7 +101,7 @@ pub struct TokenStorage {
 //</hide>
 
 // Helper functions with explicit storage effects
-fn do_transfer(from: u256, to: u256, amount: u256) uses (mut store: TokenStorage) {
+fn do_transfer(from: u256, to: u256, amount: u256) uses (store: mut TokenStorage) {
     let from_balance = store.balances.get(from)
     let to_balance = store.balances.get(to)
 
@@ -134,7 +134,7 @@ pub struct Metadata {
 }
 
 // Only needs Balances
-fn transfer(from: u256, to: u256, amount: u256) uses (mut balances: Balances) {
+fn transfer(from: u256, to: u256, amount: u256) uses (balances: mut Balances) {
     let from_balance = balances.data.get(from)
     let to_balance = balances.data.get(to)
 
@@ -160,7 +160,7 @@ pub struct Balances { pub data: u256 }
 //</hide>
 
 // This signature tells you exactly what storage is accessed
-fn do_transfer(from: u256, to: u256, amount: u256) uses (mut balances: Balances) {
+fn do_transfer(from: u256, to: u256, amount: u256) uses (balances: mut Balances) {
     // ...
     //<hide>
     let _ = (from, to, amount, balances)
@@ -176,7 +176,7 @@ pub struct Balances { pub data: u256 }
 //</hide>
 
 // This function cannot accidentally modify Allowances
-fn transfer(from: u256, to: u256, amount: u256) uses (mut balances: Balances) {
+fn transfer(from: u256, to: u256, amount: u256) uses (balances: mut Balances) {
     // Compiler error if you try to access Allowances here
     //<hide>
     let _ = (from, to, amount, balances)
@@ -189,7 +189,7 @@ fn transfer(from: u256, to: u256, amount: u256) uses (mut balances: Balances) {
 ```fe
 //<hide>
 pub struct Balances { pub data: u256 }
-fn transfer(from: u256, to: u256, amount: u256) uses (mut balances: Balances) {
+fn transfer(from: u256, to: u256, amount: u256) uses (balances: mut Balances) {
     let _ = (from, to, amount, balances)
 }
 //</hide>
@@ -219,7 +219,7 @@ You don't need to manage storage layout manually. Just define your storage struc
 | Pattern | Description |
 |---------|-------------|
 | `uses (s: Storage)` | Read-only storage access |
-| `uses (mut s: Storage)` | Mutable storage access |
+| `uses (s: mut Storage)` | Mutable storage access |
 | Storage struct | Group related storage fields |
 | Multiple effects | Separate storage by concern |
 | `with (Storage = ...)` | Provide storage effect in scope |

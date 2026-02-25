@@ -157,17 +157,27 @@ For language behavior not covered in docs, consult the [Fe compiler source](http
 
 ## Updating the Fe Binary
 
-The Fe binary is stored in `bin/`. A platform-detecting wrapper is at `scripts/fe`.
+The Fe compiler is resolved dynamically via `scripts/fe`.
 
-To update the compiler:
+Behavior:
+- On first use, `scripts/fe` fetches the latest release from `argotorg/fe` and caches it in `bin/`.
+- It stores cache metadata in `bin/.fe-version` and `bin/.fe-last-check`.
+- By default it only re-checks for latest releases every 6 hours.
 
-1. Build Fe from source or obtain a new binary
-2. Copy to `bin/fe-linux-x86_64` (or appropriate platform)
-3. Ensure it's executable: `chmod +x bin/fe-linux-x86_64`
-4. Run `bash scripts/check-examples.sh` to verify compatibility
-5. Commit the updated binary
+Useful commands:
 
-Note: Only Linux x86_64 is currently supported for local checking. CI runs on Linux.
+```bash
+# Validate all docs code examples using the wrapper
+bash scripts/check-examples.sh
+
+# Force an immediate latest-release check
+FE_FORCE_LATEST_CHECK=1 ./scripts/fe check path/to/file.fe
+```
+
+Environment variables:
+- `GITHUB_TOKEN`: used for authenticated GitHub API requests (recommended in CI)
+- `FE_LATEST_TTL_SECONDS`: override metadata freshness window (default: `21600`)
+- `FE_FORCE_LATEST_CHECK=1`: bypass freshness and force an API latest check
 
 ## Site Customization
 

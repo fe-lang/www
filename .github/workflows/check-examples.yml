@@ -21,4 +21,6 @@ jobs:
           chmod +x scripts/check-examples.sh
 
       - name: Check Fe code examples
+        env:
+          GITHUB_TOKEN: ${{ secrets.GITHUB_TOKEN }}
         run: npm run check:examples:verbose

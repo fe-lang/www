@@ -240,7 +240,7 @@ pub struct Config { pub data: u256 }
 pub struct Logger { pub data: u256 }
 //</hide>
 
-fn helper() uses (config: Config, mut logger: Logger) {
+fn helper() uses (config: Config, logger: mut Logger) {
     // Needs both effects
     //<hide>
     let _ = (config, logger)
@@ -282,7 +282,7 @@ fn caller() {
 
 ```fe ignore
 // This would be a compile error:
-fn needs_mut() uses (mut data: Data) { }
+fn needs_mut() uses (data: mut Data) { }
 
 fn caller() uses (data: Data) {
     needs_mut()

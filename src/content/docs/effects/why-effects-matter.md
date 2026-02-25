@@ -16,7 +16,7 @@ Every function declares exactly what it can access:
 pub struct Balances {}
 //</hide>
 
-fn transfer(from: u256, to: u256, amount: u256) uses (mut balances: Balances) {
+fn transfer(from: u256, to: u256, amount: u256) uses (balances: mut Balances) {
     // Can ONLY modify Balances
     // Cannot access Allowances, Config, or anything else
     //<hide>
@@ -43,7 +43,7 @@ fn get_balance(account: u256) -> u256 uses (balances: Balances) {
 }
 
 // This function can read AND write
-fn set_balance(account: u256, amount: u256) uses (mut balances: Balances) {
+fn set_balance(account: u256, amount: u256) uses (balances: mut Balances) {
     balances.data.set(account, amount)
 }
 ```
@@ -94,7 +94,7 @@ impl Logger {
     }
 }
 
-fn process_payment(amount: u256) uses (config: Config, mut balances: Balances, mut logger: Logger) {
+fn process_payment(amount: u256) uses (config: Config, balances: mut Balances, logger: mut Logger) {
     let fee = amount * config.fee_rate / 10000
 
     balances.credit(amount - fee)
@@ -203,7 +203,7 @@ pub struct EventLog {}
 // - It modifies balances
 // - It writes to event log
 fn transfer(to: u256, amount: u256)
-    uses (ctx: Ctx, tokens: TokenStore, mut balances: Balances, mut log: EventLog)
+    uses (ctx: Ctx, tokens: TokenStore, balances: mut Balances, log: mut EventLog)
 {
     //<hide>
     let _ = (to, amount, ctx, tokens, balances, log)
@@ -278,7 +278,7 @@ All effect checking happens at compile time:
 pub struct CriticalState {}
 //</hide>
 
-fn risky_operation() uses (mut state: CriticalState) {
+fn risky_operation() uses (state: mut CriticalState) {
     //<hide>
     let _ = state
     //</hide>
@@ -290,7 +290,7 @@ fn risky_operation() uses (mut state: CriticalState) {
 // }
 
 // Must declare the effect to call risky_operation
-fn valid_caller() uses (mut state: CriticalState) {
+fn valid_caller() uses (state: mut CriticalState) {
     risky_operation()
 }
 ```

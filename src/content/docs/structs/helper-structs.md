@@ -12,7 +12,7 @@ Group related values into a struct:
 ```fe
 //<hide>
 pub struct TokenStorage {}
-fn transfer(from: u256, to: u256, amount: u256) -> bool uses (mut store: TokenStorage) {
+fn transfer(from: u256, to: u256, amount: u256) -> bool uses (store: mut TokenStorage) {
     let _ = (from, to, amount, store)
     true
 }
@@ -24,7 +24,7 @@ struct TransferParams {
     amount: u256,
 }
 
-fn execute_transfer(params: TransferParams) -> bool uses (mut store: TokenStorage) {
+fn execute_transfer(params: TransferParams) -> bool uses (store: mut TokenStorage) {
     // Use params.from, params.to, params.amount
     transfer(params.from, params.to, params.amount)
 }
@@ -97,12 +97,12 @@ Create structs for validated data:
 
 ```fe
 //<hide>
-use core::revert
+use _boilerplate::revert
 use _boilerplate::{Map, caller}
 
 pub struct TokenStorage { pub balances: Map<u256, u256> }
 
-fn transfer(from: u256, to: u256, amount: u256) -> bool uses (mut store: TokenStorage) {
+fn transfer(from: u256, to: u256, amount: u256) -> bool uses (store: mut TokenStorage) {
     let _ = (from, to, amount, store)
     true
 }
@@ -124,7 +124,7 @@ impl ValidatedAmount {
     }
 }
 
-fn safe_transfer(to: u256, amount: ValidatedAmount) -> bool uses (mut store: TokenStorage) {
+fn safe_transfer(to: u256, amount: ValidatedAmount) -> bool uses (store: mut TokenStorage) {
     // amount is guaranteed to be valid
     transfer(caller(), to, amount.get())
 }
@@ -150,7 +150,7 @@ fn transfer_with_result(
     from: u256,
     to: u256,
     amount: u256
-) -> TransferResult uses (mut store: TokenStorage) {
+) -> TransferResult uses (store: mut TokenStorage) {
     let from_bal = store.balances.get(from)
 
     if from_bal < amount {
@@ -240,24 +240,48 @@ impl TokenConfig {
         }
     }
 
-    fn with_decimals(mut self, d: u8) -> TokenConfig {
-        self.decimals = d
-        self
+    fn with_decimals(self, d: u8) -> TokenConfig {
+        TokenConfig {
+            name_hash: self.name_hash,
+            symbol_hash: self.symbol_hash,
+            decimals: d,
+            initial_supply: self.initial_supply,
+            mintable: self.mintable,
+            burnable: self.burnable,
+        }
     }
 
-    fn with_supply(mut self, supply: u256) -> TokenConfig {
-        self.initial_supply = supply
-        self
+    fn with_supply(self, supply: u256) -> TokenConfig {
+        TokenConfig {
+            name_hash: self.name_hash,
+            symbol_hash: self.symbol_hash,
+            decimals: self.decimals,
+            initial_supply: supply,
+            mintable: self.mintable,
+            burnable: self.burnable,
+        }
     }
 
-    fn mintable(mut self) -> TokenConfig {
-        self.mintable = true
-        self
+    fn mintable(self) -> TokenConfig {
+        TokenConfig {
+            name_hash: self.name_hash,
+            symbol_hash: self.symbol_hash,
+            decimals: self.decimals,
+            initial_supply: self.initial_supply,
+            mintable: true,
+            burnable: self.burnable,
+        }
     }
 
-    fn burnable(mut self) -> TokenConfig {
-        self.burnable = true
-        self
+    fn burnable(self) -> TokenConfig {
+        TokenConfig {
+            name_hash: self.name_hash,
+            symbol_hash: self.symbol_hash,
+            decimals: self.decimals,
+            initial_supply: self.initial_supply,
+            mintable: self.mintable,
+            burnable: true,
+        }
     }
 }
 
@@ -321,7 +345,7 @@ Helper structs can work alongside effects:
 //<hide>
 use _boilerplate::{Map, caller}
 pub struct TokenStorage { pub balances: Map<u256, u256> }
-fn transfer(from: u256, to: u256, amount: u256) -> bool uses (mut store: TokenStorage) {
+fn transfer(from: u256, to: u256, amount: u256) -> bool uses (store: mut TokenStorage) {
     let _ = (from, to, amount, store)
     true
 }
@@ -342,7 +366,7 @@ impl TransferRequest {
         }
     }
 
-    fn execute(self) -> bool uses (mut store: TokenStorage) {
+    fn execute(self) -> bool uses (store: mut TokenStorage) {
         transfer(self.from, self.to, self.amount)
     }
 

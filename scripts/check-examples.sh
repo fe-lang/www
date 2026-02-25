@@ -6,6 +6,7 @@ set -e
 
 SCRIPT_DIR="$(cd "$(dirname "${BASH_SOURCE[0]}")" && pwd)"
 PROJECT_ROOT="$SCRIPT_DIR/.."
+BOILERPLATE_FILE="$SCRIPT_DIR/boilerplate.fe"
 
 # Configuration
 VERBOSE=false
@@ -84,6 +85,8 @@ TOTAL_BLOCKS=$(wc -l < "$MAPPINGS_FILE")
 if [[ "$VERBOSE" == true ]]; then
     echo "Found $TOTAL_BLOCKS Fe code blocks to check"
     echo ""
+else
+    echo "Checking $TOTAL_BLOCKS Fe code blocks (use --verbose for live progress)..."
 fi
 
 # Track errors
@@ -91,6 +94,22 @@ ERRORS=()
 CHECKED=0
 PASSED=0
 FAILED=0
+
+prepare_standalone_check_file() {
+    local source_file="$1"
+    local output_file="$2"
+
+    if [[ -f "$BOILERPLATE_FILE" ]]; then
+        cat "$BOILERPLATE_FILE" > "$output_file"
+        echo "" >> "$output_file"
+        echo "// --- standalone source below ---" >> "$output_file"
+        echo "" >> "$output_file"
+        cat "$source_file" >> "$output_file"
+    else
+        cp "$source_file" "$output_file"
+    fi
+
+}
 
 # Check each extracted file
 while IFS=: read -r fe_file md_file block_start_line; do
@@ -154,7 +173,9 @@ if [[ -d "$EXAMPLES_DIR" ]] && [[ ${#FILES[@]} -eq 0 ]]; then
             echo -n "Checking $rel_fe... "
         fi
 
-        FE_OUTPUT=$("$SCRIPT_DIR/fe" check "$fe_file" 2>&1) || true
+        temp_check_file="$TEMP_DIR/standalone_$(basename "$fe_file")"
+        prepare_standalone_check_file "$fe_file" "$temp_check_file"
+        FE_OUTPUT=$("$SCRIPT_DIR/fe" check "$temp_check_file" 2>&1) || true
 
         if [[ -z "$FE_OUTPUT" ]]; then
             : $((PASSED++))

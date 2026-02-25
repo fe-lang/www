@@ -62,7 +62,7 @@ fn get_balance(account: u256) -> u256 uses (store: TokenStorage) {
     store.balances.get(account)
 }
 
-fn add_balance(account: u256, amount: u256) uses (mut store: TokenStorage) {
+fn add_balance(account: u256, amount: u256) uses (store: mut TokenStorage) {
     let current = store.balances.get(account)
     store.balances.set(account, current + amount)
 }
@@ -129,15 +129,15 @@ Contracts can have multiple fields for different effects:
 ```fe
 //<hide>
 use _boilerplate::{Map, caller}
-fn do_transfer(c: u256, to: u256, amount: u256) -> bool uses (mut tokens: TokenStorage) {
+fn do_transfer(c: u256, to: u256, amount: u256) -> bool uses (tokens: mut TokenStorage) {
     let _ = (c, to, amount, tokens)
     true
 }
-fn set_allowance(c: u256, spender: u256, amount: u256) uses (mut permits: AllowanceStorage) {
+fn set_allowance(c: u256, spender: u256, amount: u256) uses (permits: mut AllowanceStorage) {
     let _ = (c, spender, amount, permits)
 }
 fn do_transfer_from(c: u256, from: u256, to: u256, amount: u256) -> bool
-    uses (mut tokens: TokenStorage, mut permits: AllowanceStorage)
+    uses (tokens: mut TokenStorage, permits: mut AllowanceStorage)
 {
     let _ = (c, from, to, amount, tokens, permits)
     true
@@ -245,7 +245,7 @@ pub struct TokenStorage { pub balances: Map<u256, u256> }
 //</hide>
 
 // Fe - explicit effect dependency
-fn transfer(to: u256, amount: u256) -> bool uses (mut store: TokenStorage) {
+fn transfer(to: u256, amount: u256) -> bool uses (store: mut TokenStorage) {
     // Clear that this function needs TokenStorage
     store.balances.set(to, amount)
     true

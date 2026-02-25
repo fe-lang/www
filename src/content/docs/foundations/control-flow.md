@@ -159,21 +159,21 @@ let _ = description
 Match on enum variants to handle different cases:
 
 ```fe
-//<hide>
-fn example() {
-//</hide>
 enum Status {
     Pending,
     Approved,
-    Rejected(String<64>),
+    Rejected,
 }
 
-let status = Status::Pending
+//<hide>
+fn example() {
+    let status = Status::Pending
+//</hide>
 
 let message: String<64> = match status {
     Status::Pending => "Awaiting review"
     Status::Approved => "Request approved"
-    Status::Rejected(reason) => reason  // Extract the reason
+    Status::Rejected => "Request rejected"
 }
 //<hide>
 let _ = message

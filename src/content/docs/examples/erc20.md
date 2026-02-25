@@ -12,7 +12,7 @@ This chapter presents a complete ERC20 token implementation called CoolCoin. Thi
 const MINTER: u256 = 1
 const BURNER: u256 = 2
 
-pub contract CoolCoin uses (mut ctx: Ctx, mut log: Log) {
+pub contract CoolCoin uses (ctx: mut Ctx, log: mut Log) {
     // Storage fields. These act as effects within the contract.
     mut store: TokenStore,
     mut auth: AccessControl,
@@ -105,7 +105,7 @@ pub contract CoolCoin uses (mut ctx: Ctx, mut log: Log) {
 }
 
 fn transfer(from: Address, to: Address, amount: u256)
-    uses (mut store: TokenStore, mut log: Log)
+    uses (store: mut TokenStore, log: mut Log)
 {
     assert(from != Address::zero(), "transfer from zero address")
     assert(to != Address::zero(), "transfer to zero address")
@@ -120,7 +120,7 @@ fn transfer(from: Address, to: Address, amount: u256)
 }
 
 fn mint(to: Address, amount: u256)
-    uses (mut store: TokenStore, mut log: Log)
+    uses (store: mut TokenStore, log: mut Log)
 {
     assert(to != Address::zero(), "mint to zero address")
 
@@ -131,7 +131,7 @@ fn mint(to: Address, amount: u256)
 }
 
 fn burn(from: Address, amount: u256)
-    uses (mut store: TokenStore, mut log: Log)
+    uses (store: mut TokenStore, log: mut Log)
 {
     assert(from != Address::zero(), "burn from zero address")
 
@@ -145,7 +145,7 @@ fn burn(from: Address, amount: u256)
 }
 
 fn approve(owner: Address, spender: Address, amount: u256)
-    uses (mut store: TokenStore, mut log: Log)
+    uses (store: mut TokenStore, log: mut Log)
 {
     assert(owner != Address::zero(), "approve from zero address")
     assert(spender != Address::zero(), "approve to zero address")
@@ -157,7 +157,7 @@ fn approve(owner: Address, spender: Address, amount: u256)
 
 // Internal function to spend allowance
 fn spend_allowance(owner: Address, spender: Address, amount: u256)
-    uses (mut store: TokenStore)
+    uses (store: mut TokenStore)
 {
     let current = store.allowances[(owner, spender)]
     // if current != u256::MAX { // TODO: define ::MAX constants
@@ -184,11 +184,12 @@ impl AccessControl {
     }
 
     pub fn has_role(self, role: u256, account: Address) -> bool {
-        self.roles[(role, account)]
+        core::ops::Index<(u256, Address)>::index(self.roles, (role, account))
     }
 
     pub fn require(self, role: u256) uses (ctx: Ctx) {
-        assert(self.roles[(role, ctx.caller())], "access denied: missing role")
+        let caller = ctx.caller()
+        assert(self.has_role(role, caller), "access denied: missing role")
     }
 
     pub fn grant(mut self, role: u256, to: Address) {
@@ -249,6 +250,7 @@ msg Erc20Extended {
 }
 
 // ERC20 events
+#[event]
 struct TransferEvent {
     #[indexed]
     from: Address,
@@ -257,6 +259,7 @@ struct TransferEvent {
     value: u256,
 }
 
+#[event]
 struct ApprovalEvent {
     #[indexed]
     owner: Address,
@@ -265,21 +268,12 @@ struct ApprovalEvent {
     value: u256,
 }
 
+//<hide>
 // stubs for missing std lib stuff
+use _boilerplate::Address
+
 extern {
     fn assert(_: bool, _: String<64>)
-}
-
-pub struct Address { inner: u256 }
-impl Address {
-    pub fn zero() -> Self {
-        Address { inner: 0 }
-    }
-}
-impl core::ops::Eq for Address {
-    fn eq(self, _ other: Address) -> bool {
-        self.inner == other.inner
-    }
 }
 
 pub struct Map<K, V> {}
@@ -308,6 +302,7 @@ impl Log {
         todo()
     }
 }
+//</hide>
 ```
 
 ## Walkthrough
@@ -317,13 +312,13 @@ impl Log {
 The contract declares effects at the contract level:
 
 ```fe ignore
-pub contract CoolCoin uses (mut ctx: Ctx, mut log: Log) {
+pub contract CoolCoin uses (ctx: mut Ctx, log: mut Log) {
     mut store: TokenStore,
     mut auth: AccessControl,
 ```
 
 Key points:
-- `uses (mut ctx: Ctx, mut log: Log)` declares contract-wide effects
+- `uses (ctx: mut Ctx, log: mut Log)` declares contract-wide effects
 - `Ctx` provides execution context (caller address, block info)
 - `Log` provides event emission capability
 - `store` and `auth` are storage fields that act as effects within the contract
@@ -418,7 +413,7 @@ Core logic is extracted into standalone functions:
 
 ```fe ignore
 fn transfer(from: Address, to: Address, amount: u256)
-    uses (mut store: TokenStore, mut log: Log)
+    uses (store: mut TokenStore, log: mut Log)
 {
     assert(from != Address::zero(), "transfer from zero address")
     assert(to != Address::zero(), "transfer to zero address")
@@ -446,6 +441,7 @@ The `mint` and `burn` functions follow the same pattern, using `Address::zero()`
 Events are structs with `#[indexed]` fields for filtering:
 
 ```fe ignore
+#[event]
 struct TransferEvent {
     #[indexed]
     from: Address,
@@ -454,6 +450,7 @@ struct TransferEvent {
     value: u256,
 }
 
+#[event]
 struct ApprovalEvent {
     #[indexed]
     owner: Address,
@@ -479,7 +476,8 @@ const BURNER: u256 = 2
 
 impl AccessControl {
     pub fn require(self, role: u256) uses (ctx: Ctx) {
-        assert(self.roles[(role, ctx.caller())], "access denied: missing role")
+        let caller = ctx.caller()
+        assert(self.has_role(role, caller), "access denied: missing role")
     }
 
     pub fn grant(mut self, role: u256, to: Address) {
@@ -504,10 +502,10 @@ The `require` method checks if the caller has the specified role, reverting if n
 
 | Pattern | Example |
 |---------|---------|
-| Contract-level effects | `contract CoolCoin uses (mut ctx: Ctx, mut log: Log)` |
+| Contract-level effects | `contract CoolCoin uses (ctx: mut Ctx, log: mut Log)` |
 | Storage as fields | `mut store: TokenStore` |
 | Handler-specific effects | `uses (ctx, mut store, mut log)` |
-| Effect in helpers | `fn transfer(...) uses (mut store: TokenStore, mut log: Log)` |
+| Effect in helpers | `fn transfer(...) uses (store: mut TokenStore, log: mut Log)` |
 | Event emission | `log.emit(TransferEvent { ... })` |
 | Role-based access | `auth.require(role: MINTER)` |
 | Zero address checks | `assert(to != Address::zero(), "...")` |

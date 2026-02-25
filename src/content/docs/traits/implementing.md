@@ -15,7 +15,7 @@ struct String {}
 //</hide>
 
 trait Greetable {
-    fn greet(self) -> String
+    fn greet(own self) -> String
 }
 
 struct Person {
@@ -23,7 +23,7 @@ struct Person {
 }
 
 impl Greetable for Person {
-    fn greet(self) -> String {
+    fn greet(own self) -> String {
         self.name
     }
 }
@@ -37,7 +37,7 @@ struct String {}
 
 
 trait Greetable {
-    fn greet(self) -> String
+    fn greet(own self) -> String
 }
 
 struct Person {
@@ -45,7 +45,7 @@ struct Person {
 }
 
 impl Greetable for Person {
-    fn greet(self) -> String {
+    fn greet(own self) -> String {
         self.name
     }
 }
@@ -257,9 +257,8 @@ impl Wallet {
         Wallet { balance: initial }
     }
 
-    fn deposit(mut self, amount: u256) -> Self {
-        self.balance += amount
-        self
+    fn deposit(self, amount: u256) -> Self {
+        Wallet { balance: self.balance + amount }
     }
 }
 
@@ -291,9 +290,8 @@ impl Wallet {
         Wallet { balance: initial }
     }
 
-    fn deposit(mut self, amount: u256) -> Self {
-        self.balance += amount
-        self
+    fn deposit(self, amount: u256) -> Self {
+        Wallet { balance: self.balance + amount }
     }
 }
 

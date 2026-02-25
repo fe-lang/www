@@ -14,8 +14,9 @@ The current `StorageMap` is a minimal implementation that will be replaced with 
 `StorageMap<K, V>` stores key-value pairs in contract storage:
 
 ```fe
-use core::StorageMap
-
+//<hide>
+use _boilerplate::Map as StorageMap
+//</hide>
 pub struct MyContract {
     balances: StorageMap<u256, u256>,
 }
@@ -29,7 +30,7 @@ Declare maps as fields in contract structs:
 
 ```fe
 //<hide>
-use core::StorageMap
+use _boilerplate::Map as StorageMap
 //</hide>
 
 pub struct Token {
@@ -48,8 +49,7 @@ Use `get(key)` to read a value:
 
 ```fe
 //<hide>
-use core::StorageMap
-
+use _boilerplate::Map as StorageMap
 pub struct Token {
     balances: StorageMap<u256, u256>,
 }
@@ -70,8 +70,7 @@ Use `set(key, value)` to store a value:
 
 ```fe
 //<hide>
-use core::StorageMap
-
+use _boilerplate::Map as StorageMap
 pub struct Token {
     balances: StorageMap<u256, u256>,
 }
@@ -142,7 +141,7 @@ This ensures:
 
 ```fe
 //<hide>
-use core::StorageMap
+use _boilerplate::Map as StorageMap
 //</hide>
 
 pub struct Token {

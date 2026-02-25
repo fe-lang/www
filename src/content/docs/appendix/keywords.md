@@ -107,7 +107,7 @@ return value
 ### Effects
 ```fe ignore
 fn foo() uses (storage: Storage) { }
-fn foo() uses (mut storage: Storage) { }
+fn foo() uses (storage: mut Storage) { }
 with (storage: Storage = store) { }
 ```
 

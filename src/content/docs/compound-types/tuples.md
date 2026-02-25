@@ -103,7 +103,7 @@ Extract all tuple elements at once with pattern matching:
 fn example() {
 //</hide>
 let point: (u256, u256) = (100, 200)
-let (x, y) = point
+let (x, y): ref (u256, u256) = ref point
 
 // x is 100, y is 200
 //<hide>
@@ -189,8 +189,8 @@ fn example() {
 //</hide>
 let nested: ((i32, i32), (i32, i32)) = ((0, 0), (100, 100))
 
-let start = nested.0      // (0, 0)
-let start_x = nested.0.0  // 0
+let (start, _) = nested  // (0, 0)
+let start_x = start.0    // 0
 //<hide>
 let _ = (start, start_x)
 }

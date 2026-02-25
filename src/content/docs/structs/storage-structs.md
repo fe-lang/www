@@ -47,7 +47,7 @@ fn get_balance(account: u256) -> u256 uses (store: TokenStorage) {
 }
 
 // Function that writes to storage
-fn set_balance(account: u256, amount: u256) uses (mut store: TokenStorage) {
+fn set_balance(account: u256, amount: u256) uses (store: mut TokenStorage) {
     store.balances.set(account, amount)
 }
 ```
@@ -63,7 +63,7 @@ pub struct TokenStorage { pub balances: Map<u256, u256> }
 fn get_balance(account: u256) -> u256 uses (store: TokenStorage) {
     store.balances.get(account)
 }
-fn transfer(from: u256, to: u256, amount: u256) -> bool uses (mut store: TokenStorage) {
+fn transfer(from: u256, to: u256, amount: u256) -> bool uses (store: mut TokenStorage) {
     let _ = (from, to, amount, store)
     true
 }
@@ -107,7 +107,7 @@ fn get_value() -> u256 uses (store: CounterStorage) {
     store.value
 }
 
-fn increment() uses (mut store: CounterStorage) {
+fn increment() uses (store: mut CounterStorage) {
     store.value = store.value + 1
 }
 ```
@@ -154,7 +154,7 @@ pub struct PauseStorage { pub paused: bool }
 //</hide>
 
 fn transfer(from: u256, to: u256, amount: u256)
-    -> bool uses (mut balances: BalanceStorage, pause: PauseStorage)
+    -> bool uses (balances: mut BalanceStorage, pause: PauseStorage)
 {
     if pause.paused {
         return false
@@ -200,7 +200,7 @@ fn get_entry(key: u256) -> u256 uses (reg: Registry) {
     reg.entries.get(key)
 }
 
-fn set_entry(key: u256, value: u256) uses (mut reg: Registry) {
+fn set_entry(key: u256, value: u256) uses (reg: mut Registry) {
     reg.entries.set(key, value)
 }
 
@@ -208,7 +208,7 @@ fn get_nested(outer: u256, inner: u256) -> u256 uses (reg: Registry) {
     reg.nested.get(outer).get(inner)
 }
 
-fn set_nested(outer: u256, inner: u256, value: u256) uses (mut reg: Registry) {
+fn set_nested(outer: u256, inner: u256, value: u256) uses (reg: mut Registry) {
     reg.nested.get(outer).set(inner, value)
 }
 ```
@@ -279,7 +279,7 @@ fn get_balance(account: u256) -> u256 uses (tokens: TokenStorage) {
     tokens.balances.get(account)
 }
 
-fn transfer(from: u256, to: u256, amount: u256) -> bool uses (mut tokens: TokenStorage) {
+fn transfer(from: u256, to: u256, amount: u256) -> bool uses (tokens: mut TokenStorage) {
     let from_bal = tokens.balances.get(from)
     if from_bal < amount {
         return false
@@ -324,5 +324,5 @@ contract Token {
 | Effect type | Storage struct used in `uses` clause |
 | `Map<K, V>` | Key-value storage field |
 | `uses (store: Storage)` | Read-only access |
-| `uses (mut store: Storage)` | Read-write access |
+| `uses (store: mut Storage)` | Read-write access |
 | Handler `uses (field)` | Bind contract field to effect in handlers |

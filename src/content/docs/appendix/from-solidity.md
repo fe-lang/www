@@ -173,8 +173,8 @@ function transfer(...) {
 ```fe
 //<hide>
 use _boilerplate::{Address, Log}
-fn transfer(from: Address, to: Address, amount: u256) uses mut log: Log {
 //</hide>
+#[event]
 struct Transfer {
     #[indexed]
     from: Address,
@@ -183,14 +183,9 @@ struct Transfer {
     value: u256,
 }
 
-//<hide>
-}
-fn _transfer(from: Address, to: Address, amount: u256) uses mut log: Log {
-//</hide>
+fn transfer(from: Address, to: Address, amount: u256) uses (log: mut Log) {
     log.emit(Transfer { from, to, value: amount })
-//<hide>
 }
-//</hide>
 ```
 
 ### Error Handling

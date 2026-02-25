@@ -188,6 +188,7 @@ Event emission:
 //<hide>
 use _boilerplate::{Address, Log}
 //</hide>
+#[event]
 struct TransferEvent {
     #[indexed]
     from: Address,
@@ -196,7 +197,7 @@ struct TransferEvent {
     value: u256,
 }
 
-fn emit_transfer(from: Address, to: Address, value: u256) uses mut log: Log {
+fn emit_transfer(from: own Address, to: own Address, value: u256) uses (log: mut Log) {
     log.emit(TransferEvent { from, to, value })
 }
 ```

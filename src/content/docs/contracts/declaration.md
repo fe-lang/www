@@ -56,7 +56,7 @@ Fields declare the contract's storage and effect dependencies:
 
 ```fe
 //<hide>
-use core::StorageMap
+use _boilerplate::Map as StorageMap
 //</hide>
 
 pub struct TokenStorage {
@@ -94,8 +94,7 @@ Instead, use standalone functions with effects:
 
 ```fe
 //<hide>
-use core::StorageMap
-
+use _boilerplate::Map as StorageMap
 pub struct TokenStorage {
     pub balances: StorageMap<u256, u256>,
 }
@@ -128,8 +127,7 @@ The canonical structure of a Fe contract:
 
 ```fe
 //<hide>
-use core::StorageMap
-
+use _boilerplate::Map as StorageMap
 pub struct Ctx {}
 impl Ctx {
     pub fn caller(self) -> u256 { todo() }
@@ -152,7 +150,7 @@ msg TokenMsg {
 }
 
 // 3. Helper functions with effects
-fn do_transfer(from: u256, to: u256, amount: u256) -> bool uses (mut store: TokenStorage) {
+fn do_transfer(from: u256, to: u256, amount: u256) -> bool uses (store: mut TokenStorage) {
     let from_bal = store.balances.get(from)
     if from_bal < amount {
         return false

@@ -117,7 +117,7 @@ fn combine<A: Hashable, B: Printable>(a: A, b: B) -> String<256> {
     b.to_string()
 }
 
-fn transform<T: Readable, U: Writable>(input: T, mut output: U) {
+fn transform<T: Readable, U: Writable>(input: T, mut output: own U) {
     let value = input.read()
     output.write(value)
 }
@@ -164,7 +164,7 @@ struct Wrapper<T> {
 
 // Basic methods, no bounds needed
 impl<T> Wrapper<T> {
-    fn get(self) -> T {
+    fn get(own self) -> T {
         self.value
     }
 }
@@ -224,7 +224,7 @@ trait Default {
     fn default() -> Self
 }
 
-fn or_default<T: Default>(value: Option<T>) -> T {
+fn or_default<T: Default>(value: own Option<T>) -> T {
     match value {
         Option::Some(v) => v,
         Option::None => T::default(),
@@ -242,7 +242,7 @@ trait Clone {
     fn clone(self) -> Self
 }
 
-fn duplicate<T: Clone>(value: T) -> (T, T) {
+fn duplicate<T: Clone>(value: own T) -> (T, T) {
     (value.clone(), value)
 }
 ```
@@ -259,7 +259,7 @@ trait Storable {
     fn key(self) -> u256
 }
 
-fn save<T: Storable>(item: T) uses (mut storage: Storage) {
+fn save<T: Storable>(item: T) uses (storage: mut Storage) {
     let key = item.key()
     storage.set(key, item)
 }

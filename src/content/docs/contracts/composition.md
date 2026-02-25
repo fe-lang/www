@@ -18,7 +18,7 @@ pub struct BalanceStorage { pub total: u256 }
 pub struct OwnerStorage { pub owner: u256 }
 
 // Reusable functions
-fn transfer(from: u256, to: u256, amount: u256) -> bool uses (mut balances: BalanceStorage) {
+fn transfer(from: u256, to: u256, amount: u256) -> bool uses (balances: mut BalanceStorage) {
     let _ = (from, to, amount)
     true
 }
@@ -40,7 +40,7 @@ Extract business logic into functions that declare their effect dependencies:
 
 ```fe
 //<hide>
-use core::StorageMap
+use _boilerplate::Map as StorageMap
 //</hide>
 
 pub struct TokenStorage {
@@ -54,12 +54,12 @@ fn get_balance(account: u256) -> u256 uses (store: TokenStorage) {
 }
 
 // Mutating helper
-fn add_balance(account: u256, amount: u256) uses (mut store: TokenStorage) {
+fn add_balance(account: u256, amount: u256) uses (store: mut TokenStorage) {
     let current = store.balances.get(account)
     store.balances.set(account, current + amount)
 }
 
-fn sub_balance(account: u256, amount: u256) -> bool uses (mut store: TokenStorage) {
+fn sub_balance(account: u256, amount: u256) -> bool uses (store: mut TokenStorage) {
     let current = store.balances.get(account)
     if current < amount {
         return false
@@ -69,7 +69,7 @@ fn sub_balance(account: u256, amount: u256) -> bool uses (mut store: TokenStorag
 }
 
 // Higher-level helper composing lower-level ones
-fn transfer(from: u256, to: u256, amount: u256) -> bool uses (mut store: TokenStorage) {
+fn transfer(from: u256, to: u256, amount: u256) -> bool uses (store: mut TokenStorage) {
     if !sub_balance(from, amount) {
         return false
     }
@@ -84,8 +84,7 @@ Split storage into logical units:
 
 ```fe
 //<hide>
-use core::{StorageMap, revert}
-
+use _boilerplate::{Map as StorageMap, revert}
 pub struct Ctx {}
 impl Ctx {
     pub fn caller(self) -> u256 { todo() }
@@ -99,7 +98,7 @@ fn require_owner(expected: u256) uses (ctx: Ctx) {
     if ctx.caller() != expected { revert(0, 0) }
 }
 
-fn transfer(from: u256, to: u256, amount: u256) -> bool uses (mut balances: BalanceStorage) {
+fn transfer(from: u256, to: u256, amount: u256) -> bool uses (balances: mut BalanceStorage) {
     let current = balances.balances.get(from)
     if current < amount { return false }
     balances.balances.set(from, current - amount)
@@ -107,7 +106,7 @@ fn transfer(from: u256, to: u256, amount: u256) -> bool uses (mut balances: Bala
     true
 }
 
-fn set_paused(value: bool) uses (mut pause_state: PauseStorage) {
+fn set_paused(value: bool) uses (pause_state: mut PauseStorage) {
     pause_state.paused = value
 }
 //</hide>
@@ -168,8 +167,7 @@ Implement access control as a reusable module:
 
 ```fe
 //<hide>
-use core::{StorageMap, revert}
-
+use _boilerplate::{Map as StorageMap, revert}
 pub struct TokenStorage {
     pub balances: StorageMap<u256, u256>,
 }
@@ -179,7 +177,7 @@ impl Ctx {
     pub fn caller(self) -> u256 { todo() }
 }
 
-fn mint_tokens(to: u256, amount: u256) uses (mut store: TokenStorage) {
+fn mint_tokens(to: u256, amount: u256) uses (store: mut TokenStorage) {
     store.balances.set(to, store.balances.get(to) + amount)
 }
 //</hide>
@@ -198,7 +196,7 @@ fn require_owner() uses (ctx: Ctx, ownership: OwnerStorage) {
     }
 }
 
-fn transfer_ownership(new_owner: u256) uses (ctx: Ctx, mut ownership: OwnerStorage) {
+fn transfer_ownership(new_owner: u256) uses (ctx: Ctx, ownership: mut OwnerStorage) {
     require_owner()
     ownership.owner = new_owner
 }
@@ -240,8 +238,7 @@ contract OwnableToken {
 
 ```fe
 //<hide>
-use core::{StorageMap, revert}
-
+use _boilerplate::{Map as StorageMap, revert}
 pub struct TokenStorage {
     pub balances: StorageMap<u256, u256>,
 }
@@ -259,7 +256,7 @@ fn require_owner() uses (ctx: Ctx, ownership: OwnerStorage) {
     if ctx.caller() != ownership.owner { revert(0, 0) }
 }
 
-fn transfer(from: u256, to: u256, amount: u256) -> bool uses (mut store: TokenStorage) {
+fn transfer(from: u256, to: u256, amount: u256) -> bool uses (store: mut TokenStorage) {
     let current = store.balances.get(from)
     if current < amount { return false }
     store.balances.set(from, current - amount)
@@ -294,7 +291,7 @@ fn require_not_paused() uses (pause_state: PauseStorage) {
     }
 }
 
-fn set_paused(paused: bool) uses (mut pause_state: PauseStorage) {
+fn set_paused(paused: bool) uses (pause_state: mut PauseStorage) {
     pause_state.paused = paused
 }
 
@@ -332,8 +329,7 @@ Functions can require multiple effects:
 
 ```fe
 //<hide>
-use core::{StorageMap, revert}
-
+use _boilerplate::{Map as StorageMap, revert}
 pub struct TokenStorage {
     pub balances: StorageMap<u256, u256>,
 }
@@ -355,7 +351,7 @@ fn require_not_paused() uses (pause_state: PauseStorage) {
     if pause_state.paused { revert(0, 0) }
 }
 
-fn transfer(from: u256, to: u256, amount: u256) -> bool uses (mut store: TokenStorage) {
+fn transfer(from: u256, to: u256, amount: u256) -> bool uses (store: mut TokenStorage) {
     let current = store.balances.get(from)
     if current < amount { return false }
     store.balances.set(from, current - amount)
@@ -373,7 +369,7 @@ fn guarded_transfer(
     from: u256,
     to: u256,
     amount: u256
-) -> bool uses (mut store: TokenStorage, pause_state: PauseStorage) {
+) -> bool uses (store: mut TokenStorage, pause_state: PauseStorage) {
     require_not_paused()
     transfer(from, to, amount)
 }

@@ -43,7 +43,7 @@ fn process(value: u256, flag: bool) {
 Fe supports **labeled parameters** for improved call-site clarity. A label is the name used when calling the function, while the parameter name is used inside the function body:
 
 ```fe
-fn transfer(from sender: u256, to recipient: u256, amount: u256) {
+fn transfer(sender: u256, recipient: u256, amount: u256) {
     // Inside the function, use: sender, recipient, amount
     //<hide>
     let _ = (sender, recipient, amount)
@@ -56,7 +56,7 @@ fn example_transfer() {
     let bob: u256 = 2
 //</hide>
 // At the call site, use the labels:
-transfer(from: alice, to: bob, amount: 100)
+transfer(sender: alice, recipient: bob, amount: 100)
 //<hide>
 }
 ```
@@ -115,7 +115,7 @@ create_point(10, 20, named: true)
 Use `mut` to declare a parameter that can be modified within the function:
 
 ```fe
-fn increment(mut value: u256) -> u256 {
+fn increment(mut value: own u256) -> u256 {
     value = value + 1
     value
 }
@@ -138,10 +138,9 @@ impl Counter {
         self.value
     }
 
-    // Method with mutable self - can read and modify
-    fn increment(mut self) -> Self {
-        self.value = self.value + 1
-        self
+    // Method that returns an updated counter
+    fn increment(self) -> Self {
+        Counter { value: self.value + 1 }
     }
 }
 ```
@@ -159,9 +158,8 @@ impl Counter {
         self.value
     }
 
-    fn increment(mut self) -> Self {
-        self.value = self.value + 1
-        self
+    fn increment(self) -> Self {
+        Counter { value: self.value + 1 }
     }
 }
 
@@ -304,7 +302,7 @@ This separation keeps contracts focused on state and message handling, while log
 Functions can be generic over types using angle brackets:
 
 ```fe
-fn identity<T>(value: T) -> T {
+fn identity<T>(value: own T) -> T {
     value
 }
 ```
@@ -341,7 +339,7 @@ fn read_storage() uses (storage: Storage) {
     //</hide>
 }
 
-fn write_storage() uses (mut storage: Storage) {
+fn write_storage() uses (storage: mut Storage) {
     // can read and write to storage
     //<hide>
     let _ = storage

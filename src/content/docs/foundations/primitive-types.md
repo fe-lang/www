@@ -276,8 +276,7 @@ Fe's primitive types cover the fundamentals, but EVM-specific types like `Addres
 Currently, EVM addresses are represented as `u256` values:
 
 ```fe
-use core::intrinsic::caller
-
+use _boilerplate::caller
 fn get_sender() -> u256 {
     caller()  // returns the sender's address as u256
 }

@@ -45,7 +45,7 @@ fn read_data() -> u256 uses (storage: Storage) {
     storage.data
 }
 
-fn write_data(value: u256) uses (mut storage: Storage) {
+fn write_data(value: u256) uses (storage: mut Storage) {
     storage.data = value
 }
 ```
@@ -69,7 +69,7 @@ fn process() uses (store: Storage) {
     //</hide>
 }
 
-fn update() uses (mut store: Storage) {
+fn update() uses (store: mut Storage) {
     store.data = 100
 }
 ```
@@ -107,7 +107,7 @@ pub struct Config { pub data: u256 }
 pub struct Logger { pub data: u256 }
 //</hide>
 
-fn transfer() uses (mut balances: Balances, config: Config, mut log: Logger) {
+fn transfer() uses (balances: mut Balances, config: Config, log: mut Logger) {
     // balances and log are mutable
     // config is read-only
     //<hide>
@@ -122,11 +122,11 @@ Contracts can declare effects in their definition:
 
 ```fe
 //<hide>
-pub struct Context { pub data: u256 }
+pub struct Context {}
 pub struct TokenStorage { pub data: u256 }
 //</hide>
 
-contract Token uses (mut ctx: Context) {
+contract Token uses (ctx: mut Context) {
     store: TokenStorage,
 }
 ```
@@ -143,7 +143,7 @@ pub struct TokenStorage {
 }
 
 // Helper function with explicit effects
-fn do_transfer(from: u256, to: u256, amount: u256) uses (mut store: TokenStorage) {
+fn do_transfer(from: u256, to: u256, amount: u256) uses (store: mut TokenStorage) {
     let from_balance = store.balances.get(from)
     let to_balance = store.balances.get(to)
 
@@ -186,9 +186,9 @@ fn get_cached<T>() -> T uses (cache: Cache<T>) {
 | Form | Example |
 |------|---------|
 | Single effect | `uses (name: Effect)` |
-| Mutable effect | `uses (mut name: Effect)` |
+| Mutable effect | `uses (name: mut Effect)` |
 | Multiple effects | `uses (a: A, b: B, c: C)` |
-| Mixed mutability | `uses (mut a: A, b: B)` |
+| Mixed mutability | `uses (a: mut A, b: B)` |
 | With return type | `fn foo() -> T uses (e: E)` |
 | On contract | `contract C uses (e: Effect) { }` |
 
@@ -219,7 +219,7 @@ impl Balances {
 }
 //</hide>
 
-fn set_balance(account: u256, amount: u256) uses (mut balances: Balances) {
+fn set_balance(account: u256, amount: u256) uses (balances: mut Balances) {
     balances.set(account, amount)
 }
 ```
@@ -239,7 +239,7 @@ impl TransferLog {
 //</hide>
 
 fn logged_transfer(from: u256, to: u256, amount: u256)
-    uses (mut balances: Balances, mut log: TransferLog)
+    uses (balances: mut Balances, log: mut TransferLog)
 {
     balances.transfer(from, to, amount)
     log.record(from, to, amount)
