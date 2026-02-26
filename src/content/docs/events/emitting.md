@@ -11,7 +11,7 @@ Emit an event through a Log effect:
 
 ```fe
 //<hide>
-use _boilerplate::{Log}
+use _boilerplate::Log
 //</hide>
 
 
@@ -78,7 +78,7 @@ A critical pattern: emit events after state changes succeed, not before:
 
 ```fe
 //<hide>
-use _boilerplate::{Map, Log}
+use _boilerplate::Map
 pub struct TokenStorage { pub balances: Map<u256, u256> }
 #[event]
 struct Transfer {
@@ -161,7 +161,7 @@ Emit different event types from the same handler:
 
 ```fe
 //<hide>
-use _boilerplate::{Map, Log}
+use _boilerplate::Map
 pub struct TokenStorage {
     pub balances: Map<u256, u256>,
     pub allowances: Map<u256, Map<u256, u256>>,
@@ -221,7 +221,7 @@ Emit when persistent state changes:
 
 ```fe
 //<hide>
-use _boilerplate::{Map, Log}
+use _boilerplate::Map
 pub struct TokenStorage {
     pub balances: Map<u256, u256>,
     pub total_supply: u256,
@@ -303,7 +303,7 @@ Create helper functions for common events:
 
 ```fe
 //<hide>
-use _boilerplate::{Map, Log}
+use _boilerplate::Map
 pub struct TokenStorage { pub balances: Map<u256, u256> }
 #[event]
 struct Transfer {
@@ -350,7 +350,7 @@ Only emit when something meaningful happens:
 
 ```fe
 //<hide>
-use _boilerplate::{Map, Log}
+use _boilerplate::Map
 pub struct TokenStorage { pub allowances: Map<u256, Map<u256, u256>> }
 #[event]
 struct Approval {

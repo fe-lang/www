@@ -270,7 +270,6 @@ struct ApprovalEvent {
 
 //<hide>
 // stubs for missing std lib stuff
-use _boilerplate::Address
 
 extern {
     fn assert(_: bool, _: String<64>)

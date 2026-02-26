@@ -199,7 +199,6 @@ Structs can serve as effects, allowing you to inject behavior:
 
 ```fe
 //<hide>
-use _boilerplate::Option
 //</hide>
 // Define a validator effect
 pub struct RangeValidator {

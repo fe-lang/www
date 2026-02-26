@@ -68,45 +68,10 @@ mod _boilerplate {
     pub fn ecrecover(_ hash: u256, _ v: u8, _ r: u256, _ s: u256) -> Address { todo() }
     pub fn block_hash(_ number: u256) -> u256 { todo() }
 
-    // Address type stub
-    pub struct Address { inner: u256 }
-    impl Address {
-        pub fn zero() -> Self { Address { inner: 0 } }
-        pub fn encode<E>(own self, _ e: mut E) { todo() }
-        pub fn decode<D>(_ d: mut D) -> Self { todo() }
-        pub fn as_topic(self) -> u256 { self.inner }
-    }
-    impl core::abi::Encode<std::abi::Sol> for Address {
-        fn encode<E: core::abi::AbiEncoder<std::abi::Sol>>(own self, _ e: mut E) { todo() }
-    }
-    impl core::abi::Decode<std::abi::Sol> for Address {
-        fn decode<D: core::abi::AbiDecoder<std::abi::Sol>>(_ d: mut D) -> Self { todo() }
-    }
-    impl std::abi::SolCompat for Address {
-        type S = String<7>
-        const SOL_TYPE: Self::S = "address"
-    }
-    impl Copy for Address {}
-    impl core::ops::Eq for Address {
-        fn eq(self, _ other: Self) -> bool { todo() }
-    }
-
     // Assert function stub - uses fixed String<256> which can accept smaller string literals
     pub fn assert(cond: bool, message: String<256>) { todo() }
 
     // Note: revert is re-exported from core above
-
-    // Option enum for optional values
-    pub enum Option<T> {
-        Some(T),
-        None,
-    }
-
-    // Result enum for error handling
-    pub enum Result<T, E> {
-        Ok(T),
-        Err(E),
-    }
 
     // Common trait stubs
     pub trait Hashable {

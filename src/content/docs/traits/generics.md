@@ -214,7 +214,7 @@ let _ = (x, y)
 
 ```fe
 //<hide>
-use _boilerplate::{Option, Default}
+use _boilerplate::Default
 //</hide>
 fn or_default<T: Default>(value: own Option<T>) -> T {
     match value {

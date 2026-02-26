@@ -26,7 +26,7 @@ These intrinsics provide information about the execution context:
 
 ```fe
 //<hide>
-use _boilerplate::{Ctx, Address, assert}
+use _boilerplate::{Ctx, assert}
 //</hide>
 
 fn only_owner(owner: Address) uses (ctx: Ctx) {
@@ -54,7 +54,7 @@ These intrinsics relate to contract state and identity:
 
 ```fe
 //<hide>
-use _boilerplate::{Address, self_balance, code_size}
+use _boilerplate::{self_balance, code_size}
 //</hide>
 
 fn get_contract_balance() -> u256 {
@@ -81,7 +81,7 @@ Hash functions and cryptographic operations:
 
 ```fe
 //<hide>
-use _boilerplate::{Address, keccak256, ecrecover}
+use _boilerplate::{keccak256, ecrecover}
 //</hide>
 
 fn hash_value(value: u256) -> u256 {
@@ -186,7 +186,7 @@ Event emission:
 
 ```fe
 //<hide>
-use _boilerplate::{Address, Log}
+use _boilerplate::Log
 //</hide>
 #[event]
 struct TransferEvent {

@@ -172,7 +172,7 @@ function transfer(...) {
 **Fe**:
 ```fe
 //<hide>
-use _boilerplate::{Address, Log}
+use _boilerplate::Log
 //</hide>
 #[event]
 struct Transfer {

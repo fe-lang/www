@@ -206,8 +206,6 @@ Represents an optional value:
 
 ```fe
 //<hide>
-use _boilerplate::Option
-
 fn example() -> u256 {
 //</hide>
 let maybe_value: Option<u256> = Option::Some(42)
