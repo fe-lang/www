@@ -3,35 +3,72 @@ title: Installation
 description: Setting up the Fe compiler
 ---
 
-:::caution[No Release Available]
-Fe is currently under active development and there is no installable release available. The last published release is over two years old and does not reflect the current state of the language documented here.
+:::caution[Pre-Release Software]
+Fe is in active development. The current releases are alpha versions and not yet suitable for production use.
 :::
 
-## Current Status
+## Quick Install (recommended)
 
-The Fe compiler has undergone intensive rework over the past two years, introducing significant improvements including:
+The fastest way to install Fe is via **feup**, the Fe toolchain installer. It automatically detects your platform and downloads the latest release.
 
-- A new effect system for explicit capability tracking
-- Message-based contract interfaces
-- Enhanced type system with traits and generics
-- Improved tooling (formatter, language server, package manager)
+```bash
+curl -fsSL https://raw.githubusercontent.com/argotorg/fe/master/feup/feup.sh | bash
+```
 
-This documentation covers these upcoming features.
+This will:
+- Install the `fe` compiler to `~/.fe/bin/`
+- Install the `feup` command for future updates
+- Add `~/.fe/bin` to your `PATH`
 
-## Following Development
+After installation, restart your shell or run:
 
-Until a new release is available, you can follow Fe's development:
+```bash
+source ~/.fe/env
+```
 
-- **GitHub Repository**: [github.com/argotorg/fe](https://github.com/argotorg/fe) - Watch for releases and follow development
-- **Build from Source**: Advanced users can build the compiler from the repository's main branch
+To install a specific version:
 
-## What's Next
+```bash
+curl -fsSL https://raw.githubusercontent.com/argotorg/fe/master/feup/feup.sh | bash -s -- --version v26.0.0-alpha.5
+```
 
-Once a release is available, this page will include:
+## Homebrew
 
-- Binary downloads for major platforms
-- Package manager installation (cargo, brew, etc.)
-- Verification steps
-- IDE setup instructions
+On macOS and Linux you can also install Fe via Homebrew:
 
-For now, continue reading to learn about Fe's design and features. When the release is ready, you'll be prepared to start building.
+```bash
+brew install argotorg/tap/fe
+```
+
+## Supported Platforms
+
+Fe provides pre-built binaries for:
+
+| Platform | Architecture |
+|----------|-------------|
+| Linux    | x86_64, ARM64 |
+| macOS    | x86_64, ARM64 (Apple Silicon) |
+
+## Verify Installation
+
+After installing, verify that Fe is working:
+
+```bash
+fe --version
+```
+
+## Build from Source
+
+To build the compiler from source, clone the repository and build with Cargo:
+
+```bash
+git clone https://github.com/argotorg/fe.git
+cd fe
+cargo install --path crates/driver
+```
+
+This requires a working [Rust toolchain](https://rustup.rs/).
+
+## Next Steps
+
+With Fe installed, head over to [Key Concepts](/getting-started/key-concepts/) to learn about the language.
