@@ -71,4 +71,4 @@ This requires a working [Rust toolchain](https://rustup.rs/).
 
 ## Next Steps
 
-With Fe installed, head over to [Key Concepts](/getting-started/key-concepts/) to learn about the language.
+With Fe installed, head over to [Your First Contract](/getting-started/first-contract/) to write, deploy, and interact with a Counter contract.
