@@ -218,7 +218,7 @@ fn find<T: Comparable>(items: Array<T>, target: T) -> bool {
 
 ```fe
 //<hide>
-use _boilerplate::{Option, Default}
+use _boilerplate::Default
 //</hide>
 trait Default {
     fn default() -> Self

@@ -38,7 +38,6 @@ pub contract GuestBook uses (ctx: Ctx, log: mut Log) {
 }
 
 // Stubs for type checking (not shown on landing page)
-use _boilerplate::Address
 
 pub struct Ctx {}
 impl Ctx {

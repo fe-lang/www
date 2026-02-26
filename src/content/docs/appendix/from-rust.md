@@ -137,8 +137,6 @@ Optional values use `Option<T>`:
 
 ```fe
 //<hide>
-use _boilerplate::Option
-
 fn example() -> u256 {
 //</hide>
 let maybe: Option<u256> = Option::Some(42)

@@ -229,8 +229,6 @@ Use `_` to match any value you don't need:
 
 ```fe
 //<hide>
-use _boilerplate::Result
-
 fn use_value(v: u256) { let _ = v }
 fn handle_error() {}
 
