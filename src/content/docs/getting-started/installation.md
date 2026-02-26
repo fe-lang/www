@@ -64,7 +64,7 @@ To build the compiler from source, clone the repository and build with Cargo:
 ```bash
 git clone https://github.com/argotorg/fe.git
 cd fe
-cargo install --path crates/driver
+cargo install --path crates/fe
 ```
 
 This requires a working [Rust toolchain](https://rustup.rs/).
