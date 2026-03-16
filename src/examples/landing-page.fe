@@ -1,57 +1,108 @@
-// Events are structs with #[indexed] fields where needed
+use std::abi::sol
+use std::evm::{Address, Ctx, Log, StorageMap, revert}
+use core::result::Result::{self, Ok, Err}
+use core::abi::{Abi, AbiEncoder, AbiSize, Encode}
+
+// Enums as error types
+enum VaultError {
+    InsufficientFunds,
+    ZeroAmount,
+}
+
+// Traits define shared behavior
+trait Validate {
+    fn validate(self) -> Result<VaultError, u256>
+}
+
+struct Withdrawal {
+    balance: u256,
+    amount: u256,
+}
+
+impl Validate for Withdrawal {
+    fn validate(self) -> Result<VaultError, u256> {
+        if self.amount == 0 {
+            return Err(VaultError::ZeroAmount)
+        }
+        if self.balance < self.amount {
+            return Err(VaultError::InsufficientFunds)
+        }
+        Ok(self.balance - self.amount)
+    }
+}
+
+// Events with indexed fields for efficient filtering
 #[event]
-struct Signed {
+struct Deposited {
     #[indexed]
-    signer: Address,
+    owner: Address,
+    amount: u256,
 }
 
-// Storage is defined as a struct
-struct GuestBookStore {
-    messages: Map<Address, String<100>>,
+struct VaultStore {
+    balances: StorageMap<Address, u256>,
 }
 
-// Message interface - defines the public ABI
-msg GuestBookMsg {
-    #[selector = 0x7f49a6b2]
-    Sign { book_msg: String<100> },
-
-    #[selector = 0x3a5c5d9e]
-    GetMsg { addr: Address } -> String<100>,
+// Message interface — the contract's public ABI
+msg VaultMsg {
+    #[selector = sol("deposit()")]
+    Deposit {},
+    #[selector = sol("withdraw(uint256)")]
+    Withdraw { amount: u256 },
+    #[selector = sol("balanceOf(address)")]
+    BalanceOf { addr: Address } -> u256,
 }
 
-// Contract with explicit effects from environment
-pub contract GuestBook uses (ctx: Ctx, log: mut Log) {
-    mut store: GuestBookStore,
+// Effects declared explicitly — no hidden state access
+pub contract Vault uses (ctx: Ctx, log: mut Log) {
+    mut store: VaultStore
 
-    // Handle incoming messages with per-handler effects
-    recv GuestBookMsg {
-        Sign { book_msg } uses (ctx, mut store, mut log) {
-            let signer = ctx.caller()
-            store.messages[signer] = book_msg
-            log.emit(Signed { signer })
+    recv VaultMsg {
+        Deposit {} uses (ctx, mut store, mut log) {
+            let who = ctx.caller()
+            store.balances.set(
+                who,
+                store.balances.get(who) + ctx.value()
+            )
+            log.emit(Deposited { owner: who, amount: ctx.value() })
         }
 
-        GetMsg { addr } -> String<100> uses (store) {
-            store.messages[addr]
+        // Pattern match on Result for control flow
+        Withdraw { amount } uses (ctx, mut store) {
+            let who = ctx.caller()
+            let req = Withdrawal {
+                balance: store.balances.get(who), 
+                amount
+            }
+            match req.validate() {
+                Ok(new_bal) => { store.balances.set(who, new_bal) }
+                Err(e) => { revert(e) }
+            }
+        }
+
+        BalanceOf { addr } -> u256 uses (store) {
+            store.balances.get(addr)
         }
     }
 }
 
 // Stubs for type checking (not shown on landing page)
 
-pub struct Ctx {}
-impl Ctx {
-    pub fn caller(self) -> Address { todo() }
+impl VaultError {
+    fn to_code(self) -> u256 {
+        match self {
+            VaultError::InsufficientFunds => 1
+            VaultError::ZeroAmount => 2
+        }
+    }
 }
-pub struct Log {}
-impl Log {
-    pub fn emit<T>(self, event: T) { let _ = event }
+
+impl AbiSize for VaultError {
+    const ENCODED_SIZE: u256 = 32
 }
-pub struct Map<K, V> {}
-impl<K, V> core::ops::Index<K> for Map<K, V> {
-    type Output = V
-    fn index(self, _ key: K) -> V {
-        let _ = key
-        todo()
+
+impl<A: Abi> Encode<A> for VaultError {
+    fn encode<E: AbiEncoder<A>>(own self, _ e: mut E) {
+        e.write_word(self.to_code())
     }
 }
