@@ -105,7 +105,7 @@ const lineNumbers = Array.from({ length: lineCount }, (_, i) => i + 1).join('\n'
         <p class="text-xl mx-auto max-w-3xl text-center mt-6 text-gray-600">A vault contract with traits, pattern matching, and explicit effects.</p>
       </div>
       <div class="mx-auto max-w-7xl flex flex-col gap-8 lg:flex-row lg:items-stretch lg:justify-around xl:pb-8">
-        <div class="flex flex-col gap-3 px-4 lg:max-w-md sm:grid sm:grid-cols-2 sm:gap-3 lg:flex lg:flex-col lg:justify-between">
+        <div class="flex flex-col gap-3 px-4 lg:max-w-md sm:grid sm:grid-cols-2 sm:gap-3 lg:flex lg:flex-col lg:justify-between order-2 lg:order-1">
           <div class="p-4 bg-gray-50 rounded-lg border border-gray-100">
             <h3 class="text-xl font-semibold mb-1 text-gray-900">
               <svg xmlns="http://www.w3.org/2000/svg" class="h-6 w-6 inline-block align-text-top mr-1 text-indigo-500" viewBox="0 0 20 20" fill="currentColor">
@@ -188,7 +188,7 @@ const lineNumbers = Array.from({ length: lineCount }, (_, i) => i + 1).join('\n'
             <p class="text-gray-600">Ships with <code class="text-indigo-600">Option&lt;T&gt;</code>, <code class="text-indigo-600">Result&lt;E, T&gt;</code>, <code class="text-indigo-600">StorageMap&lt;K, V&gt;</code>, and traits like <code class="text-indigo-600">Default</code>, <code class="text-indigo-600">Encode</code>, <code class="text-indigo-600">Decode</code>.</p>
           </div>
         </div>
-        <div class="lg:max-w-2xl lg:flex-1 lg:-mr-18">
+        <div class="lg:max-w-2xl lg:flex-1 lg:-mr-18 order-1 lg:order-2">
           <div class="relative overflow-hidden md:rounded-xl md:rounded-b-none xl:rounded-b-xl shadow-2xl flex bg-gray-900 pb-6 md:pb-0">
             <div class="relative w-full flex flex-col">
               <div class="flex-none h-11 flex items-center px-4 bg-gray-800">
