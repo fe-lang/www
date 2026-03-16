@@ -361,7 +361,12 @@ const lineNumbers = Array.from({ length: lineCount }, (_, i) => i + 1).join('\n'
             hljs.C_NUMBER_MODE,
             {
               className: 'function',
-              beginKeywords: 'fn', end: '\\{',
+              beginKeywords: 'fn', end: '\\(',
+              contains: [hljs.TITLE_MODE]
+            },
+            {
+              className: 'class',
+              beginKeywords: 'struct enum contract msg trait', end: '[\\{<]',
               contains: [hljs.TITLE_MODE]
             }
           ]
