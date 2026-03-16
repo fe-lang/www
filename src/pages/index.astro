@@ -212,7 +212,7 @@ const lineNumbers = Array.from({ length: lineCount }, (_, i) => i + 1).join('\n'
       </div>
     </section>
     <section class="max-w-screen-lg xl:max-w-screen-xl mx-auto lg:mt-8 py-8">
-      <div class="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-5 gap-4 px-4">
+      <div class="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 gap-4 px-4">
         <div class="bg-white p-6 rounded-xl shadow-sm border border-gray-100 hover:shadow-md transition-shadow">
           <svg xmlns="http://www.w3.org/2000/svg" fill="none" viewBox="0 0 24 24" stroke-width="2" stroke="currentColor" class="h-8 w-8 text-indigo-500 mb-3">
             <path stroke-linecap="round" stroke-linejoin="round" d="M9 12.75L11.25 15 15 9.75M21 12a9 9 0 11-18 0 9 9 0 0118 0z" />
@@ -247,6 +247,13 @@ const lineNumbers = Array.from({ length: lineCount }, (_, i) => i + 1).join('\n'
           </svg>
           <h3 class="text-lg font-semibold text-gray-900 mb-2">Docs Generator</h3>
           <p class="text-sm text-gray-600">Generate browsable HTML docs from your code with <code class="text-indigo-600 bg-indigo-50 px-1 rounded" style="display:inline-block">fe doc</code>.</p>
+        </div>
+        <div class="bg-white p-6 rounded-xl shadow-sm border border-gray-100 hover:shadow-md transition-shadow">
+          <svg xmlns="http://www.w3.org/2000/svg" fill="none" viewBox="0 0 24 24" stroke-width="2" stroke="currentColor" class="h-8 w-8 text-indigo-500 mb-3">
+            <path stroke-linecap="round" stroke-linejoin="round" d="M5.25 14.25h13.5m-13.5 0a3 3 0 01-3-3m3 3a3 3 0 100 6h13.5a3 3 0 100-6m-16.5-3a3 3 0 013-3h13.5a3 3 0 013 3m-19.5 0a4.5 4.5 0 01.9-2.7L5.737 5.1a3.375 3.375 0 012.7-1.35h7.126c1.062 0 2.062.5 2.7 1.35l2.587 3.45a4.5 4.5 0 01.9 2.7" />
+          </svg>
+          <h3 class="text-lg font-semibold text-gray-900 mb-2">Dual Backend</h3>
+          <p class="text-sm text-gray-600">Compiles through Sonatina, Fe's custom SSA-based backend, or via Yul for Solidity toolchain compatibility.</p>
         </div>
       </div>
       <div class="text-center px-4 py-12">
