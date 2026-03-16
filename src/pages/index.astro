@@ -99,6 +99,118 @@ const lineNumbers = Array.from({ length: lineCount }, (_, i) => i + 1).join('\n'
         </div>
       </div>
     </section>
+    <section class="max-w-screen-lg xl:max-w-screen-xl mx-auto lg:mt-8 bg-white sm:rounded-xl overflow-hidden border border-gray-100 shadow-sm">
+      <div class="p-4 pt-12 pb-10 lg:pt-16">
+        <h2 class="text-3xl font-semibold text-center tracking-tight mt-1 lg:text-4xl text-gray-900">True to the machine.</h2>
+        <p class="text-xl mx-auto max-w-3xl text-center mt-6 text-gray-600">Fe embraces the EVM's message-passing reality with explicit effects and modern language features.</p>
+      </div>
+      <div class="mx-auto max-w-7xl flex flex-col gap-8 lg:flex-row lg:items-stretch lg:justify-around xl:pb-8">
+        <div class="flex flex-col gap-3 px-4 lg:max-w-md sm:grid sm:grid-cols-2 sm:gap-3 lg:flex lg:flex-col lg:justify-between">
+          <div class="p-4 bg-gray-50 rounded-lg border border-gray-100">
+            <h3 class="text-xl font-semibold mb-1 text-gray-900">
+              <svg xmlns="http://www.w3.org/2000/svg" class="h-6 w-6 inline-block align-text-top mr-1 text-indigo-500" viewBox="0 0 20 20" fill="currentColor">
+                <path fill-rule="evenodd" d="M10 18a8 8 0 100-16 8 8 0 000 16zm3.707-9.293a1 1 0 00-1.414-1.414L9 10.586 7.707 9.293a1 1 0 00-1.414 1.414l2 2a1 1 0 001.414 0l4-4z" clip-rule="evenodd" />
+              </svg>
+              Explicit Effects
+            </h3>
+            <p class="text-gray-600">The <code class="text-indigo-600">uses</code> clause declares all capabilities a function requires: storage access, event emission, external calls, contract creation. Side effects become explicit.</p>
+          </div>
+          <div class="p-4 bg-gray-50 rounded-lg border border-gray-100">
+            <h3 class="text-xl font-semibold mb-1 text-gray-900">
+              <svg xmlns="http://www.w3.org/2000/svg" class="h-6 w-6 inline-block align-text-top mr-1 text-indigo-500" viewBox="0 0 20 20" fill="currentColor">
+                <path fill-rule="evenodd" d="M10 18a8 8 0 100-16 8 8 0 000 16zm3.707-9.293a1 1 0 00-1.414-1.414L9 10.586 7.707 9.293a1 1 0 00-1.414 1.414l2 2a1 1 0 001.414 0l4-4z" clip-rule="evenodd" />
+              </svg>
+              Explicit Mutability
+            </h3>
+            <p class="text-gray-600">All bindings, storage fields, and effect parameters are immutable unless marked <code class="text-indigo-600">mut</code>. The compiler rejects writes to immutable state.</p>
+          </div>
+          <div class="p-4 bg-gray-50 rounded-lg border border-gray-100">
+            <h3 class="text-xl font-semibold mb-1 text-gray-900">
+              <svg xmlns="http://www.w3.org/2000/svg" class="h-6 w-6 inline-block align-text-top mr-1 text-indigo-500" viewBox="0 0 20 20" fill="currentColor">
+                <path fill-rule="evenodd" d="M10 18a8 8 0 100-16 8 8 0 000 16zm3.707-9.293a1 1 0 00-1.414-1.414L9 10.586 7.707 9.293a1 1 0 00-1.414 1.414l2 2a1 1 0 001.414 0l4-4z" clip-rule="evenodd" />
+              </svg>
+              Message Passing
+            </h3>
+            <p class="text-gray-600">Contracts interact via <code class="text-indigo-600">msg</code> types and <code class="text-indigo-600">recv</code> handlers, mirroring the EVM's transaction-based execution model.</p>
+          </div>
+          <div class="p-4 bg-gray-50 rounded-lg border border-gray-100">
+            <h3 class="text-xl font-semibold mb-1 text-gray-900">
+              <svg xmlns="http://www.w3.org/2000/svg" class="h-6 w-6 inline-block align-text-top mr-1 text-indigo-500" viewBox="0 0 20 20" fill="currentColor">
+                <path fill-rule="evenodd" d="M10 18a8 8 0 100-16 8 8 0 000 16zm3.707-9.293a1 1 0 00-1.414-1.414L9 10.586 7.707 9.293a1 1 0 00-1.414 1.414l2 2a1 1 0 001.414 0l4-4z" clip-rule="evenodd" />
+              </svg>
+              Pattern Matching
+            </h3>
+            <p class="text-gray-600"><code class="text-indigo-600">match</code> expressions destructure enums, tuples, and nested data. Extract variant payloads and branch on values. The compiler checks that all cases are covered.</p>
+          </div>
+          <div class="p-4 bg-gray-50 rounded-lg border border-gray-100">
+            <h3 class="text-xl font-semibold mb-1 text-gray-900">
+              <svg xmlns="http://www.w3.org/2000/svg" class="h-6 w-6 inline-block align-text-top mr-1 text-indigo-500" viewBox="0 0 20 20" fill="currentColor">
+                <path fill-rule="evenodd" d="M10 18a8 8 0 100-16 8 8 0 000 16zm3.707-9.293a1 1 0 00-1.414-1.414L9 10.586 7.707 9.293a1 1 0 00-1.414 1.414l2 2a1 1 0 001.414 0l4-4z" clip-rule="evenodd" />
+              </svg>
+              Traits
+            </h3>
+            <p class="text-gray-600">Define shared interfaces with <code class="text-indigo-600">trait</code> and implement them for any type. Used throughout the standard library for <code class="text-indigo-600">Encode</code>, <code class="text-indigo-600">Decode</code>, <code class="text-indigo-600">Default</code>, and more.</p>
+          </div>
+          <div class="p-4 bg-gray-50 rounded-lg border border-gray-100">
+            <h3 class="text-xl font-semibold mb-1 text-gray-900">
+              <svg xmlns="http://www.w3.org/2000/svg" class="h-6 w-6 inline-block align-text-top mr-1 text-indigo-500" viewBox="0 0 20 20" fill="currentColor">
+                <path fill-rule="evenodd" d="M10 18a8 8 0 100-16 8 8 0 000 16zm3.707-9.293a1 1 0 00-1.414-1.414L9 10.586 7.707 9.293a1 1 0 00-1.414 1.414l2 2a1 1 0 001.414 0l4-4z" clip-rule="evenodd" />
+              </svg>
+              Generics
+            </h3>
+            <p class="text-gray-600">Type parameters on <code class="text-indigo-600">struct</code>, <code class="text-indigo-600">enum</code>, <code class="text-indigo-600">trait</code>, and <code class="text-indigo-600">fn</code> with trait bounds. Monomorphized at compile time with zero runtime overhead.</p>
+          </div>
+          <div class="p-4 bg-gray-50 rounded-lg border border-gray-100">
+            <h3 class="text-xl font-semibold mb-1 text-gray-900">
+              <svg xmlns="http://www.w3.org/2000/svg" class="h-6 w-6 inline-block align-text-top mr-1 text-indigo-500" viewBox="0 0 20 20" fill="currentColor">
+                <path fill-rule="evenodd" d="M10 18a8 8 0 100-16 8 8 0 000 16zm3.707-9.293a1 1 0 00-1.414-1.414L9 10.586 7.707 9.293a1 1 0 00-1.414 1.414l2 2a1 1 0 001.414 0l4-4z" clip-rule="evenodd" />
+              </svg>
+              Higher-Kinded Types
+            </h3>
+            <p class="text-gray-600">Supports higher-kinded types via <code class="text-indigo-600">* -&gt; *</code> bounds on traits. Enables abstractions like <code class="text-indigo-600">Functor</code>, <code class="text-indigo-600">Applicative</code>, and <code class="text-indigo-600">Monad</code>, generic over <code class="text-indigo-600">Option&lt;T&gt;</code>, <code class="text-indigo-600">Result&lt;E, T&gt;</code>, or any type constructor.</p>
+          </div>
+          <div class="p-4 bg-gray-50 rounded-lg border border-gray-100">
+            <h3 class="text-xl font-semibold mb-1 text-gray-900">
+              <svg xmlns="http://www.w3.org/2000/svg" class="h-6 w-6 inline-block align-text-top mr-1 text-indigo-500" viewBox="0 0 20 20" fill="currentColor">
+                <path fill-rule="evenodd" d="M10 18a8 8 0 100-16 8 8 0 000 16zm3.707-9.293a1 1 0 00-1.414-1.414L9 10.586 7.707 9.293a1 1 0 00-1.414 1.414l2 2a1 1 0 001.414 0l4-4z" clip-rule="evenodd" />
+              </svg>
+              Const Functions
+            </h3>
+            <p class="text-gray-600">Functions marked <code class="text-indigo-600">const fn</code> are evaluated at compile time. The <code class="text-indigo-600">sol("deposit()")</code> selector in the code computes its 4-byte hash during compilation, not at runtime.</p>
+          </div>
+          <div class="p-4 bg-gray-50 rounded-lg border border-gray-100">
+            <h3 class="text-xl font-semibold mb-1 text-gray-900">
+              <svg xmlns="http://www.w3.org/2000/svg" class="h-6 w-6 inline-block align-text-top mr-1 text-indigo-500" viewBox="0 0 20 20" fill="currentColor">
+                <path fill-rule="evenodd" d="M10 18a8 8 0 100-16 8 8 0 000 16zm3.707-9.293a1 1 0 00-1.414-1.414L9 10.586 7.707 9.293a1 1 0 00-1.414 1.414l2 2a1 1 0 001.414 0l4-4z" clip-rule="evenodd" />
+              </svg>
+              Standard Library
+            </h3>
+            <p class="text-gray-600">Ships with <code class="text-indigo-600">Option&lt;T&gt;</code>, <code class="text-indigo-600">Result&lt;E, T&gt;</code>, <code class="text-indigo-600">StorageMap&lt;K, V&gt;</code>, and traits like <code class="text-indigo-600">Default</code>, <code class="text-indigo-600">Encode</code>, <code class="text-indigo-600">Decode</code>.</p>
+          </div>
+        </div>
+        <div class="lg:max-w-2xl lg:flex-1 lg:-mr-18">
+          <div class="relative overflow-hidden md:rounded-xl md:rounded-b-none xl:rounded-b-xl shadow-2xl flex bg-gray-900 pb-6 md:pb-0">
+            <div class="relative w-full flex flex-col">
+              <div class="flex-none h-11 flex items-center px-4 bg-gray-800">
+                <div class="flex space-x-1.5">
+                  <div class="w-3 h-3 rounded-full bg-red-500"></div>
+                  <div class="w-3 h-3 rounded-full bg-yellow-400"></div>
+                  <div class="w-3 h-3 rounded-full bg-green-500"></div>
+                </div>
+              </div>
+              <div class="relative min-h-0 flex-auto flex flex-col">
+                <div class="hidden md:block absolute inset-y-0 left-0 bg-gray-800" style="width: 50px;"></div>
+                <div class="w-full flex-auto flex min-h-0 overflow-auto">
+                  <div class="w-full relative flex-auto">
+                    <pre class="flex min-h-full text-sm md:text-sm"><div aria-hidden="true" class="hidden md:block text-gray-500 flex-none py-4 pr-4 text-right select-none" style="width: 50px;" set:html={lineNumbers}></div><code class="language-fe flex-auto relative block text-gray-100 pt-4 pb-4 px-4 overflow-auto" set:html={escapedCode}></code></pre>
+                  </div>
+                </div>
+              </div>
+            </div>
+          </div>
+        </div>
+      </div>
+    </section>
     <section class="max-w-screen-lg xl:max-w-screen-xl mx-auto lg:mt-8 py-8">
       <div class="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 gap-6 px-4">
         <div class="bg-white p-8 py-10 rounded-xl shadow-sm border border-gray-100 hover:shadow-md transition-shadow">
@@ -132,119 +244,6 @@ const lineNumbers = Array.from({ length: lineCount }, (_, i) => i + 1).join('\n'
       <div class="text-center px-4 py-12">
         <p class="text-2xl text-gray-800 leading-7">Explore some advanced contracts written in Fe</p>
         <a class="w-full mt-6 inline-block bg-indigo-600 rounded-lg px-6 py-3 text-lg text-white sm:w-auto hover:bg-indigo-700 transition duration-200 ease-in-out shadow-lg" href={`${base}examples/erc20/`}>See examples &rarr;</a>
-      </div>
-    </section>
-
-    <section class="max-w-screen-lg xl:max-w-screen-xl mx-auto bg-gradient-to-br from-gray-800 to-gray-900 sm:rounded-xl overflow-hidden shadow-xl">
-      <div class="p-4 pt-12 pb-10 lg:pt-16">
-        <h2 class="text-3xl font-semibold text-center tracking-tight mt-1 lg:text-4xl text-white">True to the machine.</h2>
-        <p class="text-xl mx-auto max-w-3xl text-center mt-6 text-gray-300">Fe embraces the EVM's message-passing reality with explicit effects and modern language features.</p>
-      </div>
-      <div class="mx-auto max-w-7xl flex flex-col gap-8 lg:flex-row lg:items-stretch lg:justify-around xl:pb-8">
-        <div class="flex flex-col gap-3 px-4 lg:max-w-md sm:grid sm:grid-cols-2 sm:gap-3 lg:flex lg:flex-col lg:justify-between">
-          <div class="p-4 bg-gray-700 rounded-lg">
-            <h3 class="text-xl font-semibold mb-1 text-white">
-              <svg xmlns="http://www.w3.org/2000/svg" class="h-6 w-6 inline-block align-text-top mr-1 text-indigo-400" viewBox="0 0 20 20" fill="currentColor">
-                <path fill-rule="evenodd" d="M10 18a8 8 0 100-16 8 8 0 000 16zm3.707-9.293a1 1 0 00-1.414-1.414L9 10.586 7.707 9.293a1 1 0 00-1.414 1.414l2 2a1 1 0 001.414 0l4-4z" clip-rule="evenodd" />
-              </svg>
-              Explicit Effects
-            </h3>
-            <p class="text-gray-300">The <code class="text-indigo-300">uses</code> clause declares all capabilities a function requires: storage access, event emission, external calls, contract creation. Side effects become explicit.</p>
-          </div>
-          <div class="p-4 bg-gray-700 rounded-lg">
-            <h3 class="text-xl font-semibold mb-1 text-white">
-              <svg xmlns="http://www.w3.org/2000/svg" class="h-6 w-6 inline-block align-text-top mr-1 text-indigo-400" viewBox="0 0 20 20" fill="currentColor">
-                <path fill-rule="evenodd" d="M10 18a8 8 0 100-16 8 8 0 000 16zm3.707-9.293a1 1 0 00-1.414-1.414L9 10.586 7.707 9.293a1 1 0 00-1.414 1.414l2 2a1 1 0 001.414 0l4-4z" clip-rule="evenodd" />
-              </svg>
-              Explicit Mutability
-            </h3>
-            <p class="text-gray-300">All bindings, storage fields, and effect parameters are immutable unless marked <code class="text-indigo-300">mut</code>. The compiler rejects writes to immutable state.</p>
-          </div>
-          <div class="p-4 bg-gray-700 rounded-lg">
-            <h3 class="text-xl font-semibold mb-1 text-white">
-              <svg xmlns="http://www.w3.org/2000/svg" class="h-6 w-6 inline-block align-text-top mr-1 text-indigo-400" viewBox="0 0 20 20" fill="currentColor">
-                <path fill-rule="evenodd" d="M10 18a8 8 0 100-16 8 8 0 000 16zm3.707-9.293a1 1 0 00-1.414-1.414L9 10.586 7.707 9.293a1 1 0 00-1.414 1.414l2 2a1 1 0 001.414 0l4-4z" clip-rule="evenodd" />
-              </svg>
-              Message Passing
-            </h3>
-            <p class="text-gray-300">Contracts interact via <code class="text-indigo-300">msg</code> types and <code class="text-indigo-300">recv</code> handlers, mirroring the EVM's transaction-based execution model.</p>
-          </div>
-          <div class="p-4 bg-gray-700 rounded-lg">
-            <h3 class="text-xl font-semibold mb-1 text-white">
-              <svg xmlns="http://www.w3.org/2000/svg" class="h-6 w-6 inline-block align-text-top mr-1 text-indigo-400" viewBox="0 0 20 20" fill="currentColor">
-                <path fill-rule="evenodd" d="M10 18a8 8 0 100-16 8 8 0 000 16zm3.707-9.293a1 1 0 00-1.414-1.414L9 10.586 7.707 9.293a1 1 0 00-1.414 1.414l2 2a1 1 0 001.414 0l4-4z" clip-rule="evenodd" />
-              </svg>
-              Pattern Matching
-            </h3>
-            <p class="text-gray-300"><code class="text-indigo-300">match</code> expressions destructure enums, tuples, and nested data. Extract variant payloads and branch on values. The compiler checks that all cases are covered.</p>
-          </div>
-          <div class="p-4 bg-gray-700 rounded-lg">
-            <h3 class="text-xl font-semibold mb-1 text-white">
-              <svg xmlns="http://www.w3.org/2000/svg" class="h-6 w-6 inline-block align-text-top mr-1 text-indigo-400" viewBox="0 0 20 20" fill="currentColor">
-                <path fill-rule="evenodd" d="M10 18a8 8 0 100-16 8 8 0 000 16zm3.707-9.293a1 1 0 00-1.414-1.414L9 10.586 7.707 9.293a1 1 0 00-1.414 1.414l2 2a1 1 0 001.414 0l4-4z" clip-rule="evenodd" />
-              </svg>
-              Traits
-            </h3>
-            <p class="text-gray-300">Define shared interfaces with <code class="text-indigo-300">trait</code> and implement them for any type. Used throughout the standard library for <code class="text-indigo-300">Encode</code>, <code class="text-indigo-300">Decode</code>, <code class="text-indigo-300">Default</code>, and more.</p>
-          </div>
-          <div class="p-4 bg-gray-700 rounded-lg">
-            <h3 class="text-xl font-semibold mb-1 text-white">
-              <svg xmlns="http://www.w3.org/2000/svg" class="h-6 w-6 inline-block align-text-top mr-1 text-indigo-400" viewBox="0 0 20 20" fill="currentColor">
-                <path fill-rule="evenodd" d="M10 18a8 8 0 100-16 8 8 0 000 16zm3.707-9.293a1 1 0 00-1.414-1.414L9 10.586 7.707 9.293a1 1 0 00-1.414 1.414l2 2a1 1 0 001.414 0l4-4z" clip-rule="evenodd" />
-              </svg>
-              Generics
-            </h3>
-            <p class="text-gray-300">Type parameters on <code class="text-indigo-300">struct</code>, <code class="text-indigo-300">enum</code>, <code class="text-indigo-300">trait</code>, and <code class="text-indigo-300">fn</code> with trait bounds. Monomorphized at compile time with zero runtime overhead.</p>
-          </div>
-          <div class="p-4 bg-gray-700 rounded-lg">
-            <h3 class="text-xl font-semibold mb-1 text-white">
-              <svg xmlns="http://www.w3.org/2000/svg" class="h-6 w-6 inline-block align-text-top mr-1 text-indigo-400" viewBox="0 0 20 20" fill="currentColor">
-                <path fill-rule="evenodd" d="M10 18a8 8 0 100-16 8 8 0 000 16zm3.707-9.293a1 1 0 00-1.414-1.414L9 10.586 7.707 9.293a1 1 0 00-1.414 1.414l2 2a1 1 0 001.414 0l4-4z" clip-rule="evenodd" />
-              </svg>
-              Higher-Kinded Types
-            </h3>
-            <p class="text-gray-300">Supports higher-kinded types via <code class="text-indigo-300">* -&gt; *</code> bounds on traits. Enables abstractions like <code class="text-indigo-300">Functor</code>, <code class="text-indigo-300">Applicative</code>, and <code class="text-indigo-300">Monad</code>, generic over <code class="text-indigo-300">Option&lt;T&gt;</code>, <code class="text-indigo-300">Result&lt;E, T&gt;</code>, or any type constructor.</p>
-          </div>
-          <div class="p-4 bg-gray-700 rounded-lg">
-            <h3 class="text-xl font-semibold mb-1 text-white">
-              <svg xmlns="http://www.w3.org/2000/svg" class="h-6 w-6 inline-block align-text-top mr-1 text-indigo-400" viewBox="0 0 20 20" fill="currentColor">
-                <path fill-rule="evenodd" d="M10 18a8 8 0 100-16 8 8 0 000 16zm3.707-9.293a1 1 0 00-1.414-1.414L9 10.586 7.707 9.293a1 1 0 00-1.414 1.414l2 2a1 1 0 001.414 0l4-4z" clip-rule="evenodd" />
-              </svg>
-              Const Functions
-            </h3>
-            <p class="text-gray-300">Functions marked <code class="text-indigo-300">const fn</code> are evaluated at compile time. The <code class="text-indigo-300">sol("deposit()")</code> selector in the code computes its 4-byte hash during compilation, not at runtime.</p>
-          </div>
-          <div class="p-4 bg-gray-700 rounded-lg">
-            <h3 class="text-xl font-semibold mb-1 text-white">
-              <svg xmlns="http://www.w3.org/2000/svg" class="h-6 w-6 inline-block align-text-top mr-1 text-indigo-400" viewBox="0 0 20 20" fill="currentColor">
-                <path fill-rule="evenodd" d="M10 18a8 8 0 100-16 8 8 0 000 16zm3.707-9.293a1 1 0 00-1.414-1.414L9 10.586 7.707 9.293a1 1 0 00-1.414 1.414l2 2a1 1 0 001.414 0l4-4z" clip-rule="evenodd" />
-              </svg>
-              Standard Library
-            </h3>
-            <p class="text-gray-300">Ships with <code class="text-indigo-300">Option&lt;T&gt;</code>, <code class="text-indigo-300">Result&lt;E, T&gt;</code>, <code class="text-indigo-300">StorageMap&lt;K, V&gt;</code>, and traits like <code class="text-indigo-300">Default</code>, <code class="text-indigo-300">Encode</code>, <code class="text-indigo-300">Decode</code>.</p>
-          </div>
-        </div>
-        <div class="lg:max-w-2xl lg:flex-1 lg:-mr-18">
-          <div class="relative overflow-hidden md:rounded-xl md:rounded-b-none xl:rounded-b-xl shadow-2xl flex bg-gray-900 pb-6 md:pb-0">
-            <div class="relative w-full flex flex-col">
-              <div class="flex-none h-11 flex items-center px-4 bg-gray-800">
-                <div class="flex space-x-1.5">
-                  <div class="w-3 h-3 rounded-full bg-red-500"></div>
-                  <div class="w-3 h-3 rounded-full bg-yellow-400"></div>
-                  <div class="w-3 h-3 rounded-full bg-green-500"></div>
-                </div>
-              </div>
-              <div class="relative min-h-0 flex-auto flex flex-col">
-                <div class="hidden md:block absolute inset-y-0 left-0 bg-gray-800" style="width: 50px;"></div>
-                <div class="w-full flex-auto flex min-h-0 overflow-auto">
-                  <div class="w-full relative flex-auto">
-                    <pre class="flex min-h-full text-sm md:text-sm"><div aria-hidden="true" class="hidden md:block text-gray-500 flex-none py-4 pr-4 text-right select-none" style="width: 50px;" set:html={lineNumbers}></div><code class="language-fe flex-auto relative block text-gray-100 pt-4 pb-4 px-4 overflow-auto" set:html={escapedCode}></code></pre>
-                  </div>
-                </div>
-              </div>
-            </div>
-          </div>
-        </div>
       </div>
     </section>
     <section class="max-w-screen-lg xl:max-w-screen-xl mx-auto lg:mt-8 py-8">
