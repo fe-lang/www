@@ -324,7 +324,7 @@ require_not_paused(store.paused)
 
 Fe requires explicit ABI selectors:
 
-```fe ignore
+```fe
 msg TokenMsg {
     #[selector = 0xa9059cbb]  // Must specify
     Transfer { to: Address, amount: u256 } -> bool,

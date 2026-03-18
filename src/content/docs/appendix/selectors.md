@@ -88,7 +88,7 @@ When calculating selectors, use these canonical type names:
 
 In Fe, you specify selectors explicitly in message definitions:
 
-```fe ignore
+```fe
 msg Erc20 {
     #[selector = 0xa9059cbb]
     Transfer { to: Address, amount: u256 } -> bool,

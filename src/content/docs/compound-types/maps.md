@@ -89,7 +89,7 @@ Note that the `self` parameter must be `mut` to modify storage.
 
 Use tuples as keys for multi-dimensional mappings:
 
-```fe ignore
+```fe
 pub struct Token {
     // Maps (owner_id, spender_id) to allowance amount
     allowances: StorageMap<(u256, u256), u256>,
@@ -161,7 +161,7 @@ impl Token {
 
 ### Allowance System
 
-```fe ignore
+```fe
 pub struct Token {
     balances: StorageMap<u256, u256>,
     allowances: StorageMap<(u256, u256), u256>,
@@ -194,7 +194,7 @@ impl Token {
 
 ### Role-Based Access
 
-```fe ignore
+```fe
 pub struct AccessControl {
     // Maps (account_id, role_id) to whether role is granted
     roles: StorageMap<(u256, u256), bool>,

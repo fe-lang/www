@@ -226,7 +226,7 @@ fn or_default<T: Default>(value: own Option<T>) -> T {
 
 ### Transform Pattern
 
-```fe ignore
+```fe
 trait Transform {
     fn transform(self) -> Self
 }

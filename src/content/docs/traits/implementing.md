@@ -87,7 +87,7 @@ impl Shape for Rectangle {
 
 Missing any method causes a compile error:
 
-```fe ignore
+```fe
 impl Shape for Rectangle {
     fn area(self) -> u256 {
         self.width * self.height

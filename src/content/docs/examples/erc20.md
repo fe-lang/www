@@ -349,7 +349,7 @@ pub struct AccessControl {
 
 Messages define the external interface with ABI-compatible selectors:
 
-```fe ignore
+```fe
 msg Erc20 {
     #[selector = 0x06fdde03]
     Name -> String<32>,
@@ -439,7 +439,7 @@ The `mint` and `burn` functions follow the same pattern, using `Address::zero()`
 
 Events are structs with `#[indexed]` fields for filtering:
 
-```fe ignore
+```fe
 #[event]
 struct TransferEvent {
     #[indexed]

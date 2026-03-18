@@ -283,7 +283,7 @@ assert(balance >= amount, "Insufficient balance")
 
 Fe doesn't support closures:
 
-```fe ignore
+```fe
 // Rust: let add = |a, b| a + b;
 // Fe: Use named functions
 fn add(a: u256, b: u256) -> u256 {
@@ -332,7 +332,7 @@ contract Token {
 
 External interfaces are defined separately:
 
-```fe ignore
+```fe
 msg TokenMsg {
     #[selector = 0xa9059cbb]
     Transfer { to: Address, amount: u256 } -> bool,
@@ -353,7 +353,7 @@ struct Storage {
 
 Blockchain events for logging:
 
-```fe ignore
+```fe
 #[event]
 struct Transfer {
     #[indexed]
