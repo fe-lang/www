@@ -32,7 +32,6 @@ This appendix lists all reserved keywords in Fe, organized by category.
 | `match` | Pattern matching expression |
 | `for` | Loop over an iterator |
 | `while` | Loop while condition is true |
-| `loop` | Infinite loop |
 | `break` | Exit a loop early |
 | `continue` | Skip to next loop iteration |
 | `return` | Return from a function |
@@ -60,14 +59,27 @@ This appendix lists all reserved keywords in Fe, organized by category.
 | `init` | Contract constructor block |
 | `recv` | Message receive block |
 
+## Ownership & Reference Keywords
+
+| Keyword | Description |
+|---------|-------------|
+| `own` | Takes ownership of a value |
+| `ref` | Reserved for future use (references) |
+
+## Module Keywords
+
+| Keyword | Description |
+|---------|-------------|
+| `use` | Import items from other modules |
+| `mod` | Declares a module |
+| `ingot` | Refers to the current ingot root |
+
 ## Other Keywords
 
 | Keyword | Description |
 |---------|-------------|
 | `as` | Type casting |
 | `in` | Used in `for` loops |
-| `revert` | Abort execution and revert state |
-| `assert` | Check a condition, revert if false |
 
 ## Contextual Keywords
 
@@ -100,7 +112,6 @@ if condition { } else { }
 match value { }
 for item in items { }
 while condition { }
-loop { break }
 return value
 ```
 
@@ -127,21 +138,20 @@ The following keywords are reserved and may not be used as identifiers:
 - `await`
 - `dyn`
 - `move`
-- `ref`
 - `static`
 - `super`
 - `unsafe`
-- `use`
-- `mod`
 - `crate`
 
 ## Summary
 
 Fe has approximately 40 keywords covering:
 - **13** declaration keywords
-- **9** control flow keywords
+- **8** control flow keywords
 - **4** type keywords
 - **2** effect keywords
 - **2** contract keywords
-- **4** other keywords
+- **2** ownership/reference keywords
+- **3** module keywords
+- **2** other keywords
 - **2** contextual keywords
