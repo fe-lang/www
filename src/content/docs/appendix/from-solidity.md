@@ -231,9 +231,14 @@ constructor(uint256 initialSupply) {
 ```
 
 **Fe**:
-```fe ignore
+```fe
+//<hide>
+struct TokenStore { total_supply: u256 }
+//</hide>
 contract Token {
-    init(initial_supply: u256) uses mut store {
+    mut store: TokenStore
+
+    init(initial_supply: u256) uses (mut store) {
         store.total_supply = initial_supply
     }
 }

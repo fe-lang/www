@@ -148,17 +148,19 @@ Many online tools can compute selectors:
 
 ### Future: Compile-Time Computation
 
-:::note[Planned Feature]
-Fe will provide a `sol_sig` const function for computing selectors at compile time:
+:::tip[Compile-Time Selector Computation]
+Fe provides the `sol()` helper from `std::abi` for computing selectors at compile time:
 
-```fe ignore
+```fe
+use std::abi::sol
+
 msg TokenMsg {
-    #[selector = sol_sig("balanceOf(address)")]
+    #[selector = sol("balanceOf(address)")]
     BalanceOf { account: Address } -> u256,
 }
 ```
 
-This will allow you to define selectors using the Solidity signature string directly, with no runtime cost. The computation happens at compile time.
+This computes the selector from the Solidity signature string at compile time, with no runtime cost.
 :::
 
 ## Event Selectors

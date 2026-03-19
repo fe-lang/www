@@ -112,15 +112,14 @@ Control flow for error handling:
 
 ### Usage
 
-```fe ignore
-fn transfer(from: Address, to: Address, amount: u256) {
-    assert(from != Address::zero(), "transfer from zero address")
-    assert(to != Address::zero(), "transfer to zero address")
-    assert(balance >= amount, "insufficient balance")
-
-    if some_condition {
-        revert
-    }
+```fe
+fn transfer(from: Address, to: Address, amount: u256, balance: u256) {
+    assert(from.inner != 0)
+    assert(to.inner != 0)
+    assert(balance >= amount)
+    //<hide>
+    let _ = (from, to, amount, balance)
+    //</hide>
 }
 
 fn not_implemented() {

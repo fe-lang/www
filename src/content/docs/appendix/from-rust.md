@@ -391,11 +391,17 @@ struct Transfer {
 
 Explicit capability tracking:
 
-```fe ignore
+```fe
+//<hide>
+struct TokenStore { total_supply: u256 }
+//</hide>
 fn transfer(from: Address, to: Address, amount: u256)
     uses (store: mut TokenStore, log: mut Log)
 {
     // Function declares what it accesses
+    //<hide>
+    let _ = (from, to, amount, store, log)
+    //</hide>
 }
 ```
 

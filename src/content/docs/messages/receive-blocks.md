@@ -155,32 +155,38 @@ contract C {
 
 Handlers can use effects to access contract state:
 
-```fe ignore
+```fe
+//<hide>
+use std::abi::sol
+
+msg TokenMsg {
+    #[selector = sol("transfer(address,uint256)")]
+    Transfer { to: u256, amount: u256 } -> bool,
+}
+//</hide>
 pub struct TokenStorage {
     pub balances: StorageMap<u256, u256>,
 }
 
-fn do_transfer(from: u256, to: u256, amount: u256) -> bool uses (store: mut TokenStorage) {
-    let from_bal = store.balances.get(from)
+fn do_transfer(from: Address, to: u256, amount: u256) -> bool uses (store: mut TokenStorage) {
+    //<hide>
+    let _ = from
+    //</hide>
+    let from_bal = store.balances.get(to)
     if from_bal < amount {
         return false
     }
 
-    let to_bal = store.balances.get(to)
-    store.balances.set(from, from_bal - amount)
-    store.balances.set(to, to_bal + amount)
+    store.balances.set(to, from_bal - amount)
     true
 }
 
-contract Token {
-    store: TokenStorage,
+contract Token uses (ctx: Ctx) {
+    mut store: TokenStorage
 
     recv TokenMsg {
-        Transfer { to, amount } -> bool {
-            // Provide storage effect and call helper
-            with (store: TokenStorage = store) {
-                do_transfer(caller(), to, amount)
-            }
+        Transfer { to, amount } -> bool uses (ctx, mut store) {
+            do_transfer(ctx.caller(), to, amount)
         }
     }
 }
