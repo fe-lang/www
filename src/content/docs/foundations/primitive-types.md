@@ -269,17 +269,32 @@ let _ = (amount, small)
 //</hide>
 ```
 
-## EVM Types (Planned)
+## Address
 
-Fe's primitive types cover the fundamentals, but EVM-specific types like `Address` and other Solidity-compatibility types are planned for the standard library (`std`). These types have not yet been implemented.
-
-Currently, EVM addresses are represented as `u256` values:
+The `Address` type represents a 20-byte EVM address. It is a built-in type, always available without imports:
 
 ```fe
-use _boilerplate::caller
-fn get_sender() -> u256 {
-    caller()  // returns the sender's address as u256
+//<hide>
+fn example() {
+//</hide>
+let zero = Address::zero()
+let addr = Address { inner: 0x742d35Cc6634C0532925a3b844Bc9e7595f5e123 }
+//<hide>
+let _ = (zero, addr)
 }
+//</hide>
 ```
 
-Future versions of Fe will provide dedicated types in `std` for better type safety and ergonomics when working with EVM-specific data.
+`Address` is used throughout contract code for account references, access control, and token operations. The `Ctx` effect provides the caller's address:
+
+```fe
+//<hide>
+use _boilerplate::Ctx
+fn example() uses (ctx: Ctx) {
+//</hide>
+let sender: Address = ctx.caller()
+//<hide>
+let _ = sender
+}
+//</hide>
+```
