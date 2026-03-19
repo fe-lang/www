@@ -3,46 +3,83 @@ title: Storage as Effects
 description: Contract storage modeled through explicit effects
 ---
 
-Contract storage in Fe is modeled through effects. This makes storage access explicit: you always know when a function reads or modifies state.
+Contract storage in Fe is modeled through effects. This makes storage access explicit: every function that reads or modifies state declares it in its signature.
 
-## Storage Structs as Effects
+## A Complete Example
 
-Define storage as a struct that serves as an effect:
-
-```fe
-//<hide>
-use _boilerplate::Map
-//</hide>
-
-pub struct TokenStorage {
-    pub balances: Map<u256, u256>,
-    pub total_supply: u256,
-}
-```
-
-Functions that need storage access declare it explicitly:
+Here is a full contract showing how storage structs become effects:
 
 ```fe
-//<hide>
-use _boilerplate::Map
-pub struct TokenStorage {
-    pub balances: Map<u256, u256>,
-    pub total_supply: u256,
-}
-//</hide>
+use std::abi::sol
 
-fn get_balance(account: u256) -> u256 uses (store: TokenStorage) {
-    store.balances.get(account)
+msg TokenMsg {
+    #[selector = sol("totalSupply()")]
+    GetSupply -> u256,
+
+    #[selector = sol("mint(address,uint256)")]
+    Mint { to: Address, amount: u256 },
 }
 
-fn get_total_supply() -> u256 uses (store: TokenStorage) {
+// 1. Define a storage struct — this is the effect type
+struct TokenStore {
+    total_supply: u256,
+    owner: Address,
+}
+
+// 2. Helper functions declare what storage they need
+fn get_supply() -> u256 uses (store: TokenStore) {
     store.total_supply
 }
+
+fn do_mint(to: Address, amount: u256) uses (ctx: Ctx, store: mut TokenStore) {
+    assert(ctx.caller() == store.owner)
+    store.total_supply += amount
+}
+
+// 3. The contract field provides the effect
+pub contract Token uses (ctx: Ctx) {
+    mut store: TokenStore
+
+    init(owner: Address) uses (mut store) {
+        store.total_supply = 0
+        store.owner = owner
+    }
+
+    recv TokenMsg {
+        // recv handlers bind the contract field as an effect
+        GetSupply -> u256 uses (store) {
+            get_supply()
+        }
+
+        Mint { to, amount } uses (mut store, ctx) {
+            do_mint(to, amount)
+        }
+    }
+}
+
+#[test]
+fn test_token() uses (evm: mut Evm) {
+    let owner = Address { inner: 1 }
+    let addr = evm.create2<Token>(value: 0, args: (owner,), salt: 0)
+
+    let supply: u256 = evm.call(
+        addr: addr, gas: 100000, value: 0,
+        message: TokenMsg::GetSupply {},
+    )
+    assert(supply == 0)
+}
 ```
 
-## Mutable vs Immutable Storage Access
+The flow is:
+1. **`struct TokenStore`** defines the storage layout
+2. **Helper functions** declare `uses (store: TokenStore)` or `uses (store: mut TokenStore)`
+3. **`mut store: TokenStore`** in the contract provides the effect
+4. **`recv` handlers** bind the field with `uses (store)` or `uses (mut store)`
+5. The compiler ensures effects match at every level
 
-Use `mut` when the function modifies storage:
+## Mutable vs Immutable Access
+
+The `mut` keyword controls whether a function can modify storage:
 
 ```fe
 //<hide>
@@ -53,16 +90,12 @@ pub struct TokenStorage {
 }
 //</hide>
 
-// Read-only access
+// Read-only — cannot modify storage
 fn get_balance(account: u256) -> u256 uses (store: TokenStorage) {
     store.balances.get(account)
 }
 
-// Mutable access
-fn set_balance(account: u256, amount: u256) uses (store: mut TokenStorage) {
-    store.balances.set(account, amount)
-}
-
+// Mutable — can read and write
 fn mint(to: u256, amount: u256) uses (store: mut TokenStorage) {
     let current = store.balances.get(to)
     store.balances.set(to, current + amount)
@@ -70,53 +103,11 @@ fn mint(to: u256, amount: u256) uses (store: mut TokenStorage) {
 }
 ```
 
-## Storage in Contracts
-
-Contracts declare storage fields and provide them as effects to recv blocks:
-
-```fe
-//<hide>
-use _boilerplate::Map
-//</hide>
-
-pub struct TokenStorage {
-    pub balances: Map<u256, u256>,
-    pub total_supply: u256,
-}
-
-contract Token {
-    store: TokenStorage,
-}
-```
-
-Inside recv blocks, use `with` to provide the storage effect:
-
-```fe
-//<hide>
-use _boilerplate::Map
-pub struct TokenStorage {
-    pub balances: Map<u256, u256>,
-    pub total_supply: u256,
-}
-//</hide>
-
-// Helper functions with explicit storage effects
-fn do_transfer(from: u256, to: u256, amount: u256) uses (store: mut TokenStorage) {
-    let from_balance = store.balances.get(from)
-    let to_balance = store.balances.get(to)
-
-    store.balances.set(from, from_balance - amount)
-    store.balances.set(to, to_balance + amount)
-}
-
-fn get_balance(account: u256) -> u256 uses (store: TokenStorage) {
-    store.balances.get(account)
-}
-```
+A function with `mut` access can call functions that only need read-only access, but not vice versa.
 
 ## Multiple Storage Effects
 
-Separate different concerns into distinct storage effects:
+Separate different concerns into distinct storage structs. Each function only declares the storage it actually needs:
 
 ```fe
 //<hide>
@@ -128,12 +119,12 @@ pub struct Balances {
 }
 
 pub struct Metadata {
-    pub name: u256,  // Simplified for example
+    pub name: u256,
     pub symbol: u256,
     pub decimals: u8,
 }
 
-// Only needs Balances
+// Only needs Balances — cannot touch Metadata
 fn transfer(from: u256, to: u256, amount: u256) uses (balances: mut Balances) {
     let from_balance = balances.data.get(from)
     let to_balance = balances.data.get(to)
@@ -142,77 +133,52 @@ fn transfer(from: u256, to: u256, amount: u256) uses (balances: mut Balances) {
     balances.data.set(to, to_balance + amount)
 }
 
-// Only needs Metadata (read-only)
+// Only needs Metadata — cannot touch Balances
 fn get_decimals() -> u8 uses (meta: Metadata) {
     meta.decimals
 }
 ```
 
-## Why Explicit Storage Effects?
+This enforces separation of concerns at the compiler level. A bug in `get_decimals` cannot corrupt balances because the function has no access to them.
 
-Making storage access explicit provides:
+## Combining Storage with Standard Library Effects
 
-### Clear Dependencies
-
-```fe
-//<hide>
-pub struct Balances { pub data: u256 }
-//</hide>
-
-// This signature tells you exactly what storage is accessed
-fn do_transfer(from: u256, to: u256, amount: u256) uses (balances: mut Balances) {
-    // ...
-    //<hide>
-    let _ = (from, to, amount, balances)
-    //</hide>
-}
-```
-
-### Enforced Separation
+Storage effects work alongside the standard library effects (`Ctx`, `Log`):
 
 ```fe
 //<hide>
-pub struct Balances { pub data: u256 }
-//</hide>
-
-// This function cannot accidentally modify Allowances
-fn transfer(from: u256, to: u256, amount: u256) uses (balances: mut Balances) {
-    // Compiler error if you try to access Allowances here
-    //<hide>
-    let _ = (from, to, amount, balances)
-    //</hide>
+#[event]
+struct Transfer {
+    #[indexed]
+    from: Address,
+    #[indexed]
+    to: Address,
+    value: u256,
 }
-```
 
-### Easy Testing
-
-```fe
-//<hide>
-pub struct Balances { pub data: u256 }
-fn transfer(from: u256, to: u256, amount: u256) uses (balances: mut Balances) {
-    let _ = (from, to, amount, balances)
+struct TokenStore {
+    total_supply: u256,
+    owner: Address,
 }
 //</hide>
 
-fn test_transfer() {
-    let mut balances = Balances { data: 0 }
+fn mint(to: Address, amount: u256) uses (ctx: Ctx, store: mut TokenStore, log: mut Log) {
+    assert(ctx.caller() == store.owner)
+    store.total_supply += amount
 
-    with (Balances = balances) {
-        transfer(1, 2, 100)
-        // Assert on balances state
-    }
+    log.emit(Transfer {
+        from: Address { inner: 0 },
+        to,
+        value: amount,
+    })
 }
 ```
+
+The signature makes all dependencies visible: execution context (`Ctx`), mutable storage (`mut TokenStore`), and event emission (`mut Log`).
 
 ## Storage Layout
 
-Storage effects map to EVM storage slots. The Fe compiler handles:
-
-- Slot assignment for primitive types
-- Storage map slot calculation (keccak256 hashing)
-- Efficient packing of small types
-
-You don't need to manage storage layout manually. Just define your storage structs and the compiler handles the rest.
+The Fe compiler automatically maps storage structs to EVM storage slots. You define your structs and the compiler handles slot assignment, map key hashing (`keccak256`), and packing of small types.
 
 ## Summary
 
@@ -220,6 +186,6 @@ You don't need to manage storage layout manually. Just define your storage struc
 |---------|-------------|
 | `uses (s: Storage)` | Read-only storage access |
 | `uses (s: mut Storage)` | Mutable storage access |
-| Storage struct | Group related storage fields |
-| Multiple effects | Separate storage by concern |
-| `with (Storage = ...)` | Provide storage effect in scope |
+| Multiple storage structs | Separate storage by concern |
+| `mut store: T` in contract | Contract field provides the effect |
+| `uses (store)` in recv | Handler binds the contract field |
