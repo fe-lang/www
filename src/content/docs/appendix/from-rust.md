@@ -366,9 +366,9 @@ msg TokenMsg {
 
 Persistent key-value storage:
 
-```fe ignore
+```fe
 struct Storage {
-    balances: Map<Address, u256>,
+    balances: StorageMap<Address, u256>,
 }
 ```
 

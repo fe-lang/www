@@ -308,13 +308,20 @@ uint256 allowed = allowances[owner][spender];
 ```
 
 **Fe**:
-```fe ignore
+```fe
 struct Storage {
-    allowances: Map<(Address, Address), u256>,
+    allowances: StorageMap<(Address, Address), u256>,
 }
 
-store.allowances[(owner, spender)] = amount
-let allowed = store.allowances[(owner, spender)]
+//<hide>
+fn __example_map(owner: Address, spender: Address, amount: u256) uses (store: mut Storage) {
+//</hide>
+store.allowances.set((owner, spender), amount)
+let allowed = store.allowances.get((owner, spender))
+//<hide>
+let _ = allowed
+}
+//</hide>
 ```
 
 ## What's Different in Fe

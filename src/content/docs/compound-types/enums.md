@@ -363,10 +363,15 @@ fn divide(a: u256, b: u256) -> Result<u256, String<20>> {
 
 Constrain generic types:
 
-```fe ignore
+```fe
+//<hide>
+trait Clone {
+    fn clone(self) -> Self
+}
+//</hide>
 enum Container<T: Clone> {
-    Single(T)
-    Pair(T, T)
+    Single(T),
+    Pair(T, T),
 }
 ```
 
@@ -427,14 +432,19 @@ fn get_balance(account_id: u256) -> Option<u256> {
 
 Represent success or failure:
 
-```fe ignore
-enum Result<T, E> {
-    Ok(T)
-    Err(E)
-}
+```fe
+// Result is available from the prelude:
+//   enum Result<T, E> {
+//       Ok(T),
+//       Err(E),
+//   }
 
-fn parse_amount(input: String) -> Result<u256, String> {
-    // Returns Ok(amount) or Err(message)
+fn parse_amount(input: u256) -> Result<u256, u256> {
+    if input > 0 {
+        Result::Ok(input)
+    } else {
+        Result::Err(0)
+    }
 }
 ```
 

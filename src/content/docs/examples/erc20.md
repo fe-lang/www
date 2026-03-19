@@ -320,15 +320,15 @@ Key points:
 
 The contract uses two storage structs:
 
-```fe ignore
+```fe
 struct TokenStore {
     total_supply: u256,
-    balances: Map<Address, u256>,
-    allowances: Map<(Address, Address), u256>,
+    balances: StorageMap<Address, u256>,
+    allowances: StorageMap<(Address, Address), u256>,
 }
 
 pub struct AccessControl {
-    roles: Map<(u256, Address), bool>,
+    roles: StorageMap<(u256, Address), bool>,
 }
 ```
 
