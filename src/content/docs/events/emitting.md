@@ -118,6 +118,7 @@ In contracts, declare storage and log as contract fields, then access them via `
 
 ```fe
 //<hide>
+use std::abi::sol
 use _boilerplate::{Map, Log, caller}
 fn do_transfer(c: u256, to: u256, amount: u256) -> bool uses (store: mut TokenStorage, log: mut Log) {
     let _ = (c, to, amount, store, log)
@@ -139,7 +140,7 @@ struct TransferEvent {
 }
 
 msg TokenMsg {
-    #[selector = 0xa9059cbb]
+    #[selector = sol("transfer(address,uint256)")]
     Transfer { to: u256, amount: u256 } -> bool,
 }
 

@@ -333,8 +333,10 @@ contract Token {
 External interfaces are defined separately:
 
 ```fe
+use std::abi::sol
+
 msg TokenMsg {
-    #[selector = 0xa9059cbb]
+    #[selector = sol("transfer(address,uint256)")]
     Transfer { to: Address, amount: u256 } -> bool,
 }
 ```

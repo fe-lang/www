@@ -105,10 +105,11 @@ In handlers, use the `uses` clause to access storage fields:
 
 ```fe
 //<hide>
+use std::abi::sol
 use _boilerplate::Map
 pub struct TokenStorage { pub balances: Map<u256, u256> }
 msg TokenMsg {
-    #[selector = 0x12345678]
+    #[selector = sol("balanceOf(address)")]
     BalanceOf { account: u256 } -> u256,
 }
 //</hide>
@@ -188,6 +189,7 @@ Contracts can have multiple storage fields for logical separation:
 
 ```fe
 //<hide>
+use std::abi::sol
 use _boilerplate::{Map, caller}
 fn do_transfer(from: u256, to: u256, amount: u256) -> bool uses (tokens: mut BalanceStorage) {
     let _ = (from, to, amount, tokens)
@@ -197,11 +199,11 @@ fn initiate_transfer(new_owner: u256) uses (ownership: mut OwnerStorage) {
     let _ = (new_owner, ownership)
 }
 msg TokenMsg {
-    #[selector = 0x12345678]
+    #[selector = sol("transfer(address,uint256)")]
     Transfer { to: u256, amount: u256 } -> bool,
 }
 msg OwnerMsg {
-    #[selector = 0x87654321]
+    #[selector = sol("transferOwnership(address)")]
     TransferOwnership { new_owner: u256 },
 }
 //</hide>

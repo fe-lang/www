@@ -60,8 +60,9 @@ In tests, you interact with `Evm` directly:
 
 ```fe
 //<hide>
+use std::abi::sol
 msg Msg {
-    #[selector = 0x01]
+    #[selector = sol("getCaller()")]
     GetCaller -> Address,
 }
 pub contract Example uses (ctx: Ctx) {

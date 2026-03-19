@@ -82,14 +82,17 @@ msg Query {
 Field order is significant for ABI encoding. The order in which fields are defined determines how calldata is decoded:
 
 ```fe
+//<hide>
+use std::abi::sol
+//</hide>
 // These are different!
 msg Example1 {
-    #[selector = 0xa9059cbb]
+    #[selector = sol("transfer(address,uint256)")]
     Transfer { to: u256, amount: u256 },
 }
 
 msg Example2 {
-    #[selector = 0xa9059cbb]
+    #[selector = sol("transfer(address,uint256)")]
     Transfer { amount: u256, to: u256 },
 }
 ```

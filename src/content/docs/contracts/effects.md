@@ -11,13 +11,14 @@ When you declare a contract field with a storage type, that field becomes availa
 
 ```fe
 //<hide>
+use std::abi::sol
 use _boilerplate::Map
 pub struct TokenStorage {
     pub balances: Map<u256, u256>,
     pub total_supply: u256,
 }
 msg TokenMsg {
-    #[selector = 0x12345678]
+    #[selector = sol("balanceOf(address)")]
     BalanceOf { account: u256 } -> u256,
 }
 //</hide>
@@ -45,15 +46,16 @@ The primary use of contract-level effects is providing them to helper functions:
 
 ```fe
 //<hide>
+use std::abi::sol
 use _boilerplate::Map
 pub struct TokenStorage {
     pub balances: Map<u256, u256>,
     pub total_supply: u256,
 }
 msg TokenMsg {
-    #[selector = 0x12345678]
+    #[selector = sol("balanceOf(address)")]
     BalanceOf { account: u256 } -> u256,
-    #[selector = 0x87654321]
+    #[selector = sol("transfer(address,uint256)")]
     Transfer { to: u256, amount: u256 } -> bool,
 }
 //</hide>
@@ -89,15 +91,16 @@ Use `mut` when you need to modify storage:
 
 ```fe
 //<hide>
+use std::abi::sol
 use _boilerplate::Map
 pub struct TokenStorage {
     pub balances: Map<u256, u256>,
     pub total_supply: u256,
 }
 msg TokenMsg {
-    #[selector = 0x12345678]
+    #[selector = sol("balanceOf(address)")]
     BalanceOf { account: u256 } -> u256,
-    #[selector = 0x87654321]
+    #[selector = sol("transfer(address,uint256)")]
     Transfer { to: u256, amount: u256 } -> bool,
 }
 //</hide>
@@ -128,6 +131,7 @@ Contracts can have multiple fields for different effects:
 
 ```fe
 //<hide>
+use std::abi::sol
 use _boilerplate::{Map, caller}
 fn do_transfer(c: u256, to: u256, amount: u256) -> bool uses (tokens: mut TokenStorage) {
     let _ = (c, to, amount, tokens)
@@ -143,11 +147,11 @@ fn do_transfer_from(c: u256, from: u256, to: u256, amount: u256) -> bool
     true
 }
 msg TokenMsg {
-    #[selector = 0x12345678]
+    #[selector = sol("transfer(address,uint256)")]
     Transfer { to: u256, amount: u256 } -> bool,
-    #[selector = 0x87654321]
+    #[selector = sol("approve(address,uint256)")]
     Approve { spender: u256, amount: u256 } -> bool,
-    #[selector = 0xabcdef12]
+    #[selector = sol("transferFrom(address,address,uint256)")]
     TransferFrom { from: u256, to: u256, amount: u256 } -> bool,
 }
 //</hide>
@@ -189,12 +193,13 @@ Effects declared in a handler's `uses` clause are available throughout that hand
 
 ```fe
 //<hide>
+use std::abi::sol
 use _boilerplate::{Map, caller}
 pub struct TokenStorage {
     pub balances: Map<u256, u256>,
 }
 msg TokenMsg {
-    #[selector = 0x12345678]
+    #[selector = sol("transfer(address,uint256)")]
     Transfer { to: u256, amount: u256 } -> bool,
 }
 //</hide>

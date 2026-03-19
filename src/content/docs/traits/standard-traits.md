@@ -19,8 +19,11 @@ trait MsgVariant {
 When you define a message:
 
 ```fe
+//<hide>
+use std::abi::sol
+//</hide>
 msg TokenMsg {
-    #[selector = 0xa9059cbb]
+    #[selector = sol("transfer(address,uint256)")]
     Transfer { to: u256, amount: u256 } -> bool,
 }
 ```

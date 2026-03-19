@@ -89,11 +89,13 @@ When calculating selectors, use these canonical type names:
 In Fe, you specify selectors explicitly in message definitions:
 
 ```fe
+use std::abi::sol
+
 msg Erc20 {
-    #[selector = 0xa9059cbb]
+    #[selector = sol("transfer(address,uint256)")]
     Transfer { to: Address, amount: u256 } -> bool,
 
-    #[selector = 0x70a08231]
+    #[selector = sol("balanceOf(address)")]
     BalanceOf { account: Address } -> u256,
 }
 ```

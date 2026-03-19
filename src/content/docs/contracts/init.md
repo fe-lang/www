@@ -123,9 +123,10 @@ The init block is optional. Contracts without init have default-initialized stor
 
 ```fe
 //<hide>
+use std::abi::sol
 pub struct SimpleStorage { pub data: u256 }
 msg SimpleMsg {
-    #[selector = 0x12345678]
+    #[selector = sol("getData()")]
     GetData -> u256,
 }
 //</hide>
@@ -194,9 +195,10 @@ While init can access storage directly, it doesn't use the effect system in the 
 
 ```fe
 //<hide>
+use std::abi::sol
 pub struct TokenStorage { pub total_supply: u256 }
 msg TokenMsg {
-    #[selector = 0x12345678]
+    #[selector = sol("totalSupply()")]
     TotalSupply -> u256,
 }
 //</hide>

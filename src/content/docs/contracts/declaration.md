@@ -22,8 +22,9 @@ A contract can contain:
 
 ```fe
 //<hide>
+use std::abi::sol
 msg TokenMsg {
-    #[selector = 0xa9059cbb]
+    #[selector = sol("transfer(address,uint256)")]
     Transfer { to: u256, amount: u256 } -> bool,
 }
 
@@ -94,13 +95,14 @@ Instead, use standalone functions with effects:
 
 ```fe
 //<hide>
+use std::abi::sol
 use _boilerplate::Map as StorageMap
 pub struct TokenStorage {
     pub balances: StorageMap<u256, u256>,
 }
 
 msg TokenMsg {
-    #[selector = 0x70a08231]
+    #[selector = sol("balanceOf(address)")]
     BalanceOf { account: u256 } -> u256,
 }
 //</hide>
@@ -127,6 +129,7 @@ The canonical structure of a Fe contract:
 
 ```fe
 //<hide>
+use std::abi::sol
 use _boilerplate::Map as StorageMap
 pub struct Ctx {}
 impl Ctx {
@@ -142,10 +145,10 @@ pub struct TokenStorage {
 
 // 2. Message definitions
 msg TokenMsg {
-    #[selector = 0xa9059cbb]
+    #[selector = sol("transfer(address,uint256)")]
     Transfer { to: u256, amount: u256 } -> bool,
 
-    #[selector = 0x70a08231]
+    #[selector = sol("balanceOf(address)")]
     BalanceOf { account: u256 } -> u256,
 }
 

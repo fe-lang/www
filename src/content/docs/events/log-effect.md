@@ -205,6 +205,7 @@ Contracts provide the Log effect via the `uses` clause on handlers:
 
 ```fe
 //<hide>
+use std::abi::sol
 use _boilerplate::{Map, Log, caller}
 pub struct TokenStorage { pub balances: Map<u256, u256> }
 fn do_transfer(c: u256, to: u256, amount: u256) -> bool uses (store: mut TokenStorage, log: mut Log) {
@@ -212,7 +213,7 @@ fn do_transfer(c: u256, to: u256, amount: u256) -> bool uses (store: mut TokenSt
     true
 }
 msg TokenMsg {
-    #[selector = 0xa9059cbb]
+    #[selector = sol("transfer(address,uint256)")]
     Transfer { to: u256, amount: u256 } -> bool,
 }
 //</hide>

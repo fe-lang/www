@@ -49,7 +49,7 @@ contract Token {
 
 ```fe ignore
 msg TokenMsg {
-    #[selector = 0xa9059cbb]
+    #[selector = sol("transfer(address,uint256)")]
     Transfer { to: Address, amount: u256 } -> bool,
 }
 
@@ -325,8 +325,11 @@ require_not_paused(store.paused)
 Fe requires explicit ABI selectors:
 
 ```fe
+//<hide>
+use std::abi::sol
+//</hide>
 msg TokenMsg {
-    #[selector = 0xa9059cbb]  // Must specify
+    #[selector = sol("transfer(address,uint256)")]  // Must specify
     Transfer { to: Address, amount: u256 } -> bool,
 }
 ```

@@ -65,7 +65,7 @@ msg TokenMsg {
 }
 
 msg OtherMsg {
-    #[selector = 0x12345678]
+    #[selector = sol("query(uint256)")]
     Query { id: u256 } -> u256,
 }
 //</hide>
@@ -126,8 +126,9 @@ Each handler in a recv block has:
 
 ```fe
 //<hide>
+use std::abi::sol
 msg Example {
-    #[selector = 0x12345678]
+    #[selector = sol("variantName(uint256)")]
     VariantName { fields: u256 } -> u256,
 }
 contract C {

@@ -84,6 +84,7 @@ Split storage into logical units:
 
 ```fe
 //<hide>
+use std::abi::sol
 use _boilerplate::{Map as StorageMap, revert}
 pub struct Ctx {}
 impl Ctx {
@@ -129,12 +130,12 @@ pub struct PauseStorage {
 
 // Message definitions
 msg TokenMsg {
-    #[selector = 0xa9059cbb]
+    #[selector = sol("transfer(address,uint256)")]
     Transfer { to: u256, amount: u256 } -> bool,
 }
 
 msg AdminMsg {
-    #[selector = 0x8456cb59]
+    #[selector = sol("pause()")]
     Pause {} -> bool,
 }
 
@@ -167,6 +168,7 @@ Implement access control as a reusable module:
 
 ```fe
 //<hide>
+use std::abi::sol
 use _boilerplate::{Map as StorageMap, revert}
 pub struct TokenStorage {
     pub balances: StorageMap<u256, u256>,
@@ -203,10 +205,10 @@ fn transfer_ownership(new_owner: u256) uses (ctx: Ctx, ownership: mut OwnerStora
 
 // Message definitions
 msg AdminMsg {
-    #[selector = 0xf2fde38b]
+    #[selector = sol("transferOwnership(address)")]
     TransferOwnership { new_owner: u256 } -> bool,
 
-    #[selector = 0x40c10f19]
+    #[selector = sol("mint(address,uint256)")]
     Mint { to: u256, amount: u256 } -> bool,
 }
 
@@ -238,6 +240,7 @@ contract OwnableToken {
 
 ```fe
 //<hide>
+use std::abi::sol
 use _boilerplate::{Map as StorageMap, revert}
 pub struct TokenStorage {
     pub balances: StorageMap<u256, u256>,
@@ -265,14 +268,14 @@ fn transfer(from: u256, to: u256, amount: u256) -> bool uses (store: mut TokenSt
 }
 
 msg TokenMsg {
-    #[selector = 0xa9059cbb]
+    #[selector = sol("transfer(address,uint256)")]
     Transfer { to: u256, amount: u256 } -> bool,
 }
 
 msg AdminMsg {
-    #[selector = 0x8456cb59]
+    #[selector = sol("pause()")]
     Pause {} -> bool,
-    #[selector = 0x3f4ba83a]
+    #[selector = sol("unpause()")]
     Unpause {} -> bool,
 }
 //</hide>
@@ -329,6 +332,7 @@ Functions can require multiple effects:
 
 ```fe
 //<hide>
+use std::abi::sol
 use _boilerplate::{Map as StorageMap, revert}
 pub struct TokenStorage {
     pub balances: StorageMap<u256, u256>,
@@ -360,7 +364,7 @@ fn transfer(from: u256, to: u256, amount: u256) -> bool uses (store: mut TokenSt
 }
 
 msg TokenMsg {
-    #[selector = 0xa9059cbb]
+    #[selector = sol("transfer(address,uint256)")]
     Transfer { to: u256, amount: u256 } -> bool,
 }
 //</hide>

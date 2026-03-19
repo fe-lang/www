@@ -11,6 +11,7 @@ In a contract, recv blocks access storage via `uses` clauses:
 
 ```fe
 //<hide>
+use std::abi::sol
 use _boilerplate::{Map, caller}
 fn do_transfer(from: u256, to: u256, amount: u256) -> bool uses (store: mut TokenStorage) {
     let _ = (from, to, amount, store)
@@ -24,10 +25,10 @@ pub struct TokenStorage {
 }
 
 msg TokenMsg {
-    #[selector = 0x70a08231]
+    #[selector = sol("balanceOf(address)")]
     BalanceOf { account: u256 } -> u256,
 
-    #[selector = 0xa9059cbb]
+    #[selector = sol("transfer(address,uint256)")]
     Transfer { to: u256, amount: u256 } -> bool,
 }
 
@@ -52,10 +53,11 @@ The `uses` clause on a handler declares which contract fields it needs:
 
 ```fe
 //<hide>
+use std::abi::sol
 use _boilerplate::Map
 pub struct TokenStorage { pub balances: Map<u256, u256> }
 msg TokenMsg {
-    #[selector = 0x12345678]
+    #[selector = sol("balanceOf(address)")]
     BalanceOf { account: u256 } -> u256,
 }
 contract Token {
@@ -83,12 +85,13 @@ Handlers typically delegate to helper functions:
 
 ```fe
 //<hide>
+use std::abi::sol
 use _boilerplate::{Map, caller}
 pub struct TokenStorage { pub balances: Map<u256, u256> }
 msg TokenMsg {
-    #[selector = 0x70a08231]
+    #[selector = sol("balanceOf(address)")]
     BalanceOf { account: u256 } -> u256,
-    #[selector = 0xa9059cbb]
+    #[selector = sol("transfer(address,uint256)")]
     Transfer { to: u256, amount: u256 } -> bool,
 }
 //</hide>
@@ -131,6 +134,7 @@ When handlers need multiple storage types:
 
 ```fe
 //<hide>
+use std::abi::sol
 use _boilerplate::{Map, caller}
 fn do_transfer_from(c: u256, from: u256, to: u256, amount: u256) -> bool
     uses (balances: mut BalanceStorage, allowances: mut AllowanceStorage)
@@ -139,7 +143,7 @@ fn do_transfer_from(c: u256, from: u256, to: u256, amount: u256) -> bool
     true
 }
 msg TokenMsg {
-    #[selector = 0x23b872dd]
+    #[selector = sol("transferFrom(address,address,uint256)")]
     TransferFrom { from: u256, to: u256, amount: u256 } -> bool,
 }
 //</hide>
@@ -174,29 +178,30 @@ For contracts with many handlers, organize by interface:
 
 ```fe
 //<hide>
+use std::abi::sol
 pub struct TokenStorage { pub total: u256 }
 
 msg Erc20 {
-    #[selector = 0xa9059cbb]
+    #[selector = sol("transfer(address,uint256)")]
     Transfer { to: u256, amount: u256 } -> bool,
-    #[selector = 0x095ea7b3]
+    #[selector = sol("approve(address,uint256)")]
     Approve { spender: u256, amount: u256 } -> bool,
-    #[selector = 0x23b872dd]
+    #[selector = sol("transferFrom(address,address,uint256)")]
     TransferFrom { from: u256, to: u256, amount: u256 } -> bool,
-    #[selector = 0x70a08231]
+    #[selector = sol("balanceOf(address)")]
     BalanceOf { account: u256 } -> u256,
-    #[selector = 0xdd62ed3e]
+    #[selector = sol("allowance(address,address)")]
     Allowance { owner: u256, spender: u256 } -> u256,
-    #[selector = 0x18160ddd]
+    #[selector = sol("totalSupply()")]
     TotalSupply {} -> u256,
 }
 
 msg Erc20Metadata {
-    #[selector = 0x06fdde03]
+    #[selector = sol("name()")]
     Name {} -> String<32>,
-    #[selector = 0x95d89b41]
+    #[selector = sol("symbol()")]
     Symbol {} -> String<8>,
-    #[selector = 0x313ce567]
+    #[selector = sol("decimals()")]
     Decimals {} -> u8,
 }
 //</hide>

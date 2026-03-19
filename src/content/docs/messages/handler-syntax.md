@@ -11,8 +11,9 @@ A handler consists of a pattern, optional return type, and body:
 
 ```fe
 //<hide>
+use std::abi::sol
 msg Example {
-    #[selector = 0x12345678]
+    #[selector = sol("variantName(uint256)")]
     VariantName { fields: u256 } -> u256,
 }
 contract C {
@@ -35,8 +36,9 @@ For handlers that don't return a value:
 
 ```fe
 //<hide>
+use std::abi::sol
 msg Example {
-    #[selector = 0x12345678]
+    #[selector = sol("variantName(uint256)")]
     VariantName { fields: u256 },
 }
 contract C {

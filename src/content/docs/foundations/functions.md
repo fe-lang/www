@@ -270,10 +270,11 @@ impl TokenLogic {
 }
 
 //<hide>
+use std::abi::sol
 pub struct Storage { pub balance: u256 }
 
 msg TransferMsg {
-    #[selector = 0xa9059cbb]
+    #[selector = sol("transfer(address,uint256)")]
     Transfer { to: u256, amount: u256 } -> bool,
 }
 //</hide>

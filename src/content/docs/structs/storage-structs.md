@@ -58,6 +58,7 @@ Contracts hold storage structs as fields and provide them as effects:
 
 ```fe
 //<hide>
+use std::abi::sol
 use _boilerplate::{Map, caller}
 pub struct TokenStorage { pub balances: Map<u256, u256> }
 fn get_balance(account: u256) -> u256 uses (store: TokenStorage) {
@@ -68,9 +69,9 @@ fn transfer(from: u256, to: u256, amount: u256) -> bool uses (store: mut TokenSt
     true
 }
 msg TokenMsg {
-    #[selector = 0x70a08231]
+    #[selector = sol("balanceOf(address)")]
     BalanceOf { account: u256 } -> u256,
-    #[selector = 0xa9059cbb]
+    #[selector = sol("transfer(address,uint256)")]
     Transfer { to: u256, amount: u256 } -> bool,
 }
 //</hide>
@@ -250,13 +251,14 @@ A full token with storage structs:
 
 ```fe
 //<hide>
+use std::abi::sol
 use _boilerplate::{Map, caller}
 msg Erc20 {
-    #[selector = 0xa9059cbb]
+    #[selector = sol("transfer(address,uint256)")]
     Transfer { to: u256, amount: u256 } -> bool,
-    #[selector = 0x70a08231]
+    #[selector = sol("balanceOf(address)")]
     BalanceOf { account: u256 } -> u256,
-    #[selector = 0x313ce567]
+    #[selector = sol("decimals()")]
     Decimals -> u8,
 }
 //</hide>
