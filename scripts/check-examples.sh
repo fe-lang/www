@@ -196,6 +196,93 @@ if [[ -d "$EXAMPLES_DIR" ]] && [[ ${#FILES[@]} -eq 0 ]]; then
     done
 fi
 
+# Run fe test on blocks that contain #[test]
+TESTED=0
+TEST_PASSED=0
+TEST_FAILED=0
+
+strip_boilerplate() {
+    local file="$1"
+    local output="$2"
+    # Extract only the snippet code after the boilerplate marker
+    sed -n '/^\/\/ --- snippet code below ---$/,$ p' "$file" | tail -n +2 > "$output"
+}
+
+while IFS=: read -r fe_file md_file block_start_line; do
+    # Only run fe test on blocks containing #[test]
+    if ! grep -q '#\[test\]' "$fe_file" 2>/dev/null; then
+        continue
+    fi
+
+    : $((TESTED++))
+    rel_md="${md_file#$PROJECT_ROOT/}"
+
+    if [[ "$VERBOSE" == true ]]; then
+        echo -n "Testing $rel_md:$block_start_line... "
+    fi
+
+    # Strip boilerplate for fe test (boilerplate conflicts with built-in assert)
+    raw_file="$TEMP_DIR/raw_$(basename "$fe_file")"
+    strip_boilerplate "$fe_file" "$raw_file"
+
+    FE_OUTPUT=$("$SCRIPT_DIR/fe" test "$raw_file" 2>&1) || true
+
+    if echo "$FE_OUTPUT" | grep -q "FAILED\|failures:"; then
+        : $((TEST_FAILED++))
+        if [[ "$VERBOSE" == true ]]; then
+            echo -e "${RED}FAILED${NC}"
+        fi
+        # Extract failure info
+        while IFS= read -r test_line; do
+            if [[ "$test_line" =~ FAIL|revert|failure ]]; then
+                ERRORS+=("$rel_md:$block_start_line: [fe test] $test_line")
+            fi
+        done <<< "$FE_OUTPUT"
+    else
+        : $((TEST_PASSED++))
+        if [[ "$VERBOSE" == true ]]; then
+            echo -e "${GREEN}OK${NC}"
+        fi
+    fi
+done < "$MAPPINGS_FILE"
+
+# Also run fe test on standalone .fe example files
+if [[ -d "$EXAMPLES_DIR" ]] && [[ ${#FILES[@]} -eq 0 ]]; then
+    for fe_file in "$EXAMPLES_DIR"/*.fe; do
+        [[ -f "$fe_file" ]] || continue
+        # Only test files containing #[test]
+        if ! grep -q '#\[test\]' "$fe_file" 2>/dev/null; then
+            continue
+        fi
+
+        : $((TESTED++))
+        rel_fe="${fe_file#$PROJECT_ROOT/}"
+
+        if [[ "$VERBOSE" == true ]]; then
+            echo -n "Testing $rel_fe... "
+        fi
+
+        FE_OUTPUT=$("$SCRIPT_DIR/fe" test "$fe_file" 2>&1) || true
+
+        if echo "$FE_OUTPUT" | grep -q "FAILED\|failures:"; then
+            : $((TEST_FAILED++))
+            if [[ "$VERBOSE" == true ]]; then
+                echo -e "${RED}FAILED${NC}"
+            fi
+            while IFS= read -r test_line; do
+                if [[ "$test_line" =~ FAIL|revert|failure ]]; then
+                    ERRORS+=("$rel_fe: [fe test] $test_line")
+                fi
+            done <<< "$FE_OUTPUT"
+        else
+            : $((TEST_PASSED++))
+            if [[ "$VERBOSE" == true ]]; then
+                echo -e "${GREEN}OK${NC}"
+            fi
+        fi
+    done
+fi
+
 # Print summary
 echo ""
 echo "======================================"
@@ -204,6 +291,12 @@ echo "======================================"
 echo "Total blocks checked: $CHECKED"
 echo -e "Passed: ${GREEN}$PASSED${NC}"
 echo -e "Failed: ${RED}$FAILED${NC}"
+if [[ $TESTED -gt 0 ]]; then
+    echo ""
+    echo "Test blocks executed: $TESTED"
+    echo -e "Tests passed: ${GREEN}$TEST_PASSED${NC}"
+    echo -e "Tests failed: ${RED}$TEST_FAILED${NC}"
+fi
 echo ""
 
 # Print errors if any
@@ -217,5 +310,5 @@ if [[ ${#ERRORS[@]} -gt 0 ]]; then
     exit 1
 fi
 
-echo -e "${GREEN}All Fe code examples passed type checking!${NC}"
+echo -e "${GREEN}All Fe code examples passed type checking and tests!${NC}"
 exit 0
