@@ -12,7 +12,6 @@ A contract can have multiple recv blocks, each handling a different message type
 ```fe
 //<hide>
 use std::abi::sol
-use _boilerplate::Map as StorageMap
 pub struct TokenStorage {
     pub balances: StorageMap<u256, u256>,
     pub total_supply: u256,
@@ -119,7 +118,6 @@ Multiple recv blocks can share the same contract state:
 ```fe
 //<hide>
 use std::abi::sol
-use _boilerplate::Map as StorageMap
 pub struct Ctx {}
 impl Ctx {
     pub fn caller(self) -> u256 { todo() }

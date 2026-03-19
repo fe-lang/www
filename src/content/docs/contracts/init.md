@@ -31,10 +31,9 @@ Init blocks can accept parameters passed during deployment:
 
 ```fe
 //<hide>
-use _boilerplate::Map
 pub struct TokenStorage {
     pub total_supply: u256,
-    pub balances: Map<u256, u256>,
+    pub balances: StorageMap<u256, u256>,
 }
 //</hide>
 
@@ -56,11 +55,11 @@ The primary purpose of init is setting up storage:
 
 ```fe
 //<hide>
-use _boilerplate::{Map, caller}
+use _boilerplate::caller
 //</hide>
 
 pub struct TokenStorage {
-    pub balances: Map<u256, u256>,
+    pub balances: StorageMap<u256, u256>,
     pub total_supply: u256,
     pub owner: u256,
 }
@@ -149,11 +148,11 @@ Init can perform multiple setup operations:
 
 ```fe
 //<hide>
-use _boilerplate::{Map, caller}
+use _boilerplate::caller
 //</hide>
 
 pub struct TokenStorage {
-    pub balances: Map<u256, u256>,
+    pub balances: StorageMap<u256, u256>,
     pub total_supply: u256,
     pub owner: u256,
     pub paused: bool,

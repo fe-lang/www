@@ -10,12 +10,8 @@ Storage structs are structs designed to hold persistent blockchain state. They s
 A storage struct contains fields that persist on-chain:
 
 ```fe
-//<hide>
-use _boilerplate::Map
-//</hide>
-
 pub struct TokenStorage {
-    pub balances: Map<u256, u256>,
+    pub balances: StorageMap<u256, u256>,
     pub total_supply: u256,
     pub owner: u256,
 }
@@ -32,12 +28,8 @@ Key characteristics:
 Storage structs serve as effect types. Define methods on them using impl blocks, with `self` for read-only and `mut self` for write access:
 
 ```fe
-//<hide>
-use _boilerplate::Map
-//</hide>
-
 pub struct TokenStorage {
-    pub balances: Map<u256, u256>,
+    pub balances: StorageMap<u256, u256>,
     pub total_supply: u256,
 }
 
@@ -61,8 +53,8 @@ Contracts hold storage structs as fields and provide them as effects:
 ```fe
 //<hide>
 use std::abi::sol
-use _boilerplate::{Map, caller}
-pub struct TokenStorage { pub balances: Map<u256, u256> }
+use _boilerplate::caller
+pub struct TokenStorage { pub balances: StorageMap<u256, u256> }
 impl TokenStorage {
     fn get_balance(self, account: u256) -> u256 {
         self.balances.get(account)
@@ -124,19 +116,15 @@ impl CounterStorage {
 For complex contracts, split storage by concern:
 
 ```fe
-//<hide>
-use _boilerplate::Map
-//</hide>
-
 // Token balances
 pub struct BalanceStorage {
-    pub balances: Map<u256, u256>,
+    pub balances: StorageMap<u256, u256>,
     pub total_supply: u256,
 }
 
 // Allowance tracking
 pub struct AllowanceStorage {
-    pub allowances: Map<u256, Map<u256, u256>>,
+    pub allowances: StorageMap<(u256, u256), u256>,
 }
 
 // Access control
@@ -155,8 +143,7 @@ Each becomes an independent effect:
 
 ```fe
 //<hide>
-use _boilerplate::Map
-pub struct BalanceStorage { pub balances: Map<u256, u256> }
+pub struct BalanceStorage { pub balances: StorageMap<u256, u256> }
 pub struct PauseStorage { pub paused: bool }
 //</hide>
 
@@ -179,29 +166,21 @@ fn transfer(from: u256, to: u256, amount: u256)
 `Map` is the primary collection type for storage:
 
 ```fe
-//<hide>
-use _boilerplate::Map
-//</hide>
-
 pub struct Registry {
     // Simple mapping: key -> value
-    pub entries: Map<u256, u256>,
+    pub entries: StorageMap<u256, u256>,
 
-    // Nested mapping: key -> (key -> value)
-    pub nested: Map<u256, Map<u256, u256>>,
+    // Composite key mapping: (key, key) -> value
+    pub nested: StorageMap<(u256, u256), u256>,
 }
 ```
 
 Access patterns:
 
 ```fe
-//<hide>
-use _boilerplate::Map
-//</hide>
-
 pub struct Registry {
-    pub entries: Map<u256, u256>,
-    pub nested: Map<u256, Map<u256, u256>>,
+    pub entries: StorageMap<u256, u256>,
+    pub nested: StorageMap<(u256, u256), u256>,
 }
 
 impl Registry {
@@ -214,11 +193,11 @@ impl Registry {
     }
 
     fn get_nested(self, outer: u256, inner: u256) -> u256 {
-        self.nested.get(outer).get(inner)
+        self.nested.get((outer, inner))
     }
 
     fn set_nested(mut self, outer: u256, inner: u256, value: u256) {
-        self.nested.get(outer).set(inner, value)
+        self.nested.set((outer, inner), value)
     }
 }
 ```
@@ -232,12 +211,8 @@ The current `Map` is a temporary implementation that will be replaced with a mor
 Storage structs and their fields are typically public:
 
 ```fe
-//<hide>
-use _boilerplate::Map
-//</hide>
-
 pub struct TokenStorage {
-    pub balances: Map<u256, u256>,  // Public for effect access
+    pub balances: StorageMap<u256, u256>,  // Public for effect access
     pub total_supply: u256,
 }
 ```
@@ -261,7 +236,7 @@ A full token with storage structs:
 ```fe
 //<hide>
 use std::abi::sol
-use _boilerplate::{Map, caller}
+use _boilerplate::caller
 msg Erc20 {
     #[selector = sol("transfer(address,uint256)")]
     Transfer { to: u256, amount: u256 } -> bool,
@@ -274,8 +249,8 @@ msg Erc20 {
 
 // Storage definitions
 pub struct TokenStorage {
-    pub balances: Map<u256, u256>,
-    pub allowances: Map<u256, Map<u256, u256>>,
+    pub balances: StorageMap<u256, u256>,
+    pub allowances: StorageMap<(u256, u256), u256>,
     pub total_supply: u256,
 }
 
@@ -336,7 +311,7 @@ contract Token {
 |---------|-------------|
 | Storage struct | Struct holding persistent state |
 | Effect type | Storage struct used in `uses` clause |
-| `Map<K, V>` | Key-value storage field |
+| `StorageMap<K, V>` | Key-value storage field |
 | `uses (store: Storage)` | Read-only access |
 | `uses (store: mut Storage)` | Read-write access |
 | Handler `uses (field)` | Bind contract field to effect in handlers |

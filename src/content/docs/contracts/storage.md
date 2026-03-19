@@ -10,12 +10,8 @@ Storage fields hold the persistent state of a contract. In Fe, storage is define
 Storage is defined as a struct with storage-compatible fields:
 
 ```fe
-//<hide>
-use _boilerplate::Map
-//</hide>
-
 pub struct TokenStorage {
-    pub balances: Map<u256, u256>,
+    pub balances: StorageMap<u256, u256>,
     pub total_supply: u256,
 }
 
@@ -45,16 +41,12 @@ pub struct Config {
 For key-value mappings, use `StorageMap`:
 
 ```fe
-//<hide>
-use _boilerplate::Map
-//</hide>
-
 pub struct TokenStorage {
     // Maps account -> balance
-    pub balances: Map<u256, u256>,
+    pub balances: StorageMap<u256, u256>,
 
-    // Maps owner -> (spender -> allowance)
-    pub allowances: Map<u256, Map<u256, u256>>,
+    // Maps (owner, spender) -> allowance
+    pub allowances: StorageMap<(u256, u256), u256>,
 }
 ```
 
@@ -67,17 +59,13 @@ The current `StorageMap` is a temporary implementation that will be replaced wit
 Storage structs can contain other structs:
 
 ```fe
-//<hide>
-use _boilerplate::Map
-//</hide>
-
 pub struct Metadata {
     pub name_length: u256,
     pub decimals: u8,
 }
 
 pub struct TokenStorage {
-    pub balances: Map<u256, u256>,
+    pub balances: StorageMap<u256, u256>,
     pub metadata: Metadata,
 }
 ```
@@ -88,8 +76,7 @@ Storage is accessed through effects, not directly:
 
 ```fe
 //<hide>
-use _boilerplate::Map
-pub struct TokenStorage { pub balances: Map<u256, u256> }
+pub struct TokenStorage { pub balances: StorageMap<u256, u256> }
 //</hide>
 
 fn get_balance(account: u256) -> u256 uses (store: TokenStorage) {
@@ -106,8 +93,7 @@ In handlers, use the `uses` clause to access storage fields:
 ```fe
 //<hide>
 use std::abi::sol
-use _boilerplate::Map
-pub struct TokenStorage { pub balances: Map<u256, u256> }
+pub struct TokenStorage { pub balances: StorageMap<u256, u256> }
 msg TokenMsg {
     #[selector = sol("balanceOf(address)")]
     BalanceOf { account: u256 } -> u256,
@@ -133,8 +119,7 @@ Retrieve a value (returns zero/default if not set):
 
 ```fe
 //<hide>
-use _boilerplate::Map
-pub struct TokenStorage { pub balances: Map<u256, u256> }
+pub struct TokenStorage { pub balances: StorageMap<u256, u256> }
 fn example(account: u256) uses (store: TokenStorage) {
 //</hide>
 let balance = store.balances.get(account)
@@ -150,8 +135,7 @@ Store a value:
 
 ```fe
 //<hide>
-use _boilerplate::Map
-pub struct TokenStorage { pub balances: Map<u256, u256> }
+pub struct TokenStorage { pub balances: StorageMap<u256, u256> }
 fn example(account: u256, new_balance: u256) uses (store: mut TokenStorage) {
 //</hide>
 store.balances.set(account, new_balance)
@@ -160,26 +144,22 @@ store.balances.set(account, new_balance)
 //</hide>
 ```
 
-### Nested Maps
+### Composite Keys
 
-For nested mappings, chain the operations:
+For multi-dimensional mappings, use tuple keys:
 
 ```fe
-//<hide>
-use _boilerplate::Map
-//</hide>
-
 pub struct AllowanceStorage {
-    // owner -> spender -> amount
-    pub allowances: Map<u256, Map<u256, u256>>,
+    // (owner, spender) -> amount
+    pub allowances: StorageMap<(u256, u256), u256>,
 }
 
 fn get_allowance(owner: u256, spender: u256) -> u256 uses (store: AllowanceStorage) {
-    store.allowances.get(owner).get(spender)
+    store.allowances.get((owner, spender))
 }
 
 fn set_allowance(owner: u256, spender: u256, amount: u256) uses (store: mut AllowanceStorage) {
-    store.allowances.get(owner).set(spender, amount)
+    store.allowances.set((owner, spender), amount)
 }
 ```
 
@@ -190,7 +170,7 @@ Contracts can have multiple storage fields for logical separation:
 ```fe
 //<hide>
 use std::abi::sol
-use _boilerplate::{Map, caller}
+use _boilerplate::caller
 fn do_transfer(from: u256, to: u256, amount: u256) -> bool uses (tokens: mut BalanceStorage) {
     let _ = (from, to, amount, tokens)
     true
@@ -209,7 +189,7 @@ msg OwnerMsg {
 //</hide>
 
 pub struct BalanceStorage {
-    pub balances: Map<u256, u256>,
+    pub balances: StorageMap<u256, u256>,
     pub total_supply: u256,
 }
 

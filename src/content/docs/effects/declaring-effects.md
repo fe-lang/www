@@ -134,12 +134,8 @@ contract Token uses (ctx: mut Context) {
 The contract's effects are available within its recv blocks. Helper functions called from recv blocks receive effects explicitly:
 
 ```fe
-//<hide>
-use _boilerplate::Map
-//</hide>
-
 pub struct TokenStorage {
-    pub balances: Map<u256, u256>,
+    pub balances: StorageMap<u256, u256>,
 }
 
 // Helper function with explicit effects

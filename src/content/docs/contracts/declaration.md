@@ -56,10 +56,6 @@ contract Token {
 Fields declare the contract's storage and effect dependencies:
 
 ```fe
-//<hide>
-use _boilerplate::Map as StorageMap
-//</hide>
-
 pub struct TokenStorage {
     pub balances: StorageMap<u256, u256>,
     pub total_supply: u256,
@@ -96,7 +92,6 @@ Instead, define methods on the storage struct and call them through the effect b
 ```fe
 //<hide>
 use std::abi::sol
-use _boilerplate::Map as StorageMap
 //</hide>
 
 pub struct TokenStorage {
@@ -134,7 +129,6 @@ The canonical structure of a Fe contract:
 ```fe
 //<hide>
 use std::abi::sol
-use _boilerplate::Map as StorageMap
 pub struct Ctx {}
 impl Ctx {
     pub fn caller(self) -> u256 { todo() }

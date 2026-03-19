@@ -310,8 +310,7 @@ For contracts, use standalone functions with effects instead:
 
 ```fe
 //<hide>
-use _boilerplate::Map
-pub struct TokenStorage { pub balances: Map<u256, u256> }
+pub struct TokenStorage { pub balances: StorageMap<u256, u256> }
 //</hide>
 fn get_balance(account: u256) -> u256 uses (store: TokenStorage) {
     store.balances.get(account)

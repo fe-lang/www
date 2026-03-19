@@ -12,9 +12,8 @@ When you declare a contract field with a storage type, that field becomes availa
 ```fe
 //<hide>
 use std::abi::sol
-use _boilerplate::Map
 pub struct TokenStorage {
-    pub balances: Map<u256, u256>,
+    pub balances: StorageMap<u256, u256>,
     pub total_supply: u256,
 }
 msg TokenMsg {
@@ -47,9 +46,8 @@ The primary use of contract-level effects is providing them to helper functions:
 ```fe
 //<hide>
 use std::abi::sol
-use _boilerplate::Map
 pub struct TokenStorage {
-    pub balances: Map<u256, u256>,
+    pub balances: StorageMap<u256, u256>,
     pub total_supply: u256,
 }
 msg TokenMsg {
@@ -92,9 +90,8 @@ Use `mut` when you need to modify storage:
 ```fe
 //<hide>
 use std::abi::sol
-use _boilerplate::Map
 pub struct TokenStorage {
-    pub balances: Map<u256, u256>,
+    pub balances: StorageMap<u256, u256>,
     pub total_supply: u256,
 }
 msg TokenMsg {
@@ -132,7 +129,7 @@ Contracts can have multiple fields for different effects:
 ```fe
 //<hide>
 use std::abi::sol
-use _boilerplate::{Map, caller}
+use _boilerplate::caller
 fn do_transfer(c: u256, to: u256, amount: u256) -> bool uses (tokens: mut TokenStorage) {
     let _ = (c, to, amount, tokens)
     true
@@ -157,12 +154,12 @@ msg TokenMsg {
 //</hide>
 
 pub struct TokenStorage {
-    pub balances: Map<u256, u256>,
+    pub balances: StorageMap<u256, u256>,
     pub total_supply: u256,
 }
 
 pub struct AllowanceStorage {
-    pub allowances: Map<u256, Map<u256, u256>>,
+    pub allowances: StorageMap<u256, StorageMap<u256, u256>>,
 }
 
 contract Token {
@@ -194,9 +191,9 @@ Effects declared in a handler's `uses` clause are available throughout that hand
 ```fe
 //<hide>
 use std::abi::sol
-use _boilerplate::{Map, caller}
+use _boilerplate::caller
 pub struct TokenStorage {
-    pub balances: Map<u256, u256>,
+    pub balances: StorageMap<u256, u256>,
 }
 msg TokenMsg {
     #[selector = sol("transfer(address,uint256)")]
@@ -245,8 +242,7 @@ contract Token {
 
 ```fe
 //<hide>
-use _boilerplate::Map
-pub struct TokenStorage { pub balances: Map<u256, u256> }
+pub struct TokenStorage { pub balances: StorageMap<u256, u256> }
 //</hide>
 
 // Fe - explicit effect dependency

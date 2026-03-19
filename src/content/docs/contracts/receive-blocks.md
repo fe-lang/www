@@ -12,7 +12,7 @@ In a contract, recv blocks access storage via `uses` clauses:
 ```fe
 //<hide>
 use std::abi::sol
-use _boilerplate::{Map, caller}
+use _boilerplate::caller
 fn do_transfer(from: u256, to: u256, amount: u256) -> bool uses (store: mut TokenStorage) {
     let _ = (from, to, amount, store)
     true
@@ -20,7 +20,7 @@ fn do_transfer(from: u256, to: u256, amount: u256) -> bool uses (store: mut Toke
 //</hide>
 
 pub struct TokenStorage {
-    pub balances: Map<u256, u256>,
+    pub balances: StorageMap<u256, u256>,
     pub total_supply: u256,
 }
 
@@ -54,8 +54,7 @@ The `uses` clause on a handler declares which contract fields it needs:
 ```fe
 //<hide>
 use std::abi::sol
-use _boilerplate::Map
-pub struct TokenStorage { pub balances: Map<u256, u256> }
+pub struct TokenStorage { pub balances: StorageMap<u256, u256> }
 msg TokenMsg {
     #[selector = sol("balanceOf(address)")]
     BalanceOf { account: u256 } -> u256,
@@ -86,8 +85,8 @@ Handlers typically delegate to helper functions:
 ```fe
 //<hide>
 use std::abi::sol
-use _boilerplate::{Map, caller}
-pub struct TokenStorage { pub balances: Map<u256, u256> }
+use _boilerplate::caller
+pub struct TokenStorage { pub balances: StorageMap<u256, u256> }
 msg TokenMsg {
     #[selector = sol("balanceOf(address)")]
     BalanceOf { account: u256 } -> u256,
@@ -135,7 +134,7 @@ When handlers need multiple storage types:
 ```fe
 //<hide>
 use std::abi::sol
-use _boilerplate::{Map, caller}
+use _boilerplate::caller
 fn do_transfer_from(c: u256, from: u256, to: u256, amount: u256) -> bool
     uses (balances: mut BalanceStorage, allowances: mut AllowanceStorage)
 {
@@ -149,11 +148,11 @@ msg TokenMsg {
 //</hide>
 
 pub struct BalanceStorage {
-    pub balances: Map<u256, u256>,
+    pub balances: StorageMap<u256, u256>,
 }
 
 pub struct AllowanceStorage {
-    pub allowances: Map<u256, Map<u256, u256>>,
+    pub allowances: StorageMap<u256, StorageMap<u256, u256>>,
 }
 
 contract Token {

@@ -195,12 +195,8 @@ fn process() uses (data: Data, cache: mut Cache) {
 A common pattern separates read and write operations:
 
 ```fe
-//<hide>
-use _boilerplate::Map
-//</hide>
-
 pub struct Balances {
-    pub data: Map<u256, u256>,
+    pub data: StorageMap<u256, u256>,
 }
 
 // Read-only: safe to call anywhere

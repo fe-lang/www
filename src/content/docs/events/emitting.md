@@ -37,11 +37,11 @@ Events are typically emitted within message handlers:
 
 ```fe
 //<hide>
-use _boilerplate::{Map, Log}
+use _boilerplate::Log
 //</hide>
 
 pub struct TokenStorage {
-    pub balances: Map<u256, u256>,
+    pub balances: StorageMap<u256, u256>,
 }
 
 #[event]
@@ -79,12 +79,8 @@ impl TokenStorage {
 A critical pattern: emit events after state changes succeed, not before:
 
 ```fe
-//<hide>
-use _boilerplate::Map
-//</hide>
-
 pub struct TokenStorage {
-    pub balances: Map<u256, u256>,
+    pub balances: StorageMap<u256, u256>,
 }
 
 #[event]
@@ -127,11 +123,11 @@ In contracts, declare storage and log as contract fields, then access them via `
 ```fe
 //<hide>
 use std::abi::sol
-use _boilerplate::{Map, Log, caller}
+use _boilerplate::{Log, caller}
 //</hide>
 
 pub struct TokenStorage {
-    pub balances: Map<u256, u256>,
+    pub balances: StorageMap<u256, u256>,
 }
 
 impl TokenStorage {
@@ -174,10 +170,9 @@ Emit different event types from the same handler:
 
 ```fe
 //<hide>
-use _boilerplate::Map
 pub struct TokenStorage {
-    pub balances: Map<u256, u256>,
-    pub allowances: Map<u256, Map<u256, u256>>,
+    pub balances: StorageMap<u256, u256>,
+    pub allowances: StorageMap<(u256, u256), u256>,
 }
 //</hide>
 
@@ -204,11 +199,11 @@ impl TokenStorage {
         -> bool uses (log: mut Log)
     {
         // Check and update allowance
-        let allowed = self.allowances.get(from).get(spender)
+        let allowed = self.allowances.get((from, spender))
         if allowed < amount {
             return false
         }
-        self.allowances.get(from).set(spender, allowed - amount)
+        self.allowances.set((from, spender), allowed - amount)
 
         // Perform transfer
         let from_bal = self.balances.get(from)
@@ -236,9 +231,8 @@ Emit when persistent state changes:
 
 ```fe
 //<hide>
-use _boilerplate::Map
 pub struct TokenStorage {
-    pub balances: Map<u256, u256>,
+    pub balances: StorageMap<u256, u256>,
     pub total_supply: u256,
 }
 #[event]
@@ -320,8 +314,7 @@ Create helper functions for common events:
 
 ```fe
 //<hide>
-use _boilerplate::Map
-pub struct TokenStorage { pub balances: Map<u256, u256> }
+pub struct TokenStorage { pub balances: StorageMap<u256, u256> }
 #[event]
 struct Transfer {
     #[indexed]
@@ -369,8 +362,7 @@ Only emit when something meaningful happens:
 
 ```fe
 //<hide>
-use _boilerplate::Map
-pub struct TokenStorage { pub allowances: Map<u256, Map<u256, u256>> }
+pub struct TokenStorage { pub allowances: StorageMap<(u256, u256), u256> }
 #[event]
 struct Approval {
     #[indexed]
@@ -385,11 +377,11 @@ impl TokenStorage {
     fn set_approval(mut self, owner: u256, spender: u256, new_amount: u256)
         uses (log: mut Log)
     {
-        let current = self.allowances.get(owner).get(spender)
+        let current = self.allowances.get((owner, spender))
 
         // Only emit if value actually changes
         if current != new_amount {
-            self.allowances.get(owner).set(spender, new_amount)
+            self.allowances.set((owner, spender), new_amount)
             log.emit(Approval { owner, spender, amount: new_amount })
         }
     }

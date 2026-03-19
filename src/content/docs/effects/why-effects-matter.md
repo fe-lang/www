@@ -33,8 +33,7 @@ Functions only get the capabilities they need:
 
 ```fe
 //<hide>
-use _boilerplate::Map
-pub struct Balances { pub data: Map<u256, u256> }
+pub struct Balances { pub data: StorageMap<u256, u256> }
 //</hide>
 
 // This function can only read

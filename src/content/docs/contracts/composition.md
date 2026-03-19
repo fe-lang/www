@@ -39,10 +39,6 @@ contract Token {
 Extract business logic into functions that declare their effect dependencies:
 
 ```fe
-//<hide>
-use _boilerplate::Map as StorageMap
-//</hide>
-
 pub struct TokenStorage {
     pub balances: StorageMap<u256, u256>,
     pub total_supply: u256,
@@ -85,7 +81,7 @@ Split storage into logical units:
 ```fe
 //<hide>
 use std::abi::sol
-use _boilerplate::{Map as StorageMap, revert}
+use _boilerplate::revert
 pub struct Ctx {}
 impl Ctx {
     pub fn caller(self) -> u256 { todo() }
@@ -169,7 +165,7 @@ Implement access control as a reusable module:
 ```fe
 //<hide>
 use std::abi::sol
-use _boilerplate::{Map as StorageMap, revert}
+use _boilerplate::revert
 pub struct TokenStorage {
     pub balances: StorageMap<u256, u256>,
 }
@@ -241,7 +237,7 @@ contract OwnableToken {
 ```fe
 //<hide>
 use std::abi::sol
-use _boilerplate::{Map as StorageMap, revert}
+use _boilerplate::revert
 pub struct TokenStorage {
     pub balances: StorageMap<u256, u256>,
 }
@@ -333,7 +329,7 @@ Functions can require multiple effects:
 ```fe
 //<hide>
 use std::abi::sol
-use _boilerplate::{Map as StorageMap, revert}
+use _boilerplate::revert
 pub struct TokenStorage {
     pub balances: StorageMap<u256, u256>,
 }

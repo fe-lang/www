@@ -84,12 +84,8 @@ The flow is:
 The `mut` keyword on `self` controls whether a method can modify storage:
 
 ```fe
-//<hide>
-use _boilerplate::Map
-//</hide>
-
 pub struct TokenStorage {
-    pub balances: Map<u256, u256>,
+    pub balances: StorageMap<u256, u256>,
     pub total_supply: u256,
 }
 
@@ -115,12 +111,8 @@ A method with `mut self` can call methods that only need `self`, but not vice ve
 Separate different concerns into distinct storage structs. Each struct's impl block only touches its own data:
 
 ```fe
-//<hide>
-use _boilerplate::Map
-//</hide>
-
 pub struct Balances {
-    pub data: Map<u256, u256>,
+    pub data: StorageMap<u256, u256>,
 }
 
 impl Balances {
@@ -152,8 +144,7 @@ When a function needs multiple storage structs, it stays standalone and declares
 
 ```fe
 //<hide>
-use _boilerplate::Map
-pub struct Balances { pub data: Map<u256, u256> }
+pub struct Balances { pub data: StorageMap<u256, u256> }
 impl Balances {
     fn transfer(mut self, from: u256, to: u256, amount: u256) {
         let _ = (from, to, amount)

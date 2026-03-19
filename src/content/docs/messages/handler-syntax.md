@@ -358,7 +358,6 @@ Handlers access contract state through effects:
 ```fe
 //<hide>
 use std::abi::sol
-use _boilerplate::Map
 msg TokenMsg {
     #[selector = sol("balanceOf(address)")]
     BalanceOf { account: u256 } -> u256,
@@ -368,7 +367,7 @@ msg TokenMsg {
 //</hide>
 
 pub struct TokenStorage {
-    pub balances: Map<u256, u256>,
+    pub balances: StorageMap<u256, u256>,
     pub total_supply: u256,
 }
 

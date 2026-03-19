@@ -38,11 +38,10 @@ Use structs to return multiple values:
 
 ```fe
 //<hide>
-use _boilerplate::Map
 pub struct TokenStorage {
-    pub balances: Map<u256, u256>,
-    pub frozen: Map<u256, bool>,
-    pub timestamps: Map<u256, u256>,
+    pub balances: StorageMap<u256, u256>,
+    pub frozen: StorageMap<u256, bool>,
+    pub timestamps: StorageMap<u256, u256>,
 }
 //</hide>
 
@@ -98,9 +97,9 @@ Create structs for validated data:
 ```fe
 //<hide>
 use _boilerplate::revert
-use _boilerplate::{Map, caller}
+use _boilerplate::caller
 
-pub struct TokenStorage { pub balances: Map<u256, u256> }
+pub struct TokenStorage { pub balances: StorageMap<u256, u256> }
 
 fn transfer(from: u256, to: u256, amount: u256) -> bool uses (store: mut TokenStorage) {
     let _ = (from, to, amount, store)
@@ -136,8 +135,7 @@ Create structs for operation results:
 
 ```fe
 //<hide>
-use _boilerplate::Map
-pub struct TokenStorage { pub balances: Map<u256, u256> }
+pub struct TokenStorage { pub balances: StorageMap<u256, u256> }
 //</hide>
 
 struct TransferResult {
@@ -343,8 +341,8 @@ Helper structs can work alongside effects:
 
 ```fe
 //<hide>
-use _boilerplate::{Map, caller}
-pub struct TokenStorage { pub balances: Map<u256, u256> }
+use _boilerplate::caller
+pub struct TokenStorage { pub balances: StorageMap<u256, u256> }
 fn transfer(from: u256, to: u256, amount: u256) -> bool uses (store: mut TokenStorage) {
     let _ = (from, to, amount, store)
     true

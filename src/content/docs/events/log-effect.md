@@ -11,8 +11,8 @@ Unlike languages where logging is implicit, Fe treats it as a tracked capability
 
 ```fe
 //<hide>
-use _boilerplate::{Map, Log}
-pub struct TokenStorage { pub balances: Map<u256, u256> }
+use _boilerplate::Log
+pub struct TokenStorage { pub balances: StorageMap<u256, u256> }
 //</hide>
 
 #[event]
@@ -158,8 +158,8 @@ Functions calling logging functions must declare the effect:
 
 ```fe
 //<hide>
-use _boilerplate::{Map, Log}
-pub struct TokenStorage { pub balances: Map<u256, u256> }
+use _boilerplate::Log
+pub struct TokenStorage { pub balances: StorageMap<u256, u256> }
 #[event]
 struct Transfer {
     #[indexed]
@@ -207,8 +207,8 @@ Contracts provide the Log effect via the `uses` clause on handlers:
 ```fe
 //<hide>
 use std::abi::sol
-use _boilerplate::{Map, Log, caller}
-pub struct TokenStorage { pub balances: Map<u256, u256> }
+use _boilerplate::{Log, caller}
+pub struct TokenStorage { pub balances: StorageMap<u256, u256> }
 impl TokenStorage {
     fn do_transfer(mut self, from: u256, to: u256, amount: u256) -> bool uses (log: mut Log) {
         let _ = (from, to, amount, log)
@@ -238,8 +238,7 @@ Use different Log effects for different event categories:
 
 ```fe
 //<hide>
-use _boilerplate::Map
-pub struct TokenStorage { pub balances: Map<u256, u256> }
+pub struct TokenStorage { pub balances: StorageMap<u256, u256> }
 pub struct AdminStorage { pub owner: u256 }
 //</hide>
 
@@ -301,7 +300,6 @@ Often storage and its events are paired:
 
 ```fe
 //<hide>
-use _boilerplate::Map
 #[event]
 struct Transfer {
     #[indexed]
@@ -313,7 +311,7 @@ struct Transfer {
 //</hide>
 
 pub struct TokenStorage {
-    pub balances: Map<u256, u256>,
+    pub balances: StorageMap<u256, u256>,
     pub total_supply: u256,
 }
 
