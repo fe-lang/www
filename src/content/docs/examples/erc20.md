@@ -363,17 +363,80 @@ Each selector matches the standard Solidity function selector, ensuring ABI comp
 
 ### The init Block
 
-```fe ignore
-init(initial_supply: u256, owner: Address)
-  uses (mut store, mut auth, mut ctx, mut log)
-{
-    auth.grant(role: MINTER, to: owner)
-    auth.grant(role: BURNER, to: owner)
+```fe
+//<hide>
+use std::abi::sol
 
-    if initial_supply > 0 {
-        store.mint(to: owner, amount: initial_supply)
+struct Map<K, V> {}
+impl<K, V> Map<K, V> {
+    pub fn new() -> Self { Map {} }
+}
+impl<K, V> core::ops::Index<K> for Map<K, V> {
+    type Output = V
+    fn index(self, _ key: K) -> V { todo() }
+}
+
+struct TokenStore {
+    total_supply: u256,
+    balances: Map<Address, u256>,
+    allowances: Map<(Address, Address), u256>,
+}
+impl TokenStore {
+    fn mint(mut self, to: Address, amount: u256) uses (log: mut Log) {
+        let _ = (to, amount)
+        todo()
     }
 }
+
+pub struct AccessControl {
+    roles: Map<(u256, Address), bool>,
+}
+impl AccessControl {
+    pub fn grant(mut self, role: u256, to: Address) {
+        self.roles[(role, to)] = true
+    }
+}
+
+pub struct Ctx {}
+impl Ctx {
+    pub fn caller(self) -> Address { todo() }
+}
+
+pub struct Log {}
+impl Log {
+    pub fn emit<T>(self, _ event: T) { todo() }
+}
+
+extern {
+    fn assert(_: bool, _: String<64>)
+}
+
+msg Erc20Init {
+    #[selector = sol("init(uint256,address)")]
+    Init { initial_supply: u256, owner: Address } -> bool,
+}
+
+const MINTER: u256 = 1
+const BURNER: u256 = 2
+
+contract CoolCoinInit uses (ctx: mut Ctx, log: mut Log) {
+    mut store: TokenStore,
+    mut auth: AccessControl,
+
+//</hide>
+    init(initial_supply: u256, owner: Address)
+      uses (mut store, mut auth, mut ctx, mut log)
+    {
+        auth.grant(role: MINTER, to: owner)
+        auth.grant(role: BURNER, to: owner)
+
+        if initial_supply > 0 {
+            store.mint(to: owner, amount: initial_supply)
+        }
+    }
+//<hide>
+}
+//</hide>
 ```
 
 The constructor:
@@ -385,17 +448,84 @@ The constructor:
 
 Each handler declares its specific effect requirements:
 
-```fe ignore
-recv Erc20 {
-    Transfer { to, amount } -> bool uses (ctx, mut store, mut log) {
-        store.transfer(from: ctx.caller(), to, amount)
-        true
-    }
+```fe
+//<hide>
+use std::abi::sol
 
-    BalanceOf { account } -> u256 uses store {
-        store.balances[account]
+struct Map<K, V> {}
+impl<K, V> Map<K, V> {
+    pub fn new() -> Self { Map {} }
+}
+impl<K, V> core::ops::Index<K> for Map<K, V> {
+    type Output = V
+    fn index(self, _ key: K) -> V { todo() }
+}
+
+#[event]
+struct TransferEvent {
+    #[indexed]
+    from: Address,
+    #[indexed]
+    to: Address,
+    value: u256,
+}
+
+struct TokenStore {
+    total_supply: u256,
+    balances: Map<Address, u256>,
+    allowances: Map<(Address, Address), u256>,
+}
+impl TokenStore {
+    fn transfer(mut self, from: Address, to: Address, amount: u256) uses (log: mut Log) {
+        let _ = (from, to, amount)
+        todo()
     }
 }
+
+pub struct AccessControl {
+    roles: Map<(u256, Address), bool>,
+}
+
+pub struct Ctx {}
+impl Ctx {
+    pub fn caller(self) -> Address { todo() }
+}
+
+pub struct Log {}
+impl Log {
+    pub fn emit<T>(self, _ event: T) { todo() }
+}
+
+extern {
+    fn assert(_: bool, _: String<64>)
+}
+
+msg Erc20 {
+    #[selector = sol("transfer(address,uint256)")]
+    Transfer { to: Address, amount: u256 } -> bool,
+
+    #[selector = sol("balanceOf(address)")]
+    BalanceOf { account: Address } -> u256,
+}
+
+contract CoolCoinRecv uses (ctx: mut Ctx, log: mut Log) {
+    mut store: TokenStore,
+    mut auth: AccessControl,
+
+//</hide>
+    recv Erc20 {
+        Transfer { to, amount } -> bool uses (ctx, mut store, mut log) {
+            store.transfer(from: ctx.caller(), to, amount)
+            true
+        }
+
+        BalanceOf { account } -> u256 uses store {
+            store.balances[account]
+        }
+    }
+//<hide>
+}
+//</hide>
 ```
 
 Notice:
@@ -458,15 +588,63 @@ struct ApprovalEvent {
 
 Events are emitted via the Log effect:
 
-```fe ignore
+```fe
+//<hide>
+#[event]
+struct TransferEvent {
+    #[indexed]
+    from: Address,
+    #[indexed]
+    to: Address,
+    value: u256,
+}
+
+pub struct Log {}
+impl Log {
+    pub fn emit<T>(self, _ event: T) { todo() }
+}
+
+fn __example_emit(log: Log, from: Address, to: Address, amount: u256) {
+//</hide>
 log.emit(TransferEvent { from, to, value: amount })
+//<hide>
+}
+//</hide>
 ```
 
 ### Access Control
 
 Role-based access control is implemented as a struct with methods:
 
-```fe ignore
+```fe
+//<hide>
+struct Map<K, V> {}
+impl<K, V> Map<K, V> {
+    pub fn new() -> Self { Map {} }
+}
+impl<K, V> core::ops::Index<K> for Map<K, V> {
+    type Output = V
+    fn index(self, _ key: K) -> V { todo() }
+}
+
+pub struct AccessControl {
+    roles: Map<(u256, Address), bool>,
+}
+impl AccessControl {
+    pub fn has_role(self, role: u256, account: Address) -> bool {
+        core::ops::Index<(u256, Address)>::index(self.roles, (role, account))
+    }
+}
+
+pub struct Ctx {}
+impl Ctx {
+    pub fn caller(self) -> Address { todo() }
+}
+
+extern {
+    fn assert(_: bool, _: String<64>)
+}
+//</hide>
 const MINTER: u256 = 1
 const BURNER: u256 = 2
 
@@ -484,12 +662,89 @@ impl AccessControl {
 
 Usage in handlers:
 
-```fe ignore
-Mint { to, amount } -> bool uses (ctx, mut store, mut log, auth) {
-    auth.require(role: MINTER)
-    store.mint(to, amount)
-    true
+```fe
+//<hide>
+use std::abi::sol
+
+struct Map<K, V> {}
+impl<K, V> Map<K, V> {
+    pub fn new() -> Self { Map {} }
 }
+impl<K, V> core::ops::Index<K> for Map<K, V> {
+    type Output = V
+    fn index(self, _ key: K) -> V { todo() }
+}
+
+#[event]
+struct TransferEvent {
+    #[indexed]
+    from: Address,
+    #[indexed]
+    to: Address,
+    value: u256,
+}
+
+struct TokenStore {
+    total_supply: u256,
+    balances: Map<Address, u256>,
+    allowances: Map<(Address, Address), u256>,
+}
+impl TokenStore {
+    fn mint(mut self, to: Address, amount: u256) uses (log: mut Log) {
+        let _ = (to, amount)
+        todo()
+    }
+}
+
+pub struct AccessControl {
+    roles: Map<(u256, Address), bool>,
+}
+impl AccessControl {
+    pub fn has_role(self, role: u256, account: Address) -> bool {
+        core::ops::Index<(u256, Address)>::index(self.roles, (role, account))
+    }
+    pub fn require(self, role: u256) uses (ctx: Ctx) {
+        let caller = ctx.caller()
+        assert(self.has_role(role, caller), "access denied: missing role")
+    }
+}
+
+pub struct Ctx {}
+impl Ctx {
+    pub fn caller(self) -> Address { todo() }
+}
+
+pub struct Log {}
+impl Log {
+    pub fn emit<T>(self, _ event: T) { todo() }
+}
+
+extern {
+    fn assert(_: bool, _: String<64>)
+}
+
+const MINTER: u256 = 1
+
+msg Erc20Ext {
+    #[selector = sol("mint(address,uint256)")]
+    Mint { to: Address, amount: u256 } -> bool,
+}
+
+contract CoolCoinMint uses (ctx: mut Ctx, log: mut Log) {
+    mut store: TokenStore,
+    auth: AccessControl,
+
+    recv Erc20Ext {
+//</hide>
+        Mint { to, amount } -> bool uses (ctx, mut store, mut log, auth) {
+            auth.require(role: MINTER)
+            store.mint(to, amount)
+            true
+        }
+//<hide>
+    }
+}
+//</hide>
 ```
 
 The `require` method checks if the caller has the specified role, reverting if not.

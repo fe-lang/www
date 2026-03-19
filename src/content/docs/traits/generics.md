@@ -72,19 +72,32 @@ fn print_value<T: Printable>(value: T) -> String {
 
 Now `print_value` only accepts types that implement `Printable`:
 
-```fe ignore
+```fe
+//<hide>
+use _boilerplate::Printable
+
+fn print_value<T: Printable>(value: T) -> String<256> {
+    value.to_string()
+}
+//</hide>
 struct Message {
-    text: String,
+    text: String<256>,
 }
 
 impl Printable for Message {
-    fn to_string(self) -> String {
+    fn to_string(self) -> String<256> {
         self.text
     }
 }
 
-let msg = Message { text: "Hello" }
-print_value(msg)  // Works: Message implements Printable
+//<hide>
+fn __example_msg() {
+//</hide>
+let message = Message { text: "Hello" }
+print_value(message)  // Works: Message implements Printable
+//<hide>
+}
+//</hide>
 ```
 
 ## Generic Structs
@@ -164,13 +177,20 @@ fn max<T: Comparable>(a: T, b: T) -> T {
 
 Generics preserve type information:
 
-```fe ignore
-fn first<T>(items: Array<T>) -> T {
+```fe
+fn first(items: [u256; 3]) -> u256 {
     items[0]
 }
 
-let numbers: Array<u256> = [1, 2, 3]
-let n = first(numbers)  // n is u256, not a generic "any" type
+//<hide>
+fn __example_first() {
+//</hide>
+let numbers: [u256; 3] = [1, 2, 3]
+let n: u256 = first(numbers)  // n is u256, not a generic "any" type
+//<hide>
+let _ = n
+}
+//</hide>
 ```
 
 ## Calling Generic Functions
@@ -179,8 +199,19 @@ let n = first(numbers)  // n is u256, not a generic "any" type
 
 Usually the compiler infers types:
 
-```fe ignore
-let x = identity(42)  // Compiler infers T = u256
+```fe
+//<hide>
+fn identity<T>(value: own T) -> T {
+    value
+}
+
+fn __example_infer() {
+//</hide>
+let x: u256 = identity(42)  // Compiler infers T = u256
+//<hide>
+let _ = x
+}
+//</hide>
 ```
 
 ### Explicit Type Arguments

@@ -154,32 +154,60 @@ match maybe {
 
 Most constructs are expressions:
 
-```fe ignore
-let value = if condition { 10 } else { 20 }
+```fe
+//<hide>
+enum Status {
+    Pending,
+    Active,
+    Completed { result: u256 },
+}
+fn __expr_example() {
+let condition = true
+let status = Status::Active
+//</hide>
+let value: u256 = if condition { 10 } else { 20 }
 
 let result = match status {
     Status::Active => true,
     _ => false,
 }
+//<hide>
+let _ = (value, result)
+}
+//</hide>
 ```
 
 ### Type Inference
 
 Types are inferred where possible:
 
-```fe ignore
-let x = 42          // u256 inferred
+```fe
+//<hide>
+fn __infer_example() {
+//</hide>
+let x = true    // Type inferred as bool
 let y: u8 = 42      // Explicit annotation
+//<hide>
+let _ = (x, y)
+}
+//</hide>
 ```
 
 ### Mutability
 
 Variables are immutable by default:
 
-```fe ignore
-let x = 10          // Immutable
-let mut y = 10      // Mutable
+```fe
+//<hide>
+fn __mut_example() {
+//</hide>
+let x: u256 = 10    // Immutable
+let mut y: u256 = 10 // Mutable
 y = 20              // OK
+//<hide>
+let _ = (x, y)
+}
+//</hide>
 ```
 
 ## Key Differences
@@ -188,15 +216,29 @@ y = 20              // OK
 
 Fe doesn't have Rust's ownership system. All values are copied or have reference semantics based on context:
 
-```fe ignore
+```fe
+//<hide>
+struct MyStruct {
+    pub x: u256,
+}
+//</hide>
 // Rust would require borrowing
 fn process(data: MyStruct) {
     // In Fe, no ownership concerns
+    //<hide>
+    let _ = data
+    //</hide>
 }
 
-let a = MyStruct { ... }
+//<hide>
+fn __ownership_example() {
+//</hide>
+let a = MyStruct { x: 1 }
 process(a)
 process(a)  // Fine in Fe, would be error in Rust
+//<hide>
+}
+//</hide>
 ```
 
 ### No Lifetimes
@@ -244,25 +286,40 @@ Fe has a standard library, but EVM constraints mean some Rust types aren't avail
 
 Fe prefers fixed-size types for EVM efficiency:
 
-```fe ignore
+```fe
+//<hide>
+fn __fixed_example() {
+//</hide>
 // Rust: String, Vec<u8>
 // Fe: Fixed-size
 let name: String<32> = "Token"
 let data: [u8; 32] = [0; 32]
+//<hide>
+let _ = (name, data)
+}
+//</hide>
 ```
 
 ### Iterators
 
 Currently, Fe has basic loop constructs but not yet the full iterator pattern:
 
-```fe ignore
+```fe
+//<hide>
+fn __iter_example() {
+let items: [u256; 3] = [1, 2, 3]
+let len: u256 = 3
+//</hide>
 // Rust: items.iter().map(|x| x + 1).collect()
 // Fe: Currently uses manual while loops
 let mut i: u256 = 0
-while i < items.len() {
+while i < len {
     // process items[i]
     i = i + 1
 }
+//<hide>
+}
+//</hide>
 ```
 
 :::note[Planned Feature]
@@ -273,10 +330,18 @@ A trait-based Iterator system similar to Rust's is planned for Fe. This will ena
 
 Error handling primarily uses assertions:
 
-```fe ignore
+```fe
+//<hide>
+fn __assert_example() {
+let balance: u256 = 100
+let amount: u256 = 50
+//</hide>
 // Rust: Result<T, E>
 // Fe: Assertions and revert
-assert(balance >= amount, "Insufficient balance")
+assert(balance >= amount)
+//<hide>
+}
+//</hide>
 ```
 
 ### No Closures

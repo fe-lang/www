@@ -274,17 +274,33 @@ let _ = day_name
 
 Use `for` to iterate over a collection:
 
-```fe ignore
+```fe
+//<hide>
+fn process<T>(item: T) { let _ = item }
+fn __example1() {
+let items: [u256; 3] = [1, 2, 3]
+//</hide>
 for item in items {
     process(item)
 }
+//<hide>
+}
+//</hide>
 ```
 
 ### Pattern Binding in For Loops
 
 Destructure elements while iterating:
 
-```fe ignore
+```fe
+//<hide>
+fn store_at(index: u256, value: u256) { let _ = (index, value) }
+fn credit(name: u256, balance: u256) { let _ = (name, balance) }
+pub struct User { pub name: u256, pub balance: u256 }
+fn __example2() {
+let indexed_items: [(u256, u256); 2] = [(0, 10), (1, 20)]
+let users: [User; 1] = [User { name: 1, balance: 100 }]
+//</hide>
 for (index, value) in indexed_items {
     store_at(index, value)
 }
@@ -294,6 +310,9 @@ for User { name, balance } in users {
         credit(name, balance)
     }
 }
+//<hide>
+}
+//</hide>
 ```
 
 ### While Loops
@@ -340,31 +359,65 @@ while true {
 
 Use `break` to exit a loop early:
 
-```fe ignore
+```fe
+//<hide>
+pub struct Item {
+    pub val: u256,
+}
+impl Item {
+    pub fn is_target(self) -> bool { self.val == 0 }
+}
+fn __example3() {
+let items: [Item; 2] = [Item { val: 1 }, Item { val: 0 }]
+let mut found = Item { val: 0 }
+//</hide>
 for item in items {
     if item.is_target() {
         found = item
         break  // Exit the loop
     }
 }
+//<hide>
+let _ = found
+}
+//</hide>
 ```
 
 ### Continue
 
 Use `continue` to skip to the next iteration:
 
-```fe ignore
+```fe
+//<hide>
+pub struct Item {
+    pub val: u256,
+}
+impl Item {
+    pub fn should_skip(self) -> bool { self.val == 0 }
+}
+fn process(item: Item) { let _ = item }
+fn __example4() {
+let items: [Item; 2] = [Item { val: 0 }, Item { val: 1 }]
+//</hide>
 for item in items {
     if item.should_skip() {
         continue  // Skip this item
     }
     process(item)
 }
+//<hide>
+}
+//</hide>
 ```
 
 ### Combining Break and Continue
 
-```fe ignore
+```fe
+//<hide>
+fn __example5() {
+let values: [u256; 3] = [1, 2, 3]
+let limit: u256 = 5
+//</hide>
 let mut sum: u256 = 0
 for value in values {
     // Skip negative values
@@ -379,6 +432,10 @@ for value in values {
 
     sum = sum + value
 }
+//<hide>
+let _ = sum
+}
+//</hide>
 ```
 
 ## Early Return

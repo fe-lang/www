@@ -117,11 +117,20 @@ The `mut` keyword signals to readers that this variable's value will change duri
 
 Use `mut` when you genuinely need to modify a value:
 
-```fe ignore
+```fe
+//<hide>
+pub struct Item { pub value: u256 }
+fn __example2() {
+let items: [Item; 2] = [Item { value: 10 }, Item { value: 20 }]
+//</hide>
 let mut total = 0
 for item in items {
     total = total + item.value
 }
+//<hide>
+let _ = total
+}
+//</hide>
 ```
 
 Prefer immutable variables when possible. If you find yourself using `mut` frequently, consider whether there's a more functional approach.

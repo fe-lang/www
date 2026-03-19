@@ -83,13 +83,19 @@ The `bool` type represents true/false values:
 
 ### Usage
 
-```fe ignore
+```fe
+//<hide>
+fn __bool_example() {
+//</hide>
 let is_active: bool = true
 let paused: bool = false
 
 if is_active && !paused {
     // ...
 }
+//<hide>
+}
+//</hide>
 ```
 
 ### Operations
@@ -140,16 +146,41 @@ Fixed-size collections of heterogeneous types:
 
 ### Usage
 
-```fe ignore
+```fe
+//<hide>
+fn __tuple_example() {
+//</hide>
 let pair: (u256, bool) = (100, true)
 let triple: (u256, u256, u256) = (1, 2, 3)
+//<hide>
+let _ = triple
+
+// Destructuring shown separately to avoid move conflicts
+}
+fn __tuple_destructure() {
+//</hide>
 
 // Destructuring
-let (amount, success) = pair
+let (_amount, _success): (u256, bool) = (100, true)
+//<hide>
+}
+fn __tuple_index() {
+//</hide>
 
 // Access by index
-let first = pair.0
-let second = pair.1
+let pair2: (u256, bool) = (100, true)
+let first = pair2.0
+//<hide>
+let _ = first
+}
+fn __tuple_index2() {
+//</hide>
+let pair3: (u256, bool) = (100, true)
+let second = pair3.1
+//<hide>
+let _ = second
+}
+//</hide>
 ```
 
 ## Arrays
@@ -256,12 +287,19 @@ storage.balances[account] = new_balance
 
 Convert between numeric types with `as`:
 
-```fe ignore
+```fe
+//<hide>
+fn __casting_example() {
+//</hide>
 let small: u8 = 100
 let big: u256 = small as u256
 
 let signed: i256 = -50
-let unsigned: u256 = signed as u256  // Caution: reinterprets bits
+let unsigned: u256 = signed.downcast_unchecked()  // Caution: reinterprets bits
+//<hide>
+let _ = (big, unsigned)
+}
+//</hide>
 ```
 
 ### Casting Rules

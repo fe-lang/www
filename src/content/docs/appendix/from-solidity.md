@@ -144,18 +144,29 @@ for (uint i = 0; i < 10; i++) {
 ```
 
 **Fe**:
-```fe ignore
+```fe
+//<hide>
+fn __control_flow_example() -> bool {
+let x: u256 = 1
+//</hide>
 if x > 0 {
     return true
 } else {
     return false
 }
+//<hide>
+}
+fn __loop_example() {
+//</hide>
 
 let mut i: u256 = 0
 while i < 10 {
     // ...
     i = i + 1
 }
+//<hide>
+}
+//</hide>
 ```
 
 ### Events
@@ -197,9 +208,17 @@ revert("Error message");
 ```
 
 **Fe**:
-```fe ignore
-assert(balance >= amount, "Insufficient balance")
-revert
+```fe
+//<hide>
+fn __error_example() {
+let balance: u256 = 100
+let amount: u256 = 50
+//</hide>
+assert(balance >= amount)
+revert("Error message")
+//<hide>
+}
+//</hide>
 ```
 
 ### Constructors
@@ -311,13 +330,19 @@ contract Token {
 
 Fe doesn't have function modifiers. Use helper functions:
 
-```fe ignore
+```fe
 fn require_not_paused(paused: bool) {
-    assert(!paused, "Contract is paused")
+    assert(!paused)
 }
 
+//<hide>
+fn __modifier_example() {
+//</hide>
 // In handler:
-require_not_paused(store.paused)
+require_not_paused(false)
+//<hide>
+}
+//</hide>
 ```
 
 ### Explicit Selectors
@@ -348,9 +373,16 @@ fn transfer_amount(to: Address, amount: u256) { ... }
 
 Fe infers types where possible:
 
-```fe ignore
-let x = 10        // u256 inferred
+```fe
+//<hide>
+fn __type_inference_example() {
+//</hide>
+let x: u256 = 10  // u256 type
 let y: u8 = 10    // Explicit when needed
+//<hide>
+let _ = (x, y)
+}
+//</hide>
 ```
 
 ## Migration Tips

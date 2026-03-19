@@ -37,7 +37,10 @@ Bounds enable the compiler to:
 2. **Catch errors early**: Fail at call site, not deep in implementation
 3. **Document requirements**: Show what types are expected
 
-```fe ignore
+```fe
+//<hide>
+struct String {}
+//</hide>
 trait Printable {
     fn to_string(self) -> String
 }
@@ -53,7 +56,7 @@ struct Secret {
 }
 
 // Error at call site: Secret doesn't implement Printable
-log(Secret { data: 42 })  // Compile error
+// log(Secret { data: 42 })  // Compile error
 ```
 
 ## Multiple Bounds
@@ -81,7 +84,15 @@ fn describe<T: Hashable + Printable>(value: T) -> String {
 
 The type must implement all specified traits:
 
-```fe ignore
+```fe
+//<hide>
+use _boilerplate::{Hashable, Printable}
+
+fn describe<T: Hashable + Printable>(value: T) -> String<256> {
+    let _hash = value.hash()
+    value.to_string()
+}
+//</hide>
 struct Token {
     id: u256,
 }
@@ -93,12 +104,18 @@ impl Hashable for Token {
 }
 
 impl Printable for Token {
-    fn to_string(self) -> String {
+    fn to_string(self) -> String<256> {
         "Token"
     }
 }
 
+//<hide>
+fn __example_describe() {
+//</hide>
 describe(Token { id: 1 })  // Works: Token implements both
+//<hide>
+}
+//</hide>
 ```
 
 ## Bounds on Multiple Parameters
@@ -273,7 +290,7 @@ fn load<T: Storable + Default>(key: u256) -> T uses (storage: Storage) {
 
 When bounds aren't satisfied, you get clear errors:
 
-```fe ignore
+```fe
 trait Hashable {
     fn hash(self) -> u256
 }
@@ -286,7 +303,7 @@ struct NoHash {
     data: u256,
 }
 
-process(NoHash { data: 1 })
+// process(NoHash { data: 1 })
 // Error: NoHash does not implement Hashable
 ```
 
