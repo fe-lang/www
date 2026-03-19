@@ -10,14 +10,16 @@ Messages define the external interface of a contract: the operations that can be
 Define a message group using the `msg` keyword:
 
 ```fe
+use std::abi::sol
+
 msg TokenMsg {
-    #[selector = 0xa9059cbb]
+    #[selector = sol("transfer(address,uint256)")]
     Transfer { to: u256, amount: u256 } -> bool,
 
-    #[selector = 0x70a08231]
+    #[selector = sol("balanceOf(address)")]
     BalanceOf { account: u256 } -> u256,
 
-    #[selector = 0x18160ddd]
+    #[selector = sol("totalSupply()")]
     TotalSupply -> u256,
 }
 ```
@@ -30,9 +32,10 @@ A variant defines a single callable operation:
 
 ```fe
 //<hide>
+use std::abi::sol
 msg Example {
 //</hide>
-    #[selector = 0xa9059cbb]
+    #[selector = sol("transfer(address,uint256)")]
     Transfer { to: u256, amount: u256 } -> bool,
 //<hide>
 }
@@ -40,7 +43,7 @@ msg Example {
 ```
 
 Components:
-- **Selector attribute**: The 4-byte identifier (`#[selector = 0x...]`)
+- **Selector attribute**: The 4-byte identifier (`#[selector = sol(...)]`)
 - **Name**: The variant name (`Transfer`)
 - **Fields**: Parameters in curly braces (`{ to: u256, amount: u256 }`)
 - **Return type**: What the handler returns (`-> bool`)
@@ -51,9 +54,10 @@ Some operations don't need parameters:
 
 ```fe
 //<hide>
+use std::abi::sol
 msg Example {
 //</hide>
-    #[selector = 0x18160ddd]
+    #[selector = sol("totalSupply()")]
     TotalSupply -> u256,
 //<hide>
 }
@@ -66,9 +70,10 @@ Operations that don't return a value omit the return type:
 
 ```fe
 //<hide>
+use std::abi::sol
 msg Example {
 //</hide>
-    #[selector = 0x42842e0e]
+    #[selector = sol("safeTransferFrom(address,address,uint256)")]
     SafeTransfer { from: u256, to: u256, token_id: u256 },
 //<hide>
 }
@@ -82,23 +87,25 @@ This implicitly returns `()` (unit).
 A simple token message interface:
 
 ```fe
+use std::abi::sol
+
 msg Erc20 {
-    #[selector = 0xa9059cbb]
+    #[selector = sol("transfer(address,uint256)")]
     Transfer { to: u256, amount: u256 } -> bool,
 
-    #[selector = 0x095ea7b3]
+    #[selector = sol("approve(address,uint256)")]
     Approve { spender: u256, amount: u256 } -> bool,
 
-    #[selector = 0x23b872dd]
+    #[selector = sol("transferFrom(address,address,uint256)")]
     TransferFrom { from: u256, to: u256, amount: u256 } -> bool,
 
-    #[selector = 0x70a08231]
+    #[selector = sol("balanceOf(address)")]
     BalanceOf { account: u256 } -> u256,
 
-    #[selector = 0xdd62ed3e]
+    #[selector = sol("allowance(address,address)")]
     Allowance { owner: u256, spender: u256 } -> u256,
 
-    #[selector = 0x18160ddd]
+    #[selector = sol("totalSupply()")]
     TotalSupply -> u256,
 }
 ```
@@ -118,8 +125,9 @@ Messages are handled in recv blocks within contracts:
 
 ```fe
 //<hide>
+use std::abi::sol
 msg Erc20 {
-    #[selector = 0xa9059cbb]
+    #[selector = sol("transfer(address,uint256)")]
     Transfer { to: u256, amount: u256 } -> bool,
 }
 //</hide>

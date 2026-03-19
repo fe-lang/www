@@ -64,8 +64,9 @@ Extract fields by their names:
 
 ```fe
 //<hide>
+use std::abi::sol
 msg TokenMsg {
-    #[selector = 0xa9059cbb]
+    #[selector = sol("transfer(address,uint256)")]
     Transfer { to: u256, amount: u256 } -> bool,
 }
 
@@ -88,8 +89,9 @@ Give fields different local names:
 
 ```fe
 //<hide>
+use std::abi::sol
 msg TokenMsg {
-    #[selector = 0xa9059cbb]
+    #[selector = sol("transfer(address,uint256)")]
     Transfer { to: u256, amount: u256 } -> bool,
 }
 
@@ -112,8 +114,9 @@ Use `_` to ignore specific fields:
 
 ```fe
 //<hide>
+use std::abi::sol
 msg TokenMsg {
-    #[selector = 0xa9059cbb]
+    #[selector = sol("transfer(address,uint256)")]
     Transfer { to: u256, amount: u256 } -> bool,
 }
 
@@ -134,8 +137,9 @@ Use `..` to ignore all remaining fields:
 
 ```fe
 //<hide>
+use std::abi::sol
 msg TokenMsg {
-    #[selector = 0x23b872dd]
+    #[selector = sol("transferFrom(address,address,uint256)")]
     TransferFrom { from: u256, to: u256, amount: u256 } -> bool,
 }
 
@@ -158,8 +162,9 @@ For variants without parameters, omit the braces:
 
 ```fe
 //<hide>
+use std::abi::sol
 msg TokenMsg {
-    #[selector = 0x18160ddd]
+    #[selector = sol("totalSupply()")]
     TotalSupply -> u256,
 }
 
@@ -183,11 +188,12 @@ The return type must match the message variant's declaration:
 
 ```fe
 //<hide>
+use std::abi::sol
 fn get_balance(account: u256) -> u256 { account }
 //</hide>
 
 msg Query {
-    #[selector = 0x70a08231]
+    #[selector = sol("balanceOf(address)")]
     BalanceOf { account: u256 } -> u256,
 }
 
@@ -210,8 +216,10 @@ contract Token {
 Handlers without a return type implicitly return `()`:
 
 ```fe
+use std::abi::sol
+
 msg Commands {
-    #[selector = 0x42842e0e]
+    #[selector = sol("safeTransferFrom(address,address,uint256)")]
     SafeTransfer { from: u256, to: u256, token_id: u256 },
 }
 
@@ -236,10 +244,11 @@ Handler bodies contain the implementation logic. They can use all standard Fe ex
 
 ```fe
 //<hide>
+use std::abi::sol
 msg TokenMsg {
-    #[selector = 0x18160ddd]
+    #[selector = sol("totalSupply()")]
     TotalSupply -> u256,
-    #[selector = 0x70a08231]
+    #[selector = sol("balanceOf(address)")]
     BalanceOf { account: u256 } -> u256,
 }
 
@@ -269,8 +278,9 @@ Use `return` for early exits:
 
 ```fe
 //<hide>
+use std::abi::sol
 msg TokenMsg {
-    #[selector = 0xa9059cbb]
+    #[selector = sol("transfer(address,uint256)")]
     Transfer { to: u256, amount: u256 } -> bool,
 }
 
@@ -298,9 +308,10 @@ Handlers typically delegate to helper functions:
 
 ```fe
 //<hide>
+use std::abi::sol
 pub struct TokenStorage {}
 msg TokenMsg {
-    #[selector = 0xa9059cbb]
+    #[selector = sol("transfer(address,uint256)")]
     Transfer { to: u256, amount: u256 } -> bool,
 }
 //</hide>
@@ -340,11 +351,12 @@ Handlers access contract state through effects:
 
 ```fe
 //<hide>
+use std::abi::sol
 use _boilerplate::Map
 msg TokenMsg {
-    #[selector = 0x70a08231]
+    #[selector = sol("balanceOf(address)")]
     BalanceOf { account: u256 } -> u256,
-    #[selector = 0xa9059cbb]
+    #[selector = sol("transfer(address,uint256)")]
     Transfer { to: u256, amount: u256 } -> bool,
 }
 //</hide>
@@ -385,13 +397,14 @@ Handlers can access transaction context using built-in functions:
 
 ```fe
 //<hide>
+use std::abi::sol
 use _boilerplate::caller
 fn do_transfer(from: u256, to: u256, amount: u256) -> bool {
     let _ = (from, to, amount)
     true
 }
 msg TokenMsg {
-    #[selector = 0xa9059cbb]
+    #[selector = sol("transfer(address,uint256)")]
     Transfer { to: u256, amount: u256 } -> bool,
 }
 contract Token {

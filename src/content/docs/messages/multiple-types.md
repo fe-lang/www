@@ -11,6 +11,7 @@ A contract can have multiple recv blocks, each handling a different message type
 
 ```fe
 //<hide>
+use std::abi::sol
 use _boilerplate::Map as StorageMap
 pub struct TokenStorage {
     pub balances: StorageMap<u256, u256>,
@@ -36,24 +37,24 @@ fn get_balance(account: u256) -> u256 uses (store: TokenStorage) {
 //</hide>
 
 msg Erc20 {
-    #[selector = 0xa9059cbb]
+    #[selector = sol("transfer(address,uint256)")]
     Transfer { to: u256, amount: u256 } -> bool,
 
-    #[selector = 0x70a08231]
+    #[selector = sol("balanceOf(address)")]
     BalanceOf { account: u256 } -> u256,
 
-    #[selector = 0x18160ddd]
+    #[selector = sol("totalSupply()")]
     TotalSupply {} -> u256,
 }
 
 msg Erc20Metadata {
-    #[selector = 0x06fdde03]
+    #[selector = sol("name()")]
     Name {} -> String<32>,
 
-    #[selector = 0x95d89b41]
+    #[selector = sol("symbol()")]
     Symbol {} -> String<8>,
 
-    #[selector = 0x313ce567]
+    #[selector = sol("decimals()")]
     Decimals {} -> u8,
 }
 
@@ -117,6 +118,7 @@ Multiple recv blocks can share the same contract state:
 
 ```fe
 //<hide>
+use std::abi::sol
 use _boilerplate::Map as StorageMap
 pub struct Ctx {}
 impl Ctx {
@@ -132,14 +134,14 @@ fn do_transfer(from: u256, to: u256, amount: u256) -> bool uses (store: mut Toke
 }
 
 msg Erc20 {
-    #[selector = 0xa9059cbb]
+    #[selector = sol("transfer(address,uint256)")]
     Transfer { to: u256, amount: u256 } -> bool,
-    #[selector = 0x70a08231]
+    #[selector = sol("balanceOf(address)")]
     BalanceOf { account: u256 } -> u256,
 }
 
 msg Erc2612 {
-    #[selector = 0xd505accf]
+    #[selector = sol("permit(address,address,uint256,uint256,uint8,uint256,uint256)")]
     Permit { owner: u256, spender: u256, value: u256, deadline: u256, v: u8, r: u256, s: u256 } -> bool,
 }
 //</hide>

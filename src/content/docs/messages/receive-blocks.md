@@ -10,11 +10,13 @@ Receive blocks (`recv`) are where contracts handle incoming messages. They conne
 A named recv block handles all variants of a specific message type:
 
 ```fe
+use std::abi::sol
+
 msg TokenMsg {
-    #[selector = 0xa9059cbb]
+    #[selector = sol("transfer(address,uint256)")]
     Transfer { to: u256, amount: u256 } -> bool,
 
-    #[selector = 0x70a08231]
+    #[selector = sol("balanceOf(address)")]
     BalanceOf { account: u256 } -> u256,
 }
 
@@ -56,8 +58,9 @@ A bare recv block handles messages without specifying a message type:
 
 ```fe
 //<hide>
+use std::abi::sol
 msg TokenMsg {
-    #[selector = 0xa9059cbb]
+    #[selector = sol("transfer(address,uint256)")]
     Transfer { to: u256, amount: u256 } -> bool,
 }
 
@@ -91,8 +94,9 @@ Recv blocks appear inside contract definitions after fields and the init block:
 
 ```fe
 //<hide>
+use std::abi::sol
 msg TokenMsg {
-    #[selector = 0xa9059cbb]
+    #[selector = sol("transfer(address,uint256)")]
     Transfer { to: u256, amount: u256 } -> bool,
 }
 //</hide>
@@ -187,17 +191,18 @@ A contract can have multiple recv blocks for different message types:
 
 ```fe
 //<hide>
+use std::abi::sol
 msg Erc20 {
-    #[selector = 0xa9059cbb]
+    #[selector = sol("transfer(address,uint256)")]
     Transfer { to: u256, amount: u256 } -> bool,
-    #[selector = 0x70a08231]
+    #[selector = sol("balanceOf(address)")]
     BalanceOf { account: u256 } -> u256,
 }
 
 msg Erc721 {
-    #[selector = 0x6352211e]
+    #[selector = sol("ownerOf(uint256)")]
     OwnerOf { token_id: u256 } -> u256,
-    #[selector = 0x42842e0e]
+    #[selector = sol("safeTransferFrom(address,address,uint256)")]
     SafeTransferFrom { from: u256, to: u256, token_id: u256 },
 }
 //</hide>

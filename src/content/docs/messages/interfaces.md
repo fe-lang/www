@@ -10,23 +10,25 @@ Message groups in Fe serve as interface definitions. They specify what operation
 A message group defines a contract interface:
 
 ```fe
+use std::abi::sol
+
 msg Erc20 {
-    #[selector = 0xa9059cbb]
+    #[selector = sol("transfer(address,uint256)")]
     Transfer { to: u256, amount: u256 } -> bool,
 
-    #[selector = 0x095ea7b3]
+    #[selector = sol("approve(address,uint256)")]
     Approve { spender: u256, amount: u256 } -> bool,
 
-    #[selector = 0x23b872dd]
+    #[selector = sol("transferFrom(address,address,uint256)")]
     TransferFrom { from: u256, to: u256, amount: u256 } -> bool,
 
-    #[selector = 0x70a08231]
+    #[selector = sol("balanceOf(address)")]
     BalanceOf { account: u256 } -> u256,
 
-    #[selector = 0xdd62ed3e]
+    #[selector = sol("allowance(address,address)")]
     Allowance { owner: u256, spender: u256 } -> u256,
 
-    #[selector = 0x18160ddd]
+    #[selector = sol("totalSupply()")]
     TotalSupply {} -> u256,
 }
 ```
@@ -59,8 +61,10 @@ The `MsgVariant` trait provides:
 When you write:
 
 ```fe
+use std::abi::sol
+
 msg TokenMsg {
-    #[selector = 0xa9059cbb]
+    #[selector = sol("transfer(address,uint256)")]
     Transfer { to: u256, amount: u256 } -> bool,
 }
 ```
@@ -91,33 +95,35 @@ This desugaring enables:
 Define standard interfaces as separate message groups:
 
 ```fe
+use std::abi::sol
+
 // Core ERC20 operations
 msg Erc20 {
-    #[selector = 0xa9059cbb]
+    #[selector = sol("transfer(address,uint256)")]
     Transfer { to: u256, amount: u256 } -> bool,
 }
 
 // Metadata extension
 msg Erc20Metadata {
-    #[selector = 0x06fdde03]
+    #[selector = sol("name()")]
     Name {} -> String<32>,
 
-    #[selector = 0x95d89b41]
+    #[selector = sol("symbol()")]
     Symbol {} -> String<8>,
 
-    #[selector = 0x313ce567]
+    #[selector = sol("decimals()")]
     Decimals {} -> u8,
 }
 
 // Permit extension (ERC2612)
 msg Erc20Permit {
-    #[selector = 0xd505accf]
+    #[selector = sol("permit(address,address,uint256,uint256,uint8,uint256,uint256)")]
     Permit { owner: u256, spender: u256, value: u256, deadline: u256, v: u8, r: u256, s: u256 } -> bool,
 
-    #[selector = 0x7ecebe00]
+    #[selector = sol("nonces(address)")]
     Nonces { owner: u256 } -> u256,
 
-    #[selector = 0x3644e515]
+    #[selector = sol("domainSeparator()")]
     DomainSeparator {} -> u256,
 }
 ```
@@ -126,26 +132,27 @@ Contracts can implement any combination:
 
 ```fe
 //<hide>
+use std::abi::sol
 msg Erc20 {
-    #[selector = 0xa9059cbb]
+    #[selector = sol("transfer(address,uint256)")]
     Transfer { to: u256, amount: u256 } -> bool,
 }
 
 msg Erc20Metadata {
-    #[selector = 0x06fdde03]
+    #[selector = sol("name()")]
     Name {} -> String<32>,
-    #[selector = 0x95d89b41]
+    #[selector = sol("symbol()")]
     Symbol {} -> String<8>,
-    #[selector = 0x313ce567]
+    #[selector = sol("decimals()")]
     Decimals {} -> u8,
 }
 
 msg Erc20Permit {
-    #[selector = 0xd505accf]
+    #[selector = sol("permit(address,address,uint256,uint256,uint8,uint256,uint256)")]
     Permit { owner: u256, spender: u256, value: u256, deadline: u256, v: u8, r: u256, s: u256 } -> bool,
-    #[selector = 0x7ecebe00]
+    #[selector = sol("nonces(address)")]
     Nonces { owner: u256 } -> u256,
-    #[selector = 0x3644e515]
+    #[selector = sol("domainSeparator()")]
     DomainSeparator {} -> u256,
 }
 //</hide>
@@ -208,31 +215,32 @@ Create your own interfaces for custom protocols:
 
 ```fe
 //<hide>
+use std::abi::sol
 msg Erc20 {
-    #[selector = 0xa9059cbb]
+    #[selector = sol("transfer(address,uint256)")]
     Transfer { to: u256, amount: u256 } -> bool,
 }
 //</hide>
 
 msg Ownable {
-    #[selector = 0x8da5cb5b]
+    #[selector = sol("owner()")]
     Owner {} -> u256,
 
-    #[selector = 0xf2fde38b]
+    #[selector = sol("transferOwnership(address)")]
     TransferOwnership { new_owner: u256 } -> bool,
 
-    #[selector = 0x715018a6]
+    #[selector = sol("renounceOwnership()")]
     RenounceOwnership {} -> bool,
 }
 
 msg Pausable {
-    #[selector = 0x5c975abb]
+    #[selector = sol("paused()")]
     Paused {} -> bool,
 
-    #[selector = 0x8456cb59]
+    #[selector = sol("pause()")]
     Pause {} -> bool,
 
-    #[selector = 0x3f4ba83a]
+    #[selector = sol("unpause()")]
     Unpause {} -> bool,
 }
 
@@ -264,6 +272,8 @@ contract ManagedToken {
 Document your interfaces with comments:
 
 ```fe
+use std::abi::sol
+
 /// Standard ERC20 token interface
 ///
 /// Defines the core operations for fungible tokens:
@@ -273,11 +283,11 @@ Document your interfaces with comments:
 msg Erc20 {
     /// Transfer tokens to another account
     /// Returns true on success
-    #[selector = 0xa9059cbb]
+    #[selector = sol("transfer(address,uint256)")]
     Transfer { to: u256, amount: u256 } -> bool,
 
     /// Approve a spender to transfer tokens on your behalf
-    #[selector = 0x095ea7b3]
+    #[selector = sol("approve(address,uint256)")]
     Approve { spender: u256, amount: u256 } -> bool,
 }
 ```

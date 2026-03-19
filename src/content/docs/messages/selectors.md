@@ -22,25 +22,29 @@ Fe uses the same selector mechanism as Solidity, ensuring contracts can interope
 Specify selectors using the `#[selector]` attribute:
 
 ```fe
+use std::abi::sol
+
 msg TokenMsg {
-    #[selector = 0xa9059cbb]
+    #[selector = sol("transfer(address,uint256)")]
     Transfer { to: u256, amount: u256 } -> bool,
 
-    #[selector = 0x70a08231]
+    #[selector = sol("balanceOf(address)")]
     BalanceOf { account: u256 } -> u256,
 }
 ```
 
 ### Selector Format
 
-Selectors are specified as hexadecimal values:
+Selectors can be specified using the `sol()` helper or as hexadecimal values:
 
 ```fe
+use std::abi::sol
+
 msg Example {
-    #[selector = 0xa9059cbb]  // Hex format (preferred)
+    #[selector = sol("transfer(address,uint256)")]  // sol() helper (preferred)
     Transfer { to: u256, amount: u256 } -> bool,
 
-    // Decimal format also valid: #[selector = 2835717307]
+    // Hex format also valid: #[selector = 0xa9059cbb]
 }
 ```
 
@@ -132,17 +136,19 @@ cast sig "transfer(address,uint256)"
 # Output: 0xa9059cbb
 ```
 
-:::note[Future: Compile-Time Selector Computation]
-Fe will provide a `sol_sig` const function for computing selectors at compile time:
+:::tip[Compile-Time Selector Computation]
+Fe provides the `sol()` helper from `std::abi` for computing selectors at compile time:
 
-```fe ignore
+```fe
+use std::abi::sol
+
 msg TokenMsg {
-    #[selector = sol_sig("balanceOf(address)")]
+    #[selector = sol("balanceOf(address)")]
     BalanceOf { account: u256 } -> u256,
 }
 ```
 
-This will allow you to define selectors using the Solidity signature string directly, with no runtime cost. The computation happens at compile time.
+This computes the selector from the Solidity signature string at compile time, with no runtime cost.
 :::
 
 ## Custom Selectors
@@ -174,12 +180,16 @@ Fe requires explicit selectors rather than auto-generating them because:
 4. **Stability**: Renaming a variant doesn't accidentally change its selector
 5. **Verification**: Easy to verify against interface specifications
 
-For example, you can name your variant `BalanceOf` or `balance_of`. It doesn't matter because the selector `0x70a08231` (derived from `balanceOf(address)`) is what the EVM uses for routing:
+6. **Type flexibility**: The `sol()` signature string can reference Solidity types that Fe doesn't have as built-in types (e.g., `uint24`, `bytes4`). This lets you implement any existing interface regardless of Fe's type system
+
+For example, you can name your variant `BalanceOf` or `balance_of`. It doesn't matter because the selector derived from `balanceOf(address)` is what the EVM uses for routing:
 
 ```fe
+use std::abi::sol
+
 msg Erc20 {
     // Fe-style naming, but ABI-compatible with ERC20's balanceOf(address)
-    #[selector = 0x70a08231]
+    #[selector = sol("balanceOf(address)")]
     BalanceOf { account: u256 } -> u256,
 }
 ```
@@ -189,6 +199,6 @@ msg Erc20 {
 | Concept | Description |
 |---------|-------------|
 | Selector | 4-byte function identifier |
-| `#[selector = 0x...]` | Attribute to specify selector |
+| `#[selector = sol(...)]` | Attribute to specify selector |
 | Uniqueness | Selectors must be unique per contract |
 | Standard selectors | Use established values for ERC compatibility |

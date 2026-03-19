@@ -11,9 +11,10 @@ Fields are defined inside curly braces, similar to struct fields:
 
 ```fe
 //<hide>
+use std::abi::sol
 msg Example {
 //</hide>
-    #[selector = 0xa9059cbb]
+    #[selector = sol("transfer(address,uint256)")]
     Transfer { to: u256, amount: u256 } -> bool,
 //<hide>
 }
@@ -61,11 +62,13 @@ msg Example {
 Variants can have no fields:
 
 ```fe
+use std::abi::sol
+
 msg Query {
-    #[selector = 0x18160ddd]
+    #[selector = sol("totalSupply()")]
     TotalSupply -> u256,
 
-    #[selector = 0x06fdde03]
+    #[selector = sol("name()")]
     Name -> String<256>,
 }
 ```
@@ -95,8 +98,9 @@ In recv blocks, destructure fields to access their values:
 
 ```fe
 //<hide>
+use std::abi::sol
 msg TokenMsg {
-    #[selector = 0xa9059cbb]
+    #[selector = sol("transfer(address,uint256)")]
     Transfer { to: u256, amount: u256 } -> bool,
 }
 
@@ -117,8 +121,9 @@ You can also rename fields during destructuring:
 
 ```fe
 //<hide>
+use std::abi::sol
 msg TokenMsg {
-    #[selector = 0xa9059cbb]
+    #[selector = sol("transfer(address,uint256)")]
     Transfer { to: u256, amount: u256 } -> bool,
 }
 
@@ -141,8 +146,9 @@ Use `_` to ignore fields you don't need:
 
 ```fe
 //<hide>
+use std::abi::sol
 msg TokenMsg {
-    #[selector = 0xa9059cbb]
+    #[selector = sol("transfer(address,uint256)")]
     Transfer { to: u256, amount: u256 } -> bool,
 }
 
@@ -163,8 +169,9 @@ Use `..` to ignore remaining fields:
 
 ```fe
 //<hide>
+use std::abi::sol
 msg TokenMsg {
-    #[selector = 0x23b872dd]
+    #[selector = sol("transferFrom(address,address,uint256)")]
     TransferFrom { from: u256, to: u256, amount: u256 } -> bool,
 }
 
