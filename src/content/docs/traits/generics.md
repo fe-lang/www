@@ -223,8 +223,17 @@ let _ = x
 
 Sometimes you need to specify types explicitly:
 
-```fe ignore
-let x = identity::<u256>(42)
+```fe
+//<hide>
+fn identity<T>(value: own T) -> T { value }
+
+fn __example_explicit() {
+//</hide>
+let x = identity<u256>(42)
+//<hide>
+let _ = x
+}
+//</hide>
 ```
 
 ## Common Patterns
