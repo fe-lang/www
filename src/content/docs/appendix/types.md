@@ -264,17 +264,24 @@ Key-value storage mapping:
 
 ### Usage
 
-```fe ignore
+```fe
 struct Storage {
-    balances: Map<Address, u256>,
-    allowances: Map<(Address, Address), u256>,
+    balances: StorageMap<Address, u256>,
+    allowances: StorageMap<(Address, Address), u256>,
 }
 
+//<hide>
+fn __example_map(account: Address, new_balance: u256) uses (storage: mut Storage) {
+//</hide>
 // Access
-let balance = storage.balances[account]
+let balance = storage.balances.get(account)
 
 // Update
-storage.balances[account] = new_balance
+storage.balances.set(account, new_balance)
+//<hide>
+let _ = balance
+}
+//</hide>
 ```
 
 ### Notes

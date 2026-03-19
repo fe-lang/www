@@ -284,7 +284,7 @@ trait Pausable {
 
 Build complex behaviors from simple traits:
 
-```fe ignore
+```fe
 trait Readable {
     fn read(self) -> u256
 }
@@ -294,7 +294,7 @@ trait Writable {
 }
 
 // Require both for read-write access
-fn update<T: Readable + Writable>(mut storage: T, delta: u256) {
+fn update<T: Readable + Writable>(storage: mut T, delta: u256) {
     let current = storage.read()
     storage.write(current + delta)
 }

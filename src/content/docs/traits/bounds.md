@@ -215,7 +215,7 @@ This means:
 
 ### Comparable Types
 
-```fe ignore
+```fe
 trait Comparable {
     fn less_than(self, other: Self) -> bool
     fn equals(self, other: Self) -> bool
@@ -225,7 +225,7 @@ fn min<T: Comparable>(a: T, b: T) -> T {
     if a.less_than(b) { a } else { b }
 }
 
-fn find<T: Comparable>(items: Array<T>, target: T) -> bool {
+fn find<T: Comparable>(items: [T; 8], target: T) -> bool {
     for item in items {
         if item.equals(target) {
             return true

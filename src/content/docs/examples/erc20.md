@@ -304,10 +304,17 @@ impl Log {
 
 The contract declares effects at the contract level:
 
-```fe ignore
+```fe
+//<hide>
+struct TokenStore { total_supply: u256 }
+struct AccessControl { owner: Address }
+//</hide>
 pub contract CoolCoin uses (ctx: mut Ctx, log: mut Log) {
-    mut store: TokenStore,
-    mut auth: AccessControl,
+    mut store: TokenStore
+    mut auth: AccessControl
+//<hide>
+}
+//</hide>
 ```
 
 Key points:

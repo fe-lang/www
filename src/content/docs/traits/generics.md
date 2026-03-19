@@ -134,7 +134,7 @@ let _ = v
 
 Methods can introduce their own type parameters:
 
-```fe ignore
+```fe
 struct Container<T> {
     item: T,
 }
@@ -145,8 +145,8 @@ impl<T> Container<T> {
     }
 
     // Method with its own type parameter
-    fn map<U>(self, f: fn(T) -> U) -> Container<U> {
-        Container { item: f(self.item) }
+    fn wrap_with<U>(self, other: own U) -> Container<(T, U)> {
+        Container { item: (self.item, other) }
     }
 }
 ```
