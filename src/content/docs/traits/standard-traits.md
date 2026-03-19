@@ -168,14 +168,14 @@ For your projects, define common traits that types should implement:
 
 ### Identifiable
 
-```fe ignore
+```fe
 trait Identifiable {
     fn id(self) -> u256
 }
 
 struct User {
     user_id: u256,
-    name: String,
+    name: String<32>,
 }
 
 impl Identifiable for User {

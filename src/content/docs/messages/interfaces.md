@@ -37,28 +37,54 @@ Any contract with `recv Erc20 { ... }` implements this interface.
 
 ## The MsgVariant Trait
 
-Under the hood, each message variant becomes a struct that implements the `MsgVariant` trait:
+Under the hood, each message variant becomes a struct that implements the `MsgVariant` trait. When you write a `msg` definition, the compiler generates `AbiSize`, `Encode<Sol>`, `Decode<Sol>`, and `MsgVariant<Sol>` implementations for each variant. Here is what that looks like — this is equivalent to what the compiler generates, but written by hand:
 
-```fe ignore
-// Conceptually, Transfer becomes:
+```fe
+use std::abi::Sol
+use core::abi::{Abi, Encode, Decode, AbiSize, AbiEncoder, AbiDecoder}
+use core::message::MsgVariant
+
+// The variant struct
 struct Transfer {
     to: u256,
     amount: u256,
 }
 
-impl MsgVariant for Transfer {
+// ABI size: two u256 fields = 64 bytes
+impl AbiSize for Transfer {
+    const ENCODED_SIZE: u256 = 64
+}
+
+// ABI encoding: write each field as a word
+impl Encode<Sol> for Transfer {
+    fn encode<E: AbiEncoder<Sol>>(own self, _ e: mut E) {
+        self.to.encode(mut e)
+        self.amount.encode(mut e)
+    }
+}
+
+// ABI decoding: read each field as a word
+impl Decode<Sol> for Transfer {
+    fn decode<D: AbiDecoder<Sol>>(_ d: mut D) -> Self {
+        Transfer {
+            to: u256::decode(mut d),
+            amount: u256::decode(mut d),
+        }
+    }
+}
+
+// The MsgVariant trait: selector and return type
+impl MsgVariant<Sol> for Transfer {
     const SELECTOR: u32 = 0xa9059cbb
     type Return = bool
 }
+
+fn check_selector() -> u32 {
+    Transfer::SELECTOR
+}
 ```
 
-The `MsgVariant` trait provides:
-- `SELECTOR`: The 4-byte function identifier
-- `Return`: The type returned by handlers of this variant
-
-## How Messages Desugar
-
-When you write:
+With a `msg` declaration, the compiler generates all of this automatically. You can always access the generated `SELECTOR` constant:
 
 ```fe
 use std::abi::sol
@@ -67,21 +93,9 @@ msg TokenMsg {
     #[selector = sol("transfer(address,uint256)")]
     Transfer { to: u256, amount: u256 } -> bool,
 }
-```
 
-The compiler generates equivalent code like:
-
-```fe ignore
-// The variant as a struct
-struct TokenMsg_Transfer {
-    to: u256,
-    amount: u256,
-}
-
-// Implementation of MsgVariant
-impl MsgVariant for TokenMsg_Transfer {
-    const SELECTOR: u32 = 0xa9059cbb
-    type Return = bool
+fn get_selector() -> u32 {
+    TokenMsg::Transfer::SELECTOR
 }
 ```
 
