@@ -309,23 +309,27 @@ Handlers typically delegate to helper functions:
 ```fe
 //<hide>
 use std::abi::sol
-pub struct TokenStorage {}
 msg TokenMsg {
     #[selector = sol("transfer(address,uint256)")]
     Transfer { to: u256, amount: u256 } -> bool,
 }
 //</hide>
 
+pub struct TokenStorage {}
+
+// Pure validation — no storage needed, stays standalone
 fn validate_transfer(to: u256, amount: u256) -> bool {
     to != 0 && amount > 0
 }
 
-fn execute_transfer(to: u256, amount: u256) -> bool uses (store: mut TokenStorage) {
-    // transfer logic using storage effect
-    //<hide>
-    let _ = store
-    //</hide>
-    true
+impl TokenStorage {
+    fn execute_transfer(mut self, to: u256, amount: u256) -> bool {
+        //<hide>
+        let _ = to
+        let _ = amount
+        //</hide>
+        true
+    }
 }
 
 //<hide>
@@ -337,7 +341,7 @@ contract Token {
             if !validate_transfer(to, amount) {
                 return false
             }
-            execute_transfer(to, amount)
+            store.execute_transfer(to, amount)
         }
     }
 //<hide>
@@ -366,13 +370,15 @@ pub struct TokenStorage {
     pub total_supply: u256,
 }
 
-fn get_balance(account: u256) -> u256 uses (store: TokenStorage) {
-    store.balances.get(account)
-}
+impl TokenStorage {
+    fn get_balance(self, account: u256) -> u256 {
+        self.balances.get(account)
+    }
 
-fn add_balance(account: u256, amount: u256) uses (store: mut TokenStorage) {
-    let current = store.balances.get(account)
-    store.balances.set(account, current + amount)
+    fn add_balance(mut self, account: u256, amount: u256) {
+        let current = self.balances.get(account)
+        self.balances.set(account, current + amount)
+    }
 }
 
 contract Token {
@@ -380,11 +386,11 @@ contract Token {
 
     recv TokenMsg {
         BalanceOf { account } -> u256 uses (store) {
-            get_balance(account)
+            store.get_balance(account)
         }
 
         Transfer { to, amount } -> bool uses (mut store) {
-            add_balance(to, amount)
+            store.add_balance(to, amount)
             true
         }
     }

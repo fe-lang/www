@@ -25,24 +25,24 @@ pub contract CoolCoin uses (ctx: mut Ctx, log: mut Log) {
         auth.grant(role: BURNER, to: owner)
 
         if initial_supply > 0 {
-            mint(to: owner, amount: initial_supply)
+            store.mint(to: owner, amount: initial_supply)
         }
     }
 
     recv Erc20 {
         Transfer { to, amount } -> bool uses (ctx, mut store, mut log) {
-            transfer(from: ctx.caller(), to, amount)
+            store.transfer(from: ctx.caller(), to, amount)
             true
         }
 
         Approve { spender, amount } -> bool uses (ctx, mut store, mut log) {
-            approve(owner: ctx.caller(), spender, amount)
+            store.approve(owner: ctx.caller(), spender, amount)
             true
         }
 
         TransferFrom { from, to, amount } -> bool uses (ctx, mut store, mut log) {
-            spend_allowance(owner: from, spender: ctx.caller(), amount)
-            transfer(from, to, amount)
+            store.spend_allowance(owner: from, spender: ctx.caller(), amount)
+            store.transfer(from, to, amount)
             true
         }
 
@@ -67,20 +67,20 @@ pub contract CoolCoin uses (ctx: mut Ctx, log: mut Log) {
     recv Erc20Extended {
         Mint { to, amount } -> bool uses (ctx, mut store, mut log, auth) {
             auth.require(role: MINTER)
-            mint(to, amount)
+            store.mint(to, amount)
             true
         }
 
         // Burns tokens from caller's balance
         Burn { amount } -> bool uses (ctx, mut store, mut log) {
-            burn(from: ctx.caller(), amount)
+            store.burn(from: ctx.caller(), amount)
             true
         }
 
         // Burns tokens from an account using allowance (requires BURNER or allowance)
         BurnFrom { from, amount } -> bool uses (ctx, mut store, mut log) {
-            spend_allowance(owner: from, spender: ctx.caller(), amount)
-            burn(from, amount)
+            store.spend_allowance(owner: from, spender: ctx.caller(), amount)
+            store.burn(from, amount)
             true
         }
 
@@ -89,7 +89,7 @@ pub contract CoolCoin uses (ctx: mut Ctx, log: mut Log) {
         {
             let owner = ctx.caller()
             let current = store.allowances[(owner, spender)]
-            approve(owner, spender, amount: current + added_value)
+            store.approve(owner, spender, amount: current + added_value)
             true
         }
 
@@ -98,78 +98,69 @@ pub contract CoolCoin uses (ctx: mut Ctx, log: mut Log) {
             let owner = ctx.caller()
             let current = store.allowances[(owner, spender)]
             assert(current >= subtracted_value, "decreased allowance below zero")
-            approve(owner, spender, amount: current - subtracted_value)
+            store.approve(owner, spender, amount: current - subtracted_value)
             true
         }
     }
-}
-
-fn transfer(from: Address, to: Address, amount: u256)
-    uses (store: mut TokenStore, log: mut Log)
-{
-    assert(from != Address::zero(), "transfer from zero address")
-    assert(to != Address::zero(), "transfer to zero address")
-
-    let from_balance = store.balances[from]
-    assert(from_balance >= amount, "transfer amount exceeds balance")
-
-    store.balances[from] = from_balance - amount
-    store.balances[to] += amount
-
-    log.emit(TransferEvent { from, to, value: amount })
-}
-
-fn mint(to: Address, amount: u256)
-    uses (store: mut TokenStore, log: mut Log)
-{
-    assert(to != Address::zero(), "mint to zero address")
-
-    store.total_supply += amount
-    store.balances[to] += amount
-
-    log.emit(TransferEvent { from: Address::zero(), to, value: amount })
-}
-
-fn burn(from: Address, amount: u256)
-    uses (store: mut TokenStore, log: mut Log)
-{
-    assert(from != Address::zero(), "burn from zero address")
-
-    let from_balance = store.balances[from]
-    assert(from_balance >= amount, "burn amount exceeds balance")
-
-    store.balances[from] = from_balance - amount
-    store.total_supply -= amount
-
-    log.emit(TransferEvent { from, to: Address::zero(), value: amount })
-}
-
-fn approve(owner: Address, spender: Address, amount: u256)
-    uses (store: mut TokenStore, log: mut Log)
-{
-    assert(owner != Address::zero(), "approve from zero address")
-    assert(spender != Address::zero(), "approve to zero address")
-
-    store.allowances[(owner, spender)] = amount
-
-    log.emit(ApprovalEvent { owner, spender, value: amount })
-}
-
-// Internal function to spend allowance
-fn spend_allowance(owner: Address, spender: Address, amount: u256)
-    uses (store: mut TokenStore)
-{
-    let current = store.allowances[(owner, spender)]
-    // if current != u256::MAX { // TODO: define ::MAX constants
-        assert(current >= amount, "insufficient allowance")
-        store.allowances[(owner, spender)] = current - amount
-    // }
 }
 
 struct TokenStore {
     total_supply: u256,
     balances: Map<Address, u256>,
     allowances: Map<(Address, Address), u256>,
+}
+
+impl TokenStore {
+    fn transfer(mut self, from: Address, to: Address, amount: u256) uses (log: mut Log) {
+        assert(from != Address::zero(), "transfer from zero address")
+        assert(to != Address::zero(), "transfer to zero address")
+
+        let from_balance = self.balances[from]
+        assert(from_balance >= amount, "transfer amount exceeds balance")
+
+        self.balances[from] = from_balance - amount
+        self.balances[to] += amount
+
+        log.emit(TransferEvent { from, to, value: amount })
+    }
+
+    fn mint(mut self, to: Address, amount: u256) uses (log: mut Log) {
+        assert(to != Address::zero(), "mint to zero address")
+
+        self.total_supply += amount
+        self.balances[to] += amount
+
+        log.emit(TransferEvent { from: Address::zero(), to, value: amount })
+    }
+
+    fn burn(mut self, from: Address, amount: u256) uses (log: mut Log) {
+        assert(from != Address::zero(), "burn from zero address")
+
+        let from_balance = self.balances[from]
+        assert(from_balance >= amount, "burn amount exceeds balance")
+
+        self.balances[from] = from_balance - amount
+        self.total_supply -= amount
+
+        log.emit(TransferEvent { from, to: Address::zero(), value: amount })
+    }
+
+    fn approve(mut self, owner: Address, spender: Address, amount: u256) uses (log: mut Log) {
+        assert(owner != Address::zero(), "approve from zero address")
+        assert(spender != Address::zero(), "approve to zero address")
+
+        self.allowances[(owner, spender)] = amount
+
+        log.emit(ApprovalEvent { owner, spender, value: amount })
+    }
+
+    fn spend_allowance(mut self, owner: Address, spender: Address, amount: u256) {
+        let current = self.allowances[(owner, spender)]
+        // if current != u256::MAX { // TODO: define ::MAX constants
+            assert(current >= amount, "insufficient allowance")
+            self.allowances[(owner, spender)] = current - amount
+        // }
+    }
 }
 
 pub struct AccessControl {
@@ -374,7 +365,7 @@ init(initial_supply: u256, owner: Address)
     auth.grant(role: BURNER, to: owner)
 
     if initial_supply > 0 {
-        mint(to: owner, amount: initial_supply)
+        store.mint(to: owner, amount: initial_supply)
     }
 }
 ```
@@ -391,7 +382,7 @@ Each handler declares its specific effect requirements:
 ```fe ignore
 recv Erc20 {
     Transfer { to, amount } -> bool uses (ctx, mut store, mut log) {
-        transfer(from: ctx.caller(), to, amount)
+        store.transfer(from: ctx.caller(), to, amount)
         true
     }
 
@@ -404,36 +395,36 @@ recv Erc20 {
 Notice:
 - `Transfer` needs `ctx` (for caller), `mut store` (to modify balances), and `mut log` (to emit event)
 - `BalanceOf` only needs `store` (read-only) - no `mut` required
-- Handlers delegate to helper functions for the actual logic
+- Handlers call methods on the storage struct
 
-### Helper Functions
+### TokenStore Methods
 
-Core logic is extracted into standalone functions:
+Core logic lives in `impl TokenStore`. Methods use `self`/`mut self` for storage access and `uses` for additional effects:
 
 ```fe ignore
-fn transfer(from: Address, to: Address, amount: u256)
-    uses (store: mut TokenStore, log: mut Log)
-{
-    assert(from != Address::zero(), "transfer from zero address")
-    assert(to != Address::zero(), "transfer to zero address")
+impl TokenStore {
+    fn transfer(mut self, from: Address, to: Address, amount: u256) uses (log: mut Log) {
+        assert(from != Address::zero(), "transfer from zero address")
+        assert(to != Address::zero(), "transfer to zero address")
 
-    let from_balance = store.balances[from]
-    assert(from_balance >= amount, "transfer amount exceeds balance")
+        let from_balance = self.balances[from]
+        assert(from_balance >= amount, "transfer amount exceeds balance")
 
-    store.balances[from] = from_balance - amount
-    store.balances[to] += amount
+        self.balances[from] = from_balance - amount
+        self.balances[to] += amount
 
-    log.emit(TransferEvent { from, to, value: amount })
+        log.emit(TransferEvent { from, to, value: amount })
+    }
 }
 ```
 
 This pattern:
 - Validates inputs with assertions
-- Updates state
-- Emits event after successful state change
-- Declares explicit effect requirements in the signature
+- Updates state through `mut self`
+- Emits events through additional effects (`uses (log: mut Log)`)
+- Keeps storage logic cohesive within the struct
 
-The `mint` and `burn` functions follow the same pattern, using `Address::zero()` as the source/destination to indicate minting/burning.
+The `mint` and `burn` methods follow the same pattern, using `Address::zero()` as the source/destination to indicate minting/burning.
 
 ### Events
 
@@ -490,7 +481,7 @@ Usage in handlers:
 ```fe ignore
 Mint { to, amount } -> bool uses (ctx, mut store, mut log, auth) {
     auth.require(role: MINTER)
-    mint(to, amount)
+    store.mint(to, amount)
     true
 }
 ```
@@ -504,7 +495,7 @@ The `require` method checks if the caller has the specified role, reverting if n
 | Contract-level effects | `contract CoolCoin uses (ctx: mut Ctx, log: mut Log)` |
 | Storage as fields | `mut store: TokenStore` |
 | Handler-specific effects | `uses (ctx, mut store, mut log)` |
-| Effect in helpers | `fn transfer(...) uses (store: mut TokenStore, log: mut Log)` |
+| Storage methods | `impl TokenStore { fn transfer(mut self, ...) uses (log: mut Log) }` |
 | Event emission | `log.emit(TransferEvent { ... })` |
 | Role-based access | `auth.require(role: MINTER)` |
 | Zero address checks | `assert(to != Address::zero(), "...")` |
@@ -516,7 +507,7 @@ CoolCoin demonstrates how to build a production-quality ERC20 token in Fe:
 1. **Explicit effects** make capabilities visible in signatures
 2. **Storage structs** organize related state
 3. **Message groups** define ABI-compatible interfaces
-4. **Helper functions** encapsulate reusable logic
+4. **Impl blocks** keep storage logic cohesive within structs
 5. **Access control** protects privileged operations
 6. **Events** record state changes for off-chain indexing
 
