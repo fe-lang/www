@@ -24,26 +24,26 @@ struct Transfer {
     amount: u256,
 }
 
-// This function CAN emit events
-fn transfer_with_event(from: u256, to: u256, amount: u256)
-    uses (store: mut TokenStorage, log: mut Log)
-{
-    // ... transfer logic ...
-    //<hide>
-    let _ = (from, to, amount, store)
-    //</hide>
-    log.emit(Transfer { from, to, amount })
-}
+impl TokenStorage {
+    // This method CAN emit events
+    fn transfer_with_event(mut self, from: u256, to: u256, amount: u256)
+        uses (log: mut Log)
+    {
+        // ... transfer logic ...
+        //<hide>
+        let _ = (from, to, amount)
+        //</hide>
+        log.emit(Transfer { from, to, amount })
+    }
 
-// This function CANNOT emit events
-fn transfer_silent(from: u256, to: u256, amount: u256)
-    uses (store: mut TokenStorage)
-{
-    // ... transfer logic only ...
-    // log.emit(...) would be a compile error here
-    //<hide>
-    let _ = (from, to, amount, store)
-    //</hide>
+    // This method CANNOT emit events
+    fn transfer_silent(mut self, from: u256, to: u256, amount: u256) {
+        // ... transfer logic only ...
+        // log.emit(...) would be a compile error here
+        //<hide>
+        let _ = (from, to, amount)
+        //</hide>
+    }
 }
 ```
 
@@ -135,20 +135,20 @@ struct Deposit {
 }
 //</hide>
 
-// Internal helper - no logging
-fn update_balance(account: u256, delta: u256) uses (balances: mut Balances) {
-    // Pure state update, no events
-    //<hide>
-    let _ = (account, delta, balances)
-    //</hide>
-}
+impl Balances {
+    // Internal helper - no logging
+    fn update_balance(mut self, account: u256, delta: u256) {
+        // Pure state update, no events
+        //<hide>
+        let _ = (account, delta)
+        //</hide>
+    }
 
-// Public interface - with logging
-fn deposit(account: u256, amount: u256)
-    uses (balances: mut Balances, log: mut Log)
-{
-    update_balance(account, amount)
-    log.emit(Deposit { account, amount })
+    // Public interface - with logging
+    fn deposit(mut self, account: u256, amount: u256) uses (log: mut Log) {
+        self.update_balance(account, amount)
+        log.emit(Deposit { account, amount })
+    }
 }
 ```
 
@@ -174,28 +174,29 @@ fn emit_transfer(from: u256, to: u256, amount: u256) uses (log: mut Log) {
     log.emit(Transfer { from, to, amount })
 }
 
-// Must declare Log because it calls emit_transfer
-fn do_transfer(from: u256, to: u256, amount: u256)
-    -> bool uses (store: mut TokenStorage, log: mut Log)
-{
-    // ... transfer logic ...
-    //<hide>
-    let _ = (from, to, amount, store)
-    //</hide>
-    emit_transfer(from, to, amount)  // Requires Log effect
-    true
+impl TokenStorage {
+    // Must declare Log because it calls emit_transfer
+    fn do_transfer(mut self, from: u256, to: u256, amount: u256)
+        -> bool uses (log: mut Log)
+    {
+        // ... transfer logic ...
+        //<hide>
+        let _ = (from, to, amount)
+        //</hide>
+        emit_transfer(from, to, amount)  // Requires Log effect
+        true
+    }
 }
 ```
 
 ```fe ignore
 // Compile error: missing Log effect
-fn broken_transfer(from: u256, to: u256, amount: u256)
-    uses (store: mut TokenStorage)
-    -> bool
-{
-    // ... transfer logic ...
-    emit_transfer(from, to, amount)  // Error: Log not available
-    true
+impl TokenStorage {
+    fn broken_transfer(mut self, from: u256, to: u256, amount: u256) -> bool {
+        // ... transfer logic ...
+        emit_transfer(from, to, amount)  // Error: Log not available
+        true
+    }
 }
 ```
 
@@ -208,9 +209,11 @@ Contracts provide the Log effect via the `uses` clause on handlers:
 use std::abi::sol
 use _boilerplate::{Map, Log, caller}
 pub struct TokenStorage { pub balances: Map<u256, u256> }
-fn do_transfer(c: u256, to: u256, amount: u256) -> bool uses (store: mut TokenStorage, log: mut Log) {
-    let _ = (c, to, amount, store, log)
-    true
+impl TokenStorage {
+    fn do_transfer(mut self, from: u256, to: u256, amount: u256) -> bool uses (log: mut Log) {
+        let _ = (from, to, amount, log)
+        true
+    }
 }
 msg TokenMsg {
     #[selector = sol("transfer(address,uint256)")]
@@ -218,13 +221,12 @@ msg TokenMsg {
 }
 //</hide>
 
-contract Token {
+contract Token uses (log: mut Log) {
     mut store: TokenStorage,
-    mut log: Log,
 
     recv TokenMsg {
         Transfer { to, amount } -> bool uses (mut store, mut log) {
-            do_transfer(caller(), to, amount)
+            store.do_transfer(caller(), to, amount)
         }
     }
 }
@@ -268,22 +270,24 @@ struct OwnershipTransferred {
     new_owner: u256,
 }
 
-fn transfer(from: u256, to: u256, amount: u256)
-    uses (store: mut TokenStorage, log: mut TransferLog)
-{
-    // ... transfer logic ...
-    //<hide>
-    let _ = (from, to, amount, store)
-    //</hide>
-    log.emit(Transfer { from, to, amount })
+impl TokenStorage {
+    fn transfer(mut self, from: u256, to: u256, amount: u256)
+        uses (log: mut TransferLog)
+    {
+        // ... transfer logic ...
+        //<hide>
+        let _ = (from, to, amount)
+        //</hide>
+        log.emit(Transfer { from, to, amount })
+    }
 }
 
-fn transfer_ownership(new_owner: u256)
-    uses (admin: mut AdminStorage, log: mut AdminLog)
-{
-    let previous = admin.owner
-    admin.owner = new_owner
-    log.emit(OwnershipTransferred { previous_owner: previous, new_owner })
+impl AdminStorage {
+    fn transfer_ownership(mut self, new_owner: u256) uses (log: mut AdminLog) {
+        let previous = self.owner
+        self.owner = new_owner
+        log.emit(OwnershipTransferred { previous_owner: previous, new_owner })
+    }
 }
 ```
 
@@ -318,12 +322,12 @@ impl TokenEvents {
     pub fn emit<T>(self, event: T) { todo() }
 }
 
-fn mint(to: u256, amount: u256)
-    uses (store: mut TokenStorage, log: mut TokenEvents)
-{
-    store.balances.set(to, store.balances.get(to) + amount)
-    store.total_supply = store.total_supply + amount
-    log.emit(Transfer { from: 0, to, amount })
+impl TokenStorage {
+    fn mint(mut self, to: u256, amount: u256) uses (log: mut TokenEvents) {
+        self.balances.set(to, self.balances.get(to) + amount)
+        self.total_supply = self.total_supply + amount
+        log.emit(Transfer { from: 0, to, amount })
+    }
 }
 ```
 
@@ -361,18 +365,18 @@ struct FeeComputed {
 
 pub struct Config { pub fee_rate: u256 }
 
-// Core logic - no logging
-fn compute_fee(amount: u256) -> u256 uses (config: Config) {
-    amount * config.fee_rate / 10000
-}
+impl Config {
+    // Core logic - no logging
+    fn compute_fee(self, amount: u256) -> u256 {
+        amount * self.fee_rate / 10000
+    }
 
-// With logging wrapper
-fn compute_fee_logged(amount: u256)
-    -> u256 uses (config: Config, log: mut Log)
-{
-    let fee = compute_fee(amount)
-    log.emit(FeeComputed { amount, fee })
-    fee
+    // With logging wrapper
+    fn compute_fee_logged(self, amount: u256) -> u256 uses (log: mut Log) {
+        let fee = self.compute_fee(amount)
+        log.emit(FeeComputed { amount, fee })
+        fee
+    }
 }
 ```
 

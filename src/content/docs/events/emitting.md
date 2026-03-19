@@ -53,22 +53,24 @@ struct Transfer {
     amount: u256,
 }
 
-fn do_transfer(from: u256, to: u256, amount: u256)
-    -> bool uses (store: mut TokenStorage, log: mut Log)
-{
-    let from_bal = store.balances.get(from)
-    if from_bal < amount {
-        return false
+impl TokenStorage {
+    fn do_transfer(mut self, from: u256, to: u256, amount: u256)
+        -> bool uses (log: mut Log)
+    {
+        let from_bal = self.balances.get(from)
+        if from_bal < amount {
+            return false
+        }
+
+        self.balances.set(from, from_bal - amount)
+        let to_bal = self.balances.get(to)
+        self.balances.set(to, to_bal + amount)
+
+        // Emit event after successful state change
+        log.emit(Transfer { from, to, amount })
+
+        true
     }
-
-    store.balances.set(from, from_bal - amount)
-    let to_bal = store.balances.get(to)
-    store.balances.set(to, to_bal + amount)
-
-    // Emit event after successful state change
-    log.emit(Transfer { from, to, amount })
-
-    true
 }
 ```
 
@@ -79,7 +81,12 @@ A critical pattern: emit events after state changes succeed, not before:
 ```fe
 //<hide>
 use _boilerplate::Map
-pub struct TokenStorage { pub balances: Map<u256, u256> }
+//</hide>
+
+pub struct TokenStorage {
+    pub balances: Map<u256, u256>,
+}
+
 #[event]
 struct Transfer {
     #[indexed]
@@ -88,25 +95,26 @@ struct Transfer {
     to: u256,
     amount: u256,
 }
-//</hide>
 
-fn transfer(from: u256, to: u256, amount: u256)
-    -> bool uses (store: mut TokenStorage, log: mut Log)
-{
-    // 1. Validate
-    let from_bal = store.balances.get(from)
-    if from_bal < amount {
-        return false
+impl TokenStorage {
+    fn transfer(mut self, from: u256, to: u256, amount: u256)
+        -> bool uses (log: mut Log)
+    {
+        // 1. Validate
+        let from_bal = self.balances.get(from)
+        if from_bal < amount {
+            return false
+        }
+
+        // 2. Update state
+        self.balances.set(from, from_bal - amount)
+        self.balances.set(to, self.balances.get(to) + amount)
+
+        // 3. Emit event (state change succeeded)
+        log.emit(Transfer { from, to, amount })
+
+        true
     }
-
-    // 2. Update state
-    store.balances.set(from, from_bal - amount)
-    store.balances.set(to, store.balances.get(to) + amount)
-
-    // 3. Emit event (state change succeeded)
-    log.emit(Transfer { from, to, amount })
-
-    true
 }
 ```
 
@@ -120,14 +128,19 @@ In contracts, declare storage and log as contract fields, then access them via `
 //<hide>
 use std::abi::sol
 use _boilerplate::{Map, Log, caller}
-fn do_transfer(c: u256, to: u256, amount: u256) -> bool uses (store: mut TokenStorage, log: mut Log) {
-    let _ = (c, to, amount, store, log)
-    true
-}
 //</hide>
 
 pub struct TokenStorage {
     pub balances: Map<u256, u256>,
+}
+
+impl TokenStorage {
+    fn do_transfer(mut self, from: u256, to: u256, amount: u256) -> bool uses (log: mut Log) {
+        //<hide>
+        let _ = (from, to, amount, log)
+        //</hide>
+        true
+    }
 }
 
 #[event]
@@ -144,13 +157,12 @@ msg TokenMsg {
     Transfer { to: u256, amount: u256 } -> bool,
 }
 
-contract Token {
+contract Token uses (log: mut Log) {
     mut store: TokenStorage,
-    mut log: Log,
 
     recv TokenMsg {
         Transfer { to, amount } -> bool uses (mut store, mut log) {
-            do_transfer(caller(), to, amount)
+            store.do_transfer(caller(), to, amount)
         }
     }
 }
@@ -187,30 +199,32 @@ struct Approval {
     amount: u256,
 }
 
-fn transfer_from(spender: u256, from: u256, to: u256, amount: u256)
-    -> bool uses (store: mut TokenStorage, log: mut Log)
-{
-    // Check and update allowance
-    let allowed = store.allowances.get(from).get(spender)
-    if allowed < amount {
-        return false
+impl TokenStorage {
+    fn transfer_from(mut self, spender: u256, from: u256, to: u256, amount: u256)
+        -> bool uses (log: mut Log)
+    {
+        // Check and update allowance
+        let allowed = self.allowances.get(from).get(spender)
+        if allowed < amount {
+            return false
+        }
+        self.allowances.get(from).set(spender, allowed - amount)
+
+        // Perform transfer
+        let from_bal = self.balances.get(from)
+        self.balances.set(from, from_bal - amount)
+        self.balances.set(to, self.balances.get(to) + amount)
+
+        // Emit both events
+        log.emit(Approval {
+            owner: from,
+            spender,
+            amount: allowed - amount,
+        })
+        log.emit(Transfer { from, to, amount })
+
+        true
     }
-    store.allowances.get(from).set(spender, allowed - amount)
-
-    // Perform transfer
-    let from_bal = store.balances.get(from)
-    store.balances.set(from, from_bal - amount)
-    store.balances.set(to, store.balances.get(to) + amount)
-
-    // Emit both events
-    log.emit(Approval {
-        owner: from,
-        spender,
-        amount: allowed - amount,
-    })
-    log.emit(Transfer { from, to, amount })
-
-    true
 }
 ```
 
@@ -237,18 +251,20 @@ struct Transfer {
 }
 //</hide>
 
-fn mint(to: u256, amount: u256) uses (store: mut TokenStorage, log: mut Log) {
-    store.balances.set(to, store.balances.get(to) + amount)
-    store.total_supply = store.total_supply + amount
+impl TokenStorage {
+    fn mint(mut self, to: u256, amount: u256) uses (log: mut Log) {
+        self.balances.set(to, self.balances.get(to) + amount)
+        self.total_supply = self.total_supply + amount
 
-    log.emit(Transfer { from: 0, to, amount })
-}
+        log.emit(Transfer { from: 0, to, amount })
+    }
 
-fn burn(from: u256, amount: u256) uses (store: mut TokenStorage, log: mut Log) {
-    store.balances.set(from, store.balances.get(from) - amount)
-    store.total_supply = store.total_supply - amount
+    fn burn(mut self, from: u256, amount: u256) uses (log: mut Log) {
+        self.balances.set(from, self.balances.get(from) - amount)
+        self.total_supply = self.total_supply - amount
 
-    log.emit(Transfer { from, to: 0, amount })
+        log.emit(Transfer { from, to: 0, amount })
+    }
 }
 ```
 
@@ -270,16 +286,16 @@ struct OwnershipTransferred {
     new_owner: u256,
 }
 
-fn transfer_ownership(new_owner: u256)
-    uses (admin: mut AdminStorage, log: mut Log)
-{
-    let previous = admin.owner
-    admin.owner = new_owner
+impl AdminStorage {
+    fn transfer_ownership(mut self, new_owner: u256) uses (log: mut Log) {
+        let previous = self.owner
+        self.owner = new_owner
 
-    log.emit(OwnershipTransferred {
-        previous_owner: previous,
-        new_owner,
-    })
+        log.emit(OwnershipTransferred {
+            previous_owner: previous,
+            new_owner,
+        })
+    }
 }
 ```
 
@@ -332,16 +348,18 @@ fn emit_approval(owner: u256, spender: u256, amount: u256) uses (log: mut Log) {
     log.emit(Approval { owner, spender, amount })
 }
 
-fn transfer(from: u256, to: u256, amount: u256)
-    -> bool uses (store: mut TokenStorage, log: mut Log)
-{
-    // ... transfer logic ...
-    //<hide>
-    let _ = (from, to, amount, store)
-    //</hide>
+impl TokenStorage {
+    fn transfer(mut self, from: u256, to: u256, amount: u256)
+        -> bool uses (log: mut Log)
+    {
+        // ... transfer logic ...
+        //<hide>
+        let _ = (from, to, amount)
+        //</hide>
 
-    emit_transfer(from, to, amount)
-    true
+        emit_transfer(from, to, amount)
+        true
+    }
 }
 ```
 
@@ -363,15 +381,17 @@ struct Approval {
 }
 //</hide>
 
-fn set_approval(owner: u256, spender: u256, new_amount: u256)
-    uses (store: mut TokenStorage, log: mut Log)
-{
-    let current = store.allowances.get(owner).get(spender)
+impl TokenStorage {
+    fn set_approval(mut self, owner: u256, spender: u256, new_amount: u256)
+        uses (log: mut Log)
+    {
+        let current = self.allowances.get(owner).get(spender)
 
-    // Only emit if value actually changes
-    if current != new_amount {
-        store.allowances.get(owner).set(spender, new_amount)
-        log.emit(Approval { owner, spender, amount: new_amount })
+        // Only emit if value actually changes
+        if current != new_amount {
+            self.allowances.get(owner).set(spender, new_amount)
+            log.emit(Approval { owner, spender, amount: new_amount })
+        }
     }
 }
 ```

@@ -10,12 +10,14 @@ Events in Fe are defined as structs with special attributes. When emitted, they 
 Define an event as a struct:
 
 ```fe
+#[event]
 struct Transfer {
     from: u256,
     to: u256,
     amount: u256,
 }
 
+#[event]
 struct Approval {
     owner: u256,
     spender: u256,
@@ -23,7 +25,7 @@ struct Approval {
 }
 ```
 
-These are regular structs that become events when emitted through the Log effect.
+The `#[event]` attribute marks a struct as an event. The compiler implements the necessary traits for EVM log encoding — something you could also do manually, but `#[event]` handles it for you.
 
 ## Indexed Fields
 
@@ -154,10 +156,12 @@ struct OwnershipTransferred {
     new_owner: u256,
 }
 
+#[event]
 struct Paused {
     account: u256,
 }
 
+#[event]
 struct Unpaused {
     account: u256,
 }
@@ -182,6 +186,7 @@ struct Withdrawal {
     amount: u256,
 }
 
+#[event]
 struct ConfigUpdated {
     parameter: u256,
     old_value: u256,
@@ -212,6 +217,7 @@ struct Burned {
 }
 
 // Less ideal: generic event
+#[event]
 struct SupplyChanged {
     operation: u256,  // 0 = mint, 1 = burn
     account: u256,
