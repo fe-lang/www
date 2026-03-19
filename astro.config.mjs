@@ -49,6 +49,7 @@ export default defineConfig({
 					items: [
 						{ label: 'Primitive Types', slug: 'foundations/primitive-types' },
 						{ label: 'Variables & Mutability', slug: 'foundations/variables' },
+						{ label: 'Ownership & Mutability', slug: 'foundations/ownership' },
 						{ label: 'Functions', slug: 'foundations/functions' },
 						{ label: 'Control Flow', slug: 'foundations/control-flow' },
 						{ label: 'Operators & Expressions', slug: 'foundations/operators' },

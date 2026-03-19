@@ -1,8 +1,6 @@
 ---
 title: Ownership & Mutability
 description: Understanding mut, own, and ref in Fe
-sidebar:
-  order: 3
 ---
 
 Fe uses three keywords to control how values are accessed and passed around: **`mut`** for mutability, **`own`** for ownership transfer, and **`ref`** for read-only borrows. Together they give you fine-grained control over who can read, modify, or consume a value.
