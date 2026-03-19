@@ -212,9 +212,11 @@ let _ = (x, y)
 
 ## Key Differences
 
-### No Ownership/Borrowing
+### Simplified Ownership Model
 
-Fe doesn't have Rust's ownership system. All values are copied or have reference semantics based on context:
+Fe has ownership concepts similar to Rust (`own`, `ref`, `mut`) but with key differences:
+
+- **Default is view mode** (no keyword): the function can read the value but not move or modify it. Unlike Rust, view-mode parameters can be used multiple times without explicit borrowing:
 
 ```fe
 //<hide>
@@ -222,9 +224,9 @@ struct MyStruct {
     pub x: u256,
 }
 //</hide>
-// Rust would require borrowing
+
 fn process(data: MyStruct) {
-    // In Fe, no ownership concerns
+    // View mode: read-only access, no ownership transfer
     //<hide>
     let _ = data
     //</hide>
@@ -235,70 +237,24 @@ fn __ownership_example() {
 //</hide>
 let a = MyStruct { x: 1 }
 process(a)
-process(a)  // Fine in Fe, would be error in Rust
+process(a)  // Fine: view mode doesn't consume the value
 //<hide>
 }
 //</hide>
 ```
+
+- **`own`** transfers ownership (like Rust's move): the caller cannot use the value after passing it
+- **`ref`** creates a read-only reference that can be stored in struct fields (like Rust's `&T`)
+- **`mut`** creates a mutable handle (like Rust's `&mut T`)
+
+Fe also has a borrow checker that prevents simultaneous `ref` and `mut` access to the same data.
 
 ### No Lifetimes
 
-No lifetime annotations needed:
+Fe does not require lifetime annotations. References are scoped but the compiler manages lifetimes implicitly.
 
-```fe ignore
-// Rust: fn longest<'a>(a: &'a str, b: &'a str) -> &'a str
-// Fe: Just works
-fn longest(a: String<32>, b: String<32>) -> String<32> {
-    if a.len() > b.len() { a } else { b }
-}
-```
+See [Ownership & Mutability](/foundations/ownership/) for details on `own`, `ref`, and `mut`.
 
-### Effects Instead of References
-
-Fe uses an effect system instead of borrowing:
-
-```fe
-//<hide>
-use _boilerplate::Storage
-//</hide>
-// Rust: fn modify(data: &mut Storage)
-// Fe: Effect declaration
-fn modify() uses (storage: mut Storage) {
-    //<hide>
-    let _ = storage
-    //</hide>
-}
-```
-
-### Different Collection Types
-
-Fe has a standard library, but EVM constraints mean some Rust types aren't available:
-
-| Rust | Fe | Reason |
-|------|-----|--------|
-| `Vec<T>` | Fixed arrays `[T; N]` | No dynamic heap allocation |
-| `HashMap<K, V>` | `Map<K, V>` | Storage-only, uses EVM storage slots |
-| `String` | `String<N>` | Fixed size for predictable gas costs |
-| `Box<T>` | Not available | No heap |
-| `Rc<T>`, `Arc<T>` | Not available | No heap, no threading |
-
-### Fixed-Size Types
-
-Fe prefers fixed-size types for EVM efficiency:
-
-```fe
-//<hide>
-fn __fixed_example() {
-//</hide>
-// Rust: String, Vec<u8>
-// Fe: Fixed-size
-let name: String<32> = "Token"
-let data: [u8; 32] = [0; 32]
-//<hide>
-let _ = (name, data)
-}
-//</hide>
-```
 
 ### Iterators
 
@@ -326,24 +282,6 @@ while i < len {
 A trait-based Iterator system similar to Rust's is planned for Fe. This will enable familiar patterns like `map`, `filter`, and `fold`.
 :::
 
-### No Result Type (Yet)
-
-Error handling primarily uses assertions:
-
-```fe
-//<hide>
-fn __assert_example() {
-let balance: u256 = 100
-let amount: u256 = 50
-//</hide>
-// Rust: Result<T, E>
-// Fe: Assertions and revert
-assert(balance >= amount)
-//<hide>
-}
-//</hide>
-```
-
 ### No Closures
 
 Fe doesn't support closures:
@@ -355,6 +293,12 @@ fn add(a: u256, b: u256) -> u256 {
     a + b
 }
 ```
+
+### Modules and Ingots
+
+Fe has modules, but uses different terminology:
+
+| Rust | Fe |
 
 ### Modules and Ingots
 
@@ -469,11 +413,8 @@ fn transfer(from: Address, to: Address, amount: u256)
 |---------|-------------|
 | Ownership/Borrowing | Not applicable (effects instead) |
 | Lifetimes | Not needed |
-| `Result<T, E>` | Use assertions/revert |
 | Closures | Not available |
 | Iterators | Planned (trait-based) |
-| `Vec<T>` | Fixed arrays only |
-| Pattern guards | Limited |
 | `async`/`await` | Not applicable |
 | Macros | Not available |
 
@@ -491,18 +432,3 @@ fn transfer(from: Address, to: Address, amount: u256)
 | `#[indexed]` | Event indexing |
 | `Map<K, V>` | Storage mappings |
 
-## Tips for Rust Developers
-
-1. **Forget ownership** - Fe doesn't have borrow checking; think in terms of effects
-
-2. **Use effects** - Instead of `&mut`, declare effects with `uses mut`
-
-3. **Fixed sizes** - Plan for fixed-size data structures upfront
-
-4. **No heap** - EVM has no heap; design accordingly
-
-5. **Storage is special** - `Map` only works in storage, not memory
-
-6. **Selectors matter** - External interfaces need explicit ABI selectors
-
-7. **Events are logs** - Use events for off-chain observability
