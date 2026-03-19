@@ -29,7 +29,7 @@ Key characteristics:
 
 ## Storage Structs as Effects
 
-Storage structs become effect types. Functions declare them in `uses`:
+Storage structs serve as effect types. Define methods on them using impl blocks, with `self` for read-only and `mut self` for write access:
 
 ```fe
 //<hide>
@@ -41,14 +41,16 @@ pub struct TokenStorage {
     pub total_supply: u256,
 }
 
-// Function that reads from storage
-fn get_balance(account: u256) -> u256 uses (store: TokenStorage) {
-    store.balances.get(account)
-}
+impl TokenStorage {
+    // Read-only access
+    fn get_balance(self, account: u256) -> u256 {
+        self.balances.get(account)
+    }
 
-// Function that writes to storage
-fn set_balance(account: u256, amount: u256) uses (store: mut TokenStorage) {
-    store.balances.set(account, amount)
+    // Write access
+    fn set_balance(mut self, account: u256, amount: u256) {
+        self.balances.set(account, amount)
+    }
 }
 ```
 
@@ -61,12 +63,14 @@ Contracts hold storage structs as fields and provide them as effects:
 use std::abi::sol
 use _boilerplate::{Map, caller}
 pub struct TokenStorage { pub balances: Map<u256, u256> }
-fn get_balance(account: u256) -> u256 uses (store: TokenStorage) {
-    store.balances.get(account)
-}
-fn transfer(from: u256, to: u256, amount: u256) -> bool uses (store: mut TokenStorage) {
-    let _ = (from, to, amount, store)
-    true
+impl TokenStorage {
+    fn get_balance(self, account: u256) -> u256 {
+        self.balances.get(account)
+    }
+    fn transfer(mut self, from: u256, to: u256, amount: u256) -> bool {
+        let _ = (from, to, amount)
+        true
+    }
 }
 msg TokenMsg {
     #[selector = sol("balanceOf(address)")]
@@ -81,17 +85,17 @@ contract Token {
 
     recv TokenMsg {
         BalanceOf { account } -> u256 uses (store) {
-            get_balance(account)
+            store.get_balance(account)
         }
 
         Transfer { to, amount } -> bool uses (mut store) {
-            transfer(caller(), to, amount)
+            store.transfer(caller(), to, amount)
         }
     }
 }
 ```
 
-The handler's `uses (store)` clause binds the contract field to the effect.
+The handler's `uses (store)` clause binds the contract field to the effect. Methods on the storage struct are called through this binding.
 
 ## Designing Storage Structs
 
@@ -104,12 +108,14 @@ pub struct CounterStorage {
     pub value: u256,
 }
 
-fn get_value() -> u256 uses (store: CounterStorage) {
-    store.value
-}
+impl CounterStorage {
+    fn get_value(self) -> u256 {
+        self.value
+    }
 
-fn increment() uses (store: mut CounterStorage) {
-    store.value = store.value + 1
+    fn increment(mut self) {
+        self.value = self.value + 1
+    }
 }
 ```
 
@@ -191,26 +197,29 @@ Access patterns:
 ```fe
 //<hide>
 use _boilerplate::Map
+//</hide>
+
 pub struct Registry {
     pub entries: Map<u256, u256>,
     pub nested: Map<u256, Map<u256, u256>>,
 }
-//</hide>
 
-fn get_entry(key: u256) -> u256 uses (reg: Registry) {
-    reg.entries.get(key)
-}
+impl Registry {
+    fn get_entry(self, key: u256) -> u256 {
+        self.entries.get(key)
+    }
 
-fn set_entry(key: u256, value: u256) uses (reg: mut Registry) {
-    reg.entries.set(key, value)
-}
+    fn set_entry(mut self, key: u256, value: u256) {
+        self.entries.set(key, value)
+    }
 
-fn get_nested(outer: u256, inner: u256) -> u256 uses (reg: Registry) {
-    reg.nested.get(outer).get(inner)
-}
+    fn get_nested(self, outer: u256, inner: u256) -> u256 {
+        self.nested.get(outer).get(inner)
+    }
 
-fn set_nested(outer: u256, inner: u256, value: u256) uses (reg: mut Registry) {
-    reg.nested.get(outer).set(inner, value)
+    fn set_nested(mut self, outer: u256, inner: u256, value: u256) {
+        self.nested.get(outer).set(inner, value)
+    }
 }
 ```
 
@@ -270,31 +279,34 @@ pub struct TokenStorage {
     pub total_supply: u256,
 }
 
+impl TokenStorage {
+    fn get_balance(self, account: u256) -> u256 {
+        self.balances.get(account)
+    }
+
+    fn transfer(mut self, from: u256, to: u256, amount: u256) -> bool {
+        let from_bal = self.balances.get(from)
+        if from_bal < amount {
+            return false
+        }
+        self.balances.set(from, from_bal - amount)
+
+        let to_bal = self.balances.get(to)
+        self.balances.set(to, to_bal + amount)
+        true
+    }
+}
+
 pub struct MetadataStorage {
     pub name_hash: u256,
     pub symbol_hash: u256,
     pub decimals: u8,
 }
 
-// Functions using storage effects
-fn get_balance(account: u256) -> u256 uses (tokens: TokenStorage) {
-    tokens.balances.get(account)
-}
-
-fn transfer(from: u256, to: u256, amount: u256) -> bool uses (tokens: mut TokenStorage) {
-    let from_bal = tokens.balances.get(from)
-    if from_bal < amount {
-        return false
+impl MetadataStorage {
+    fn get_decimals(self) -> u8 {
+        self.decimals
     }
-    tokens.balances.set(from, from_bal - amount)
-
-    let to_bal = tokens.balances.get(to)
-    tokens.balances.set(to, to_bal + amount)
-    true
-}
-
-fn get_decimals() -> u8 uses (metadata: MetadataStorage) {
-    metadata.decimals
 }
 
 // Contract binding storage to effects
@@ -304,15 +316,15 @@ contract Token {
 
     recv Erc20 {
         Transfer { to, amount } -> bool uses (mut tokens) {
-            transfer(caller(), to, amount)
+            tokens.transfer(caller(), to, amount)
         }
 
         BalanceOf { account } -> u256 uses (tokens) {
-            get_balance(account)
+            tokens.get_balance(account)
         }
 
         Decimals -> u8 uses (metadata) {
-            get_decimals()
+            metadata.get_decimals()
         }
     }
 }

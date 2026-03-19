@@ -91,33 +91,37 @@ impl Token {  // Error!
 }
 ```
 
-Instead, use standalone functions with effects:
+Instead, define methods on the storage struct and call them through the effect binding:
 
 ```fe
 //<hide>
 use std::abi::sol
 use _boilerplate::Map as StorageMap
+//</hide>
+
 pub struct TokenStorage {
     pub balances: StorageMap<u256, u256>,
 }
 
+impl TokenStorage {
+    fn get_balance(self, account: u256) -> u256 {
+        self.balances.get(account)
+    }
+}
+
+//<hide>
 msg TokenMsg {
     #[selector = sol("balanceOf(address)")]
     BalanceOf { account: u256 } -> u256,
 }
 //</hide>
 
-// CORRECT: Use functions with effects
-fn get_balance(account: u256) -> u256 uses (store: TokenStorage) {
-    store.balances.get(account)
-}
-
 contract Token {
     store: TokenStorage,
 
     recv TokenMsg {
         BalanceOf { account } -> u256 uses store {
-            get_balance(account)
+            store.get_balance(account)
         }
     }
 }
@@ -143,26 +147,28 @@ pub struct TokenStorage {
     pub total_supply: u256,
 }
 
-// 2. Message definitions
+// 2. Methods on the storage struct
+impl TokenStorage {
+    fn do_transfer(mut self, from: u256, to: u256, amount: u256) -> bool {
+        let from_bal = self.balances.get(from)
+        if from_bal < amount {
+            return false
+        }
+        self.balances.set(from, from_bal - amount)
+
+        let to_bal = self.balances.get(to)
+        self.balances.set(to, to_bal + amount)
+        true
+    }
+}
+
+// 3. Message definitions
 msg TokenMsg {
     #[selector = sol("transfer(address,uint256)")]
     Transfer { to: u256, amount: u256 } -> bool,
 
     #[selector = sol("balanceOf(address)")]
     BalanceOf { account: u256 } -> u256,
-}
-
-// 3. Helper functions with effects
-fn do_transfer(from: u256, to: u256, amount: u256) -> bool uses (store: mut TokenStorage) {
-    let from_bal = store.balances.get(from)
-    if from_bal < amount {
-        return false
-    }
-    store.balances.set(from, from_bal - amount)
-
-    let to_bal = store.balances.get(to)
-    store.balances.set(to, to_bal + amount)
-    true
 }
 
 // 4. Contract declaration
@@ -175,7 +181,7 @@ contract Token {
 
     recv TokenMsg {
         Transfer { to, amount } -> bool uses (ctx: Ctx, mut store) {
-            do_transfer(ctx.caller(), to, amount)
+            store.do_transfer(ctx.caller(), to, amount)
         }
 
         BalanceOf { account } -> u256 uses store {
@@ -216,4 +222,4 @@ Each contract is compiled to separate bytecode and deployed independently.
 | `init() { }` | Constructor logic |
 | `recv MsgType { }` | Message handlers |
 
-Contracts are intentionally simple. They hold state, initialize it, and handle messages. All business logic lives in standalone functions that use effects.
+Contracts are intentionally simple. They hold state, initialize it, and handle messages. Business logic lives in impl blocks on storage structs, keeping related behavior cohesive.
