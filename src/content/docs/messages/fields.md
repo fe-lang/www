@@ -34,8 +34,10 @@ Message fields support all Fe types:
 ### Primitive Types
 
 ```fe
+use std::abi::sol
+
 msg Example {
-    #[selector = 0x00000001]
+    #[selector = sol("withPrimitives(bool,uint256,int128)")]
     WithPrimitives {
         flag: bool,
         count: u256,
@@ -47,8 +49,10 @@ msg Example {
 ### Compound Types
 
 ```fe
+use std::abi::sol
+
 msg Example {
-    #[selector = 0x00000002]
+    #[selector = sol("withTuple(uint256,uint256)")]
     WithTuple { coords: (u256, u256) } -> bool,
 
     //<hide>
