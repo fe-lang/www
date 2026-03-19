@@ -363,10 +363,18 @@ msg TokenMsg {
 
 Fe doesn't support function overloading. Use different names:
 
-```fe ignore
+```fe
 // Instead of transfer(address) and transfer(address, uint256)
-fn transfer_to(to: Address) { ... }
-fn transfer_amount(to: Address, amount: u256) { ... }
+fn transfer_to(to: Address) {
+    //<hide>
+    let _ = to
+    //</hide>
+}
+fn transfer_amount(to: Address, amount: u256) {
+    //<hide>
+    let _ = (to, amount)
+    //</hide>
+}
 ```
 
 ### Type Inference
