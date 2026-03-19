@@ -318,11 +318,15 @@ let allowed = store.allowances[(owner, spender)]
 
 Fe doesn't have contract inheritance. Use composition instead:
 
-```fe ignore
+```fe
+//<hide>
+struct AccessControl { owner: Address }
+struct Pausable { paused: bool }
+//</hide>
 // Instead of: contract Token is Ownable, Pausable
 contract Token {
-    auth: AccessControl,    // Composition
-    pause_state: Pausable,  // Composition
+    auth: AccessControl    // Composition
+    pause_state: Pausable  // Composition
 }
 ```
 

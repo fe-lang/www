@@ -157,7 +157,12 @@ impl<T> Container<T> {
 
 Write once, use with many types:
 
-```fe ignore
+```fe
+//<hide>
+trait Comparable {
+    fn greater_than(self, other: Self) -> bool
+}
+//</hide>
 // Without generics: separate functions for each type
 fn max_u256(a: u256, b: u256) -> u256 {
     if a > b { a } else { b }
@@ -309,10 +314,22 @@ Generics and effects serve different purposes:
 
 They can be combined:
 
-```fe ignore
-fn get_value<T: Readable>(key: u256) -> T uses (storage: Storage) {
+```fe
+//<hide>
+trait Readable {
+    fn read(self, key: u256) -> u256
+}
+struct Storage { data: u256 }
+impl Readable for Storage {
+    fn read(self, key: u256) -> u256 {
+        let _ = key
+        self.data
+    }
+}
+//</hide>
+fn get_value(key: u256) -> u256 uses (storage: Storage) {
     // Generic return type with storage effect
-    storage.get(key)
+    storage.read(key)
 }
 ```
 

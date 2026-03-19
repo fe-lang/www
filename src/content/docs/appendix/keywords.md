@@ -123,10 +123,21 @@ with (storage: Storage = store) { }
 ```
 
 ### Contracts
-```fe ignore
+```fe
+//<hide>
+use std::abi::sol
+msg Msg {
+    #[selector = sol("getValue()")]
+    GetValue -> u256,
+}
+//</hide>
 contract Token {
     init() { }
-    recv Msg { }
+    recv Msg {
+        //<hide>
+        GetValue -> u256 { 0 }
+        //</hide>
+    }
 }
 ```
 

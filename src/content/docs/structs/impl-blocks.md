@@ -84,6 +84,9 @@ impl Counter {
 The compiler enforces this. You can't modify through a non-mut `self`:
 
 ```fe ignore
+//<hide>
+struct Counter { value: u256 }
+//</hide>
 impl Counter {
     fn broken(self) {
         self.value = 10  // Error: cannot mutate through immutable self

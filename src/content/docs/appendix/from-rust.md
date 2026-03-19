@@ -323,16 +323,28 @@ Fe organizes code into ingots (packages) containing modules, similar to Rust's c
 
 Fe has first-class contract support:
 
-```fe ignore
+```fe
+//<hide>
+use std::abi::sol
+struct TokenStorage { total_supply: u256 }
+msg TokenMsg {
+    #[selector = sol("totalSupply()")]
+    TotalSupply -> u256,
+}
+//</hide>
 contract Token {
-    store: TokenStorage,
+    store: TokenStorage
 
-    init(supply: u256) {
-        // Constructor
+    init(supply: u256) uses (mut store) {
+        //<hide>
+        let _ = supply
+        //</hide>
     }
 
     recv TokenMsg {
-        // Message handlers
+        //<hide>
+        TotalSupply -> u256 uses (store) { store.total_supply }
+        //</hide>
     }
 }
 ```

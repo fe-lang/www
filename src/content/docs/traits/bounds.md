@@ -145,13 +145,17 @@ fn transform<T: Readable, U: Writable>(input: T, mut output: own U) {
 Generic structs can have bounds:
 
 ```fe ignore
+trait Hashable {
+    fn hash(self) -> u256
+}
+
 struct Cache<T: Hashable> {
     item: T,
     hash: u256,
 }
 
 impl<T: Hashable> Cache<T> {
-    fn new(item: T) -> Cache<T> {
+    fn new(item: own T) -> Cache<T> {
         let hash = item.hash()
         Cache { item, hash }
     }
