@@ -1,7 +1,4 @@
 use std::abi::sol
-use std::evm::{Address, Ctx, Log, StorageMap, revert}
-use core::result::Result::{self, Ok, Err}
-use core::abi::{Abi, AbiEncoder, AbiSize, Encode}
 
 // Enums as error types
 enum VaultError {
@@ -22,12 +19,12 @@ struct Withdrawal {
 impl Validate for Withdrawal {
     fn validate(self) -> Result<VaultError, u256> {
         if self.amount == 0 {
-            return Err(VaultError::ZeroAmount)
+            return Result::Err(VaultError::ZeroAmount)
         }
         if self.balance < self.amount {
-            return Err(VaultError::InsufficientFunds)
+            return Result::Err(VaultError::InsufficientFunds)
         }
-        Ok(self.balance - self.amount)
+        Result::Ok(self.balance - self.amount)
     }
 }
 
