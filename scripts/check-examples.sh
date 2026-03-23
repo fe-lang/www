@@ -95,6 +95,26 @@ CHECKED=0
 PASSED=0
 FAILED=0
 
+ensure_fe_bootstrapped() {
+    local bootstrap_output
+
+    if [[ "$VERBOSE" == true ]]; then
+        echo "Bootstrapping Fe compiler..."
+    fi
+
+    if bootstrap_output=$("$SCRIPT_DIR/fe" check "$BOILERPLATE_FILE" 2>&1); then
+        if [[ "$VERBOSE" == true ]]; then
+            echo -e "${GREEN}Fe compiler ready${NC}"
+            echo ""
+        fi
+        return 0
+    fi
+
+    echo -e "${RED}Failed to bootstrap Fe compiler before example validation.${NC}" >&2
+    echo "$bootstrap_output" >&2
+    exit 1
+}
+
 prepare_standalone_check_file() {
     local source_file="$1"
     local output_file="$2"
@@ -110,6 +130,8 @@ prepare_standalone_check_file() {
     fi
 
 }
+
+ensure_fe_bootstrapped
 
 # Check each extracted file
 while IFS=: read -r fe_file md_file block_start_line; do
