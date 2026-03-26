@@ -115,7 +115,7 @@ fetch_latest_tag() {
     fi
 
     # The response is a JSON array; extract the tag_name from the first entry
-    tag="$(printf '%s\n' "$response" | sed -n 's/.*"tag_name":[[:space:]]*"\([^"]\+\)".*/\1/p' | head -n1)"
+    tag="$(printf '%s\n' "$response" | sed -n 's/.*"tag_name":[[:space:]]*"\([^"]*\)".*/\1/p' | head -n1)"
     if [[ -z "$tag" ]]; then
         return 1
     fi

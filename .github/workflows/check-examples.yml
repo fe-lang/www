@@ -7,6 +7,24 @@ on:
     branches: [main]
 
 jobs:
+  test-fe-wrapper:
+    strategy:
+      matrix:
+        os: [ubuntu-latest, macos-latest]
+    runs-on: ${{ matrix.os }}
+
+    steps:
+      - name: Checkout repository
+        uses: actions/checkout@v4
+
+      - name: Make scripts executable
+        run: |
+          chmod +x scripts/fe
+          chmod +x scripts/test-fe-wrapper.sh
+
+      - name: Smoke test Fe wrapper
+        run: ./scripts/test-fe-wrapper.sh
+
   check-examples:
     runs-on: ubuntu-latest
 
