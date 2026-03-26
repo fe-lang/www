@@ -99,7 +99,13 @@ impl AbiSize for VaultError {
 }
 
 impl<A: Abi> Encode<A> for VaultError {
+    const DIRECT_ENCODE: bool = true
+
     fn encode<E: AbiEncoder<A>>(own self, _ e: mut E) {
         e.write_word(self.to_code())
+    }
+
+    fn encode_to_ptr(own self, ptr: u256) {
+        A::store_word(ptr, self.to_code())
     }
 }

@@ -57,9 +57,16 @@ impl AbiSize for Transfer {
 
 // ABI encoding: write each field as a word
 impl Encode<Sol> for Transfer {
+    const DIRECT_ENCODE: bool = false
+
     fn encode<E: AbiEncoder<Sol>>(own self, _ e: mut E) {
         self.to.encode(mut e)
         self.amount.encode(mut e)
+    }
+
+    fn encode_to_ptr(own self, ptr: u256) {
+        let _ = ptr
+        core::panic()
     }
 }
 
