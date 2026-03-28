@@ -21,9 +21,13 @@ jobs:
         run: |
           chmod +x scripts/fe
           chmod +x scripts/test-fe-wrapper.sh
+          chmod +x scripts/test-check-examples.sh
 
       - name: Smoke test Fe wrapper
         run: ./scripts/test-fe-wrapper.sh
+
+      - name: Smoke test example checker
+        run: ./scripts/test-check-examples.sh
 
   check-examples:
     runs-on: ubuntu-latest

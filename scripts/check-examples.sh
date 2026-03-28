@@ -8,6 +8,14 @@ SCRIPT_DIR="$(cd "$(dirname "${BASH_SOURCE[0]}")" && pwd)"
 PROJECT_ROOT="$SCRIPT_DIR/.."
 BOILERPLATE_FILE="$SCRIPT_DIR/boilerplate.fe"
 
+if [[ -n "${FE_BIN:-}" ]]; then
+    FE_BIN_PATH="$FE_BIN"
+    FE_BIN_DIR="$(dirname "$FE_BIN_PATH")"
+else
+    FE_BIN_PATH="$PROJECT_ROOT/bin/fe"
+    FE_BIN_DIR="$PROJECT_ROOT/bin"
+fi
+
 # Configuration
 VERBOSE=false
 FILES=()
@@ -96,13 +104,18 @@ PASSED=0
 FAILED=0
 
 ensure_fe_bootstrapped() {
-    local bootstrap_output
+    local bootstrap_output fe_version
+
+    echo "Fe bin dir: $FE_BIN_DIR"
 
     if [[ "$VERBOSE" == true ]]; then
         echo "Bootstrapping Fe compiler..."
     fi
 
     if bootstrap_output=$("$SCRIPT_DIR/fe" check "$BOILERPLATE_FILE" 2>&1); then
+        fe_version=$("$SCRIPT_DIR/fe" --version)
+        echo "Fe version: $fe_version"
+
         if [[ "$VERBOSE" == true ]]; then
             echo -e "${GREEN}Fe compiler ready${NC}"
             echo ""
