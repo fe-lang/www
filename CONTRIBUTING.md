@@ -170,11 +170,15 @@ Useful commands:
 # Validate all docs code examples using the wrapper
 bash scripts/check-examples.sh
 
+# Validate examples with a custom local Fe binary
+FE_BIN=~/code/fe/fix-scalar-ref-panic/target/release/fe bash scripts/check-examples.sh
+
 # Force an immediate latest-release check
 FE_FORCE_LATEST_CHECK=1 ./scripts/fe check path/to/file.fe
 ```
 
 Environment variables:
+- `FE_BIN`: use a specific Fe binary instead of the cached/downloaded wrapper binary
 - `GITHUB_TOKEN`: used for authenticated GitHub API requests (recommended in CI)
 - `FE_LATEST_TTL_SECONDS`: override metadata freshness window (default: `21600`)
 - `FE_FORCE_LATEST_CHECK=1`: bypass freshness and force an API latest check

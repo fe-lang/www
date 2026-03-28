@@ -14,6 +14,7 @@ FE_BINARY="$BIN_DIR/fe"
 VERSION_FILE="$BIN_DIR/.fe-version"
 LAST_CHECK_FILE="$BIN_DIR/.fe-last-check"
 
+OVERRIDE_FE_BINARY="${FE_BIN:-}"
 DEFAULT_TTL_SECONDS=21600
 TTL_SECONDS="${FE_LATEST_TTL_SECONDS:-$DEFAULT_TTL_SECONDS}"
 FORCE_LATEST_CHECK="${FE_FORCE_LATEST_CHECK:-0}"
@@ -176,6 +177,14 @@ should_check_latest() {
 
 main() {
     local latest_tag cached_tag
+
+    if [[ -n "$OVERRIDE_FE_BINARY" ]]; then
+        if [[ ! -x "$OVERRIDE_FE_BINARY" ]]; then
+            die "FE_BIN='$OVERRIDE_FE_BINARY' is not an executable file."
+        fi
+
+        exec "$OVERRIDE_FE_BINARY" "$@"
+    fi
 
     require_command curl
     require_command sed
