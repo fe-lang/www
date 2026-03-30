@@ -2,6 +2,13 @@
 import { defineConfig } from 'astro/config';
 import starlight from '@astrojs/starlight';
 import remarkHideDirective from './src/plugins/remark-hide-directive.js';
+import fs from 'node:fs';
+import { fileURLToPath } from 'node:url';
+import { dirname, join } from 'node:path';
+
+const __dirname = dirname(fileURLToPath(import.meta.url));
+const feGrammar = JSON.parse(fs.readFileSync(join(__dirname, 'src/fe.tmLanguage.json'), 'utf-8'));
+const feTheme = JSON.parse(fs.readFileSync(join(__dirname, 'src/fe-theme.json'), 'utf-8'));
 
 // https://astro.build/config
 export default defineConfig({
@@ -12,6 +19,12 @@ export default defineConfig({
 	},
 	integrations: [
 		starlight({
+			expressiveCode: {
+				themes: [feTheme],
+				shiki: {
+					langs: [{ ...feGrammar, id: 'fe', aliases: ['fe'] }],
+				},
+			},
 			title: 'The Fe Guide',
 			head: [
 				{
@@ -178,8 +191,7 @@ export default defineConfig({
 				},
 				{
 					label: 'API Reference',
-					link: '/docs/index.html',
-					attrs: { target: '_self' },
+					link: '/docs/',
 				},
 				{
 					label: 'Appendices',
