@@ -1,5 +1,6 @@
 ---
 import exampleCodeRaw from '../examples/landing-page.fe?raw';
+import feHighlightCss from '../../public/fe-highlight.css?raw';
 
 const base = import.meta.env.BASE_URL;
 
@@ -7,19 +8,6 @@ const base = import.meta.env.BASE_URL;
 const stubsMarker = '// Stubs for type checking';
 const displayCode = exampleCodeRaw.split(stubsMarker)[0].trim();
 
-// HTML-escape the code for safe rendering
-function escapeHtml(text: string): string {
-  return text
-    .replace(/&/g, '&amp;')
-    .replace(/</g, '&lt;')
-    .replace(/>/g, '&gt;')
-    .replace(/"/g, '&quot;')
-    .replace(/'/g, '&#039;');
-}
-
-const escapedCode = escapeHtml(displayCode);
-const lineCount = displayCode.split('\n').length;
-const lineNumbers = Array.from({ length: lineCount }, (_, i) => i + 1).join('\n');
 const installCommands = [
   {
     command: 'curl -fsSL https://raw.githubusercontent.com/argotorg/fe/master/feup/feup.sh | bash',
@@ -59,12 +47,32 @@ const installCommands = [
   <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
   <link href="https://fonts.googleapis.com/css2?family=Ubuntu+Sans:wght@400;600;700&display=swap" rel="stylesheet">
   <link href="https://unpkg.com/tailwindcss@^2/dist/tailwind.min.css" rel="stylesheet">
-  <link rel="stylesheet" href="https://unpkg.com/@highlightjs/cdn-assets@11.9.0/styles/vs2015.min.css">
+  <script src="/fe-web.js" data-src="/docs/docs.json" data-docs="/docs/" defer></script>
   <style>
     body { font-family: 'Ubuntu Sans', sans-serif; }
     .no-scrollbar { -ms-overflow-style: none; scrollbar-width: none; }
     .no-scrollbar::-webkit-scrollbar { display: none; }
+    /* Fallback: hide raw code text until fe-code-block upgrades, show dark bg */
+    .landing-code-wrap fe-code-block:not(:defined) {
+      display: block;
+      background: #0d1117;
+      color: #e4e4e4;
+      font-family: "JetBrains Mono", "Fira Code", monospace;
+      font-size: 0.8rem;
+      line-height: 1.6;
+      padding: 0.75rem 1rem;
+      overflow: hidden;
+      white-space: pre;
+      max-height: 600px;
+    }
+    .landing-code-wrap fe-code-block {
+      margin: 0;
+      --fe-code-border: transparent;
+      --fe-code-bg: #0d1117;
+      --fe-code-radius: 0;
+    }
   </style>
+  <style set:html={feHighlightCss}></style>
 </head>
 <body class="bg-gray-50">
   <header class="bg-indigo-600">
@@ -130,7 +138,7 @@ const installCommands = [
       </div>
     </section>
     <section class="max-w-4xl mx-auto mt-1 bg-white sm:rounded-xl overflow-hidden border border-gray-100 shadow-sm">
-      <div class="mx-auto max-w-7xl flex flex-col gap-3 lg:flex-row lg:items-stretch lg:justify-around p-3 xl:pb-3">
+      <div class="mx-auto max-w-7xl flex flex-col lg:flex-row lg:items-stretch p-3 xl:pb-3">
         <div class="flex flex-col gap-3 lg:max-w-md sm:grid sm:grid-cols-2 sm:gap-3 lg:flex lg:flex-col lg:justify-between order-2 lg:order-1">
           <div class="p-4 bg-gray-50 rounded-lg border border-gray-100">
             <h3 class="text-xl font-semibold mb-1 text-gray-900">
@@ -215,25 +223,16 @@ const installCommands = [
           </div>
         </div>
         <div class="lg:max-w-2xl lg:flex-1 lg:-mr-18 order-1 lg:order-2">
-          <div class="relative overflow-hidden md:rounded-xl md:rounded-b-none xl:rounded-b-xl shadow-2xl flex bg-gray-900 pb-6 md:pb-0">
-            <div class="relative w-full flex flex-col">
-              <div class="flex-none h-11 flex items-center px-4 bg-gray-800">
-                <div class="flex space-x-1.5">
-                  <div class="w-3 h-3 rounded-full bg-red-500"></div>
-                  <div class="w-3 h-3 rounded-full bg-yellow-400"></div>
-                  <div class="w-3 h-3 rounded-full bg-green-500"></div>
-                </div>
-                <span class="flex-1 text-center text-sm font-semibold text-gray-400 -ml-12">Fe at a glance</span>
+          <div class="overflow-hidden rounded-lg shadow-2xl landing-code-wrap">
+            <div class="flex items-center px-3 py-1.5" style="background:#1e2030;">
+              <div class="flex space-x-1.5">
+                <div class="w-2.5 h-2.5 rounded-full bg-red-500"></div>
+                <div class="w-2.5 h-2.5 rounded-full bg-yellow-400"></div>
+                <div class="w-2.5 h-2.5 rounded-full bg-green-500"></div>
               </div>
-              <div class="relative min-h-0 flex-auto flex flex-col">
-                <div class="hidden md:block absolute inset-y-0 left-0 bg-gray-800" style="width: 50px;"></div>
-                <div class="w-full flex-auto flex min-h-0 overflow-auto">
-                  <div class="w-full relative flex-auto">
-                    <pre class="flex min-h-full text-sm md:text-sm"><div aria-hidden="true" class="hidden md:block text-gray-500 flex-none py-4 pr-4 text-right select-none" style="width: 50px;" set:html={lineNumbers}></div><code class="language-fe flex-auto relative block text-gray-100 pt-4 pb-4 px-4 overflow-auto" set:html={escapedCode}></code></pre>
-                  </div>
-                </div>
-              </div>
+              <span class="flex-1 text-center text-xs font-semibold text-gray-400 -ml-10">Fe at a glance</span>
             </div>
+            <fe-code-block lang="fe" line-numbers>{displayCode}</fe-code-block>
           </div>
         </div>
       </div>
@@ -361,41 +360,25 @@ const installCommands = [
       });
     });
   </script>
-  <script is:inline src="https://unpkg.com/@highlightjs/cdn-assets@11.9.0/highlight.min.js"></script>
   <script is:inline>
-    document.addEventListener('DOMContentLoaded', function() {
-      // Register Fe language (based on Rust with Fe-specific keywords)
-      hljs.registerLanguage('fe', function(hljs) {
-        return {
-          name: 'Fe',
-          keywords: {
-            keyword: 'pub contract struct enum fn let mut if else match return true false self use const impl trait where for in loop break continue msg recv uses init',
-            type: 'u8 u16 u32 u64 u128 u256 i8 i16 i32 i64 i128 i256 bool Address String Map Option Result Self',
-            built_in: 'ctx log Ctx Log Default Add Sub Encode Decode'
-          },
-          contains: [
-            hljs.COMMENT('//', '$'),
-            hljs.COMMENT('/\\*', '\\*/'),
-            hljs.QUOTE_STRING_MODE,
-            {
-              className: 'meta',
-              begin: '#\\[', end: '\\]'
-            },
-            hljs.C_NUMBER_MODE,
-            {
-              className: 'function',
-              beginKeywords: 'fn', end: '\\(',
-              contains: [hljs.TITLE_MODE]
-            },
-            {
-              className: 'class',
-              beginKeywords: 'struct enum contract msg trait', end: '[\\{<]',
-              contains: [hljs.TITLE_MODE]
-            }
-          ]
-        };
+    // Refresh fe-code-block components after docs.json loads, then fix links
+    document.addEventListener('fe-web-ready', function() {
+      document.querySelectorAll('fe-code-block').forEach(function(cb) {
+        if (cb.refresh) cb.refresh();
       });
-      hljs.highlightAll();
+      // Fix hash links to point to /docs/ viewer
+      setTimeout(function() {
+        document.querySelectorAll('fe-code-block').forEach(function(cb) {
+          var sr = cb.shadowRoot;
+          if (!sr) return;
+          sr.querySelectorAll('a').forEach(function(a) {
+            var h = a.getAttribute('href');
+            if (h && h.startsWith('#') && h.includes('::')) {
+              a.href = '/docs/index.html' + h;
+            }
+          });
+        });
+      }, 200);
     });
   </script>
 </body>
