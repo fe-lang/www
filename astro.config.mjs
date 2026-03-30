@@ -177,6 +177,11 @@ export default defineConfig({
 					],
 				},
 				{
+					label: 'API Reference',
+					link: '/docs/index.html',
+					attrs: { target: '_self' },
+				},
+				{
 					label: 'Appendices',
 					items: [
 						{ label: 'Keyword Reference', slug: 'appendix/keywords' },
