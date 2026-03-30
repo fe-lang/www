@@ -22,11 +22,15 @@ Use the wrapper script at `scripts/fe` for all compiler invocations. The wrapper
 # Validate all documentation code snippets
 bash scripts/check-examples.sh
 
+# Override the wrapper with a specific local Fe binary
+FE_BIN=~/code/fe/fix-scalar-ref-panic/target/release/fe bash scripts/check-examples.sh
+
 # Optional: force a latest-release check immediately
 FE_FORCE_LATEST_CHECK=1 ./scripts/fe check path/to/file.fe
 ```
 
 Environment variables:
+- `FE_BIN`: use a specific Fe binary instead of the cached/downloaded wrapper binary
 - `GITHUB_TOKEN`: used for authenticated GitHub API requests (recommended in CI to avoid low unauthenticated rate limits)
 - `FE_LATEST_TTL_SECONDS`: freshness window for latest-release checks (default: `21600`)
 - `FE_FORCE_LATEST_CHECK=1`: bypass freshness window and force a latest check
