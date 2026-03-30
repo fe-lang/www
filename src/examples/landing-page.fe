@@ -1,3 +1,6 @@
+/// A vault contract with traits, pattern matching,
+/// and explicit effects.
+
 use std::abi::sol
 
 // Enums as error types
