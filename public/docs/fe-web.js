@@ -5786,7 +5786,7 @@ class FeDocNav extends HTMLElement {
 
     var html = '<details class="fe-nav-module"' + (isExpanded ? " open" : "") + ">";
     html += '<summary class="' + (isCurrent ? "fe-nav-mod-name current" : "fe-nav-mod-name") + '">';
-    html += '<a href="#" data-doc-path="' + _feEsc(modUrl) + '">' + _feEsc(mod.name) + "</a>";
+    html += '<a href="#' + _feEsc(modUrl) + '" data-doc-path="' + _feEsc(modUrl) + '">' + _feEsc(mod.name) + "</a>";
     html += "</summary>";
     html += '<div class="fe-nav-mod-content">';
 
@@ -5812,7 +5812,7 @@ class FeDocNav extends HTMLElement {
             var itemUrl = item.path + "/" + _feKindStr(item.kind);
             var itemCurrent = itemUrl === active;
             html += '<li class="' + (itemCurrent ? "current" : "") + '">';
-            html += '<a href="#" data-doc-path="' + _feEsc(itemUrl) + '">';
+            html += '<a href="#' + _feEsc(itemUrl) + '" data-doc-path="' + _feEsc(itemUrl) + '">';
             html += '<span class="fe-nav-badge ' + _feEsc(_feKindStr(item.kind)) + '">' +
               _feEsc(_feKindStr(item.kind)) + "</span> ";
             html += _feEsc(item.name);
@@ -6279,6 +6279,10 @@ class FeDocViewer extends HTMLElement {
     this._contentEl.innerHTML = "";
     this._contentEl.appendChild(docItem);
     this._contentEl.scrollTop = 0;
+
+    // Update page title
+    var viewerTitle = this.getAttribute("title") || "Fe Documentation";
+    document.title = item.name + " \u2014 " + viewerTitle;
 
     // Build outline after content renders
     var self = this;
