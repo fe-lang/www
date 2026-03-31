@@ -14,7 +14,7 @@ Install the [Fe extension](https://github.com/fe-lang/vscode-fe) from a `.vsix` 
 
    Or from the command line:
    ```bash
-   code --install-extension fe-*.vsix
+   code --install-extension fe-language-*.vsix
    ```
 
 Provides syntax highlighting, diagnostics, go-to-definition, and find references.
