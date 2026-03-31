@@ -183,7 +183,7 @@ impl AccessControl {
 
     pub fn require(self, role: u256) uses (ctx: Ctx) {
         let caller = ctx.caller()
-        assert(self.has_role(role, caller), "access denied: missing role")
+        assert(self.has_role(role, account: caller), "access denied: missing role")
     }
 
     pub fn grant(mut self, role: u256, to: Address) {
@@ -658,7 +658,7 @@ const BURNER: u256 = 2
 impl AccessControl {
     pub fn require(self, role: u256) uses (ctx: Ctx) {
         let caller = ctx.caller()
-        assert(self.has_role(role, caller), "access denied: missing role")
+        assert(self.has_role(role, account: caller), "access denied: missing role")
     }
 
     pub fn grant(mut self, role: u256, to: Address) {
@@ -712,7 +712,7 @@ impl AccessControl {
     }
     pub fn require(self, role: u256) uses (ctx: Ctx) {
         let caller = ctx.caller()
-        assert(self.has_role(role, caller), "access denied: missing role")
+        assert(self.has_role(role, account: caller), "access denied: missing role")
     }
 }
 

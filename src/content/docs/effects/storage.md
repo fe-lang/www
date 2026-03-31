@@ -92,13 +92,13 @@ pub struct TokenStorage {
 impl TokenStorage {
     // Read-only — cannot modify storage
     fn get_balance(self, account: u256) -> u256 {
-        self.balances.get(account)
+        self.balances.get(key: account)
     }
 
     // Mutable — can read and write
     fn mint(mut self, to: u256, amount: u256) {
-        let current = self.balances.get(to)
-        self.balances.set(to, current + amount)
+        let current = self.balances.get(key: to)
+        self.balances.set(key: to, value: current + amount)
         self.total_supply = self.total_supply + amount
     }
 }
@@ -117,11 +117,11 @@ pub struct Balances {
 
 impl Balances {
     fn transfer(mut self, from: u256, to: u256, amount: u256) {
-        let from_balance = self.data.get(from)
-        let to_balance = self.data.get(to)
+        let from_balance = self.data.get(key: from)
+        let to_balance = self.data.get(key: to)
 
-        self.data.set(from, from_balance - amount)
-        self.data.set(to, to_balance + amount)
+        self.data.set(key: from, value: from_balance - amount)
+        self.data.set(key: to, value: to_balance + amount)
     }
 }
 

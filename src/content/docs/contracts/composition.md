@@ -46,30 +46,30 @@ pub struct TokenStorage {
 
 // Read-only helper
 fn get_balance(account: u256) -> u256 uses (store: TokenStorage) {
-    store.balances.get(account)
+    store.balances.get(key: account)
 }
 
 // Mutating helper
 fn add_balance(account: u256, amount: u256) uses (store: mut TokenStorage) {
-    let current = store.balances.get(account)
-    store.balances.set(account, current + amount)
+    let current = store.balances.get(key: account)
+    store.balances.set(key: account, value: current + amount)
 }
 
 fn sub_balance(account: u256, amount: u256) -> bool uses (store: mut TokenStorage) {
-    let current = store.balances.get(account)
+    let current = store.balances.get(key: account)
     if current < amount {
         return false
     }
-    store.balances.set(account, current - amount)
+    store.balances.set(key: account, value: current - amount)
     true
 }
 
 // Higher-level helper composing lower-level ones
 fn transfer(from: u256, to: u256, amount: u256) -> bool uses (store: mut TokenStorage) {
-    if !sub_balance(from, amount) {
+    if !sub_balance(account: from, amount) {
         return false
     }
-    add_balance(to, amount)
+    add_balance(account: to, amount)
     true
 }
 ```
@@ -96,10 +96,10 @@ fn require_owner(expected: u256) uses (ctx: Ctx) {
 }
 
 fn transfer(from: u256, to: u256, amount: u256) -> bool uses (balances: mut BalanceStorage) {
-    let current = balances.balances.get(from)
+    let current = balances.balances.get(key: from)
     if current < amount { return false }
-    balances.balances.set(from, current - amount)
-    balances.balances.set(to, balances.balances.get(to) + amount)
+    balances.balances.set(key: from, value: current - amount)
+    balances.balances.set(key: to, value: balances.balances.get(key: to) + amount)
     true
 }
 
@@ -144,14 +144,14 @@ contract Token {
     recv TokenMsg {
         Transfer { to, amount } -> bool uses (ctx: Ctx, mut balances, pause_state) {
             require_not_paused()
-            transfer(ctx.caller(), to, amount)
+            transfer(from: ctx.caller(), to, amount)
         }
     }
 
     recv AdminMsg {
         Pause {} -> bool uses (ctx: Ctx, ownership, mut pause_state) {
-            require_owner(ownership.owner)
-            set_paused(true)
+            require_owner(expected: ownership.owner)
+            set_paused(value: true)
             true
         }
     }
@@ -176,7 +176,7 @@ impl Ctx {
 }
 
 fn mint_tokens(to: u256, amount: u256) uses (store: mut TokenStorage) {
-    store.balances.set(to, store.balances.get(to) + amount)
+    store.balances.set(key: to, value: store.balances.get(key: to) + amount)
 }
 //</hide>
 
@@ -256,10 +256,10 @@ fn require_owner() uses (ctx: Ctx, ownership: OwnerStorage) {
 }
 
 fn transfer(from: u256, to: u256, amount: u256) -> bool uses (store: mut TokenStorage) {
-    let current = store.balances.get(from)
+    let current = store.balances.get(key: from)
     if current < amount { return false }
-    store.balances.set(from, current - amount)
-    store.balances.set(to, store.balances.get(to) + amount)
+    store.balances.set(key: from, value: current - amount)
+    store.balances.set(key: to, value: store.balances.get(key: to) + amount)
     true
 }
 
@@ -302,20 +302,20 @@ contract PausableToken {
     recv TokenMsg {
         Transfer { to, amount } -> bool uses (ctx: Ctx, pause_state, mut store) {
             require_not_paused()
-            transfer(ctx.caller(), to, amount)
+            transfer(from: ctx.caller(), to, amount)
         }
     }
 
     recv AdminMsg {
         Pause {} -> bool uses (ctx: Ctx, ownership, mut pause_state) {
             require_owner()
-            set_paused(true)
+            set_paused(paused: true)
             true
         }
 
         Unpause {} -> bool uses (ctx: Ctx, ownership, mut pause_state) {
             require_owner()
-            set_paused(false)
+            set_paused(paused: false)
             true
         }
     }
@@ -352,10 +352,10 @@ fn require_not_paused() uses (pause_state: PauseStorage) {
 }
 
 fn transfer(from: u256, to: u256, amount: u256) -> bool uses (store: mut TokenStorage) {
-    let current = store.balances.get(from)
+    let current = store.balances.get(key: from)
     if current < amount { return false }
-    store.balances.set(from, current - amount)
-    store.balances.set(to, store.balances.get(to) + amount)
+    store.balances.set(key: from, value: current - amount)
+    store.balances.set(key: to, value: store.balances.get(key: to) + amount)
     true
 }
 
@@ -381,7 +381,7 @@ contract Token {
 
     recv TokenMsg {
         Transfer { to, amount } -> bool uses (ctx: Ctx, mut store, pause_state) {
-            guarded_transfer(ctx.caller(), to, amount)
+            guarded_transfer(from: ctx.caller(), to, amount)
         }
     }
 }

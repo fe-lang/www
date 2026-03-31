@@ -420,8 +420,8 @@ fn account_exists(id: u256) -> bool { id != 0 }
 fn load_balance(id: u256) -> u256 { id * 100 }
 //</hide>
 fn get_balance(account_id: u256) -> Option<u256> {
-    if account_exists(account_id) {
-        Option::Some(load_balance(account_id))
+    if account_exists(id: account_id) {
+        Option::Some(load_balance(id: account_id))
     } else {
         Option::None
     }

@@ -30,7 +30,7 @@ use _boilerplate::{Ctx, assert}
 //</hide>
 
 fn only_owner(owner: Address) uses (ctx: Ctx) {
-    assert(ctx.caller() == owner, "not owner")
+    assert(cond: ctx.caller() == owner, message: "not owner")
 }
 
 fn get_timestamp() -> u256 uses (ctx: Ctx) {
@@ -197,7 +197,7 @@ struct TransferEvent {
 }
 
 fn emit_transfer(from: own Address, to: own Address, value: u256) uses (log: mut Log) {
-    log.emit(TransferEvent { from, to, value })
+    log.emit(event: TransferEvent { from, to, value })
 }
 ```
 

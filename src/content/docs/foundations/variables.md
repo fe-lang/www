@@ -192,8 +192,8 @@ fn example() {
 //</hide>
 // Transform through steps
 let input = get_raw_input()
-let input = validate(input)
-let input = process(input)
+let input = validate(x: input)
+let input = process(x: input)
 //<hide>
 let _ = input
 }

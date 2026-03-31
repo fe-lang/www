@@ -235,7 +235,7 @@ fn handle_error() {}
 fn example(result: Result<u256, u256>) {
 //</hide>
 match result {
-    Result::Ok(value) => use_value(value)
+    Result::Ok(value) => use_value(v: value)
     Result::Err(_) => handle_error()  // Ignore the specific error
 }
 //<hide>

@@ -25,8 +25,8 @@ fn identity<T>(value: own T) -> T {
 
 fn example() {
 //</hide>
-let x: u256 = identity(42)   // T is u256
-let y: bool = identity(true) // T is bool
+let x: u256 = identity(value: 42)   // T is u256
+let y: bool = identity(value: true) // T is bool
 //<hide>
 let _ = (x, y)
 }
@@ -45,7 +45,7 @@ fn pair<A, B>(first: own A, second: own B) -> (A, B) {
 //<hide>
 fn example() {
 //</hide>
-let p: (u256, bool) = pair(1, true)  // (u256, bool)
+let p: (u256, bool) = pair(first: 1, second: true)  // (u256, bool)
 //<hide>
 let _ = p
 }
@@ -94,7 +94,7 @@ impl Printable for Message {
 fn __example_msg() {
 //</hide>
 let message = Message { text: "Hello" }
-print_value(message)  // Works: Message implements Printable
+print_value(value: message)  // Works: Message implements Printable
 //<hide>
 }
 //</hide>
@@ -122,7 +122,7 @@ impl<T> Wrapper<T> {
 //<hide>
 fn example() {
 //</hide>
-let w: Wrapper<u256> = Wrapper::new(42)
+let w: Wrapper<u256> = Wrapper::new(value: 42)
 let v = w.get()  // 42
 //<hide>
 let _ = v
@@ -174,7 +174,7 @@ fn max_i256(a: i256, b: i256) -> i256 {
 
 // With generics: one function
 fn max<T: Comparable>(a: T, b: T) -> T {
-    if a.greater_than(b) { a } else { b }
+    if a.greater_than(other: b) { a } else { b }
 }
 ```
 
@@ -191,7 +191,7 @@ fn first(items: [u256; 3]) -> u256 {
 fn __example_first() {
 //</hide>
 let numbers: [u256; 3] = [1, 2, 3]
-let n: u256 = first(numbers)  // n is u256, not a generic "any" type
+let n: u256 = first(items: numbers)  // n is u256, not a generic "any" type
 //<hide>
 let _ = n
 }
@@ -212,7 +212,7 @@ fn identity<T>(value: own T) -> T {
 
 fn __example_infer() {
 //</hide>
-let x: u256 = identity(42)  // Compiler infers T = u256
+let x: u256 = identity(value: 42)  // Compiler infers T = u256
 //<hide>
 let _ = x
 }
@@ -229,7 +229,7 @@ fn identity<T>(value: own T) -> T { value }
 
 fn __example_explicit() {
 //</hide>
-let x = identity<u256>(42)
+let x = identity<u256>(value: 42)
 //<hide>
 let _ = x
 }
@@ -248,7 +248,7 @@ fn swap<T>(a: own T, b: own T) -> (T, T) {
 //<hide>
 fn example() {
 //</hide>
-let (x, y): (u256, u256) = swap(1, 2)  // (2, 1)
+let (x, y): (u256, u256) = swap(a: 1, b: 2)  // (2, 1)
 //<hide>
 let _ = (x, y)
 }

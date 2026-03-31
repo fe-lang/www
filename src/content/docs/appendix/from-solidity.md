@@ -195,7 +195,7 @@ struct Transfer {
 }
 
 fn transfer(from: Address, to: Address, amount: u256) uses (log: mut Log) {
-    log.emit(Transfer { from, to, value: amount })
+    log.emit(event: Transfer { from, to, value: amount })
 }
 ```
 
@@ -316,7 +316,7 @@ struct Storage {
 //<hide>
 fn __example_map(owner: Address, spender: Address, amount: u256) uses (store: mut Storage) {
 //</hide>
-store.allowances.set((owner, spender), amount)
+store.allowances.set(key: (owner, spender), value: amount)
 let allowed = store.allowances.get((owner, spender))
 //<hide>
 let _ = allowed
@@ -355,7 +355,7 @@ fn require_not_paused(paused: bool) {
 fn __modifier_example() {
 //</hide>
 // In handler:
-require_not_paused(false)
+require_not_paused(paused: false)
 //<hide>
 }
 //</hide>

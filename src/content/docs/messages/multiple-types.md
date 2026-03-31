@@ -25,8 +25,8 @@ impl Ctx {
 fn do_transfer(from: u256, to: u256, amount: u256) -> bool uses (store: mut TokenStorage) {
     let bal = store.balances.get(from)
     if bal < amount { return false }
-    store.balances.set(from, bal - amount)
-    store.balances.set(to, store.balances.get(to) + amount)
+    store.balances.set(key: from, value: bal - amount)
+    store.balances.set(key: to, value: store.balances.get(to) + amount)
     true
 }
 
@@ -62,7 +62,7 @@ contract Token {
 
     recv Erc20 {
         Transfer { to, amount } -> bool uses (ctx: Ctx, mut store) {
-            do_transfer(ctx.caller(), to, amount)
+            do_transfer(from: ctx.caller(), to, amount)
         }
 
         BalanceOf { account } -> u256 uses store {
@@ -126,8 +126,8 @@ impl Ctx {
 fn do_transfer(from: u256, to: u256, amount: u256) -> bool uses (store: mut TokenStorage) {
     let bal = store.balances.get(from)
     if bal < amount { return false }
-    store.balances.set(from, bal - amount)
-    store.balances.set(to, store.balances.get(to) + amount)
+    store.balances.set(key: from, value: bal - amount)
+    store.balances.set(key: to, value: store.balances.get(to) + amount)
     true
 }
 
@@ -155,7 +155,7 @@ contract Token {
     // Core token operations
     recv Erc20 {
         Transfer { to, amount } -> bool uses (ctx: Ctx, mut store) {
-            do_transfer(ctx.caller(), to, amount)
+            do_transfer(from: ctx.caller(), to, amount)
         }
 
         BalanceOf { account } -> u256 uses store {

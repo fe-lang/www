@@ -106,12 +106,12 @@ fn validate(value: u256) -> bool uses (v: RangeValidator) {
 fn test_custom_effect() {
     let validator = RangeValidator { min: 10, max: 100 }
     let result = with (validator) {
-        validate(50)
+        validate(value: 50)
     }
     assert(result == true)
 
     let result2 = with (validator) {
-        validate(5)
+        validate(value: 5)
     }
     assert(result2 == false)
 }

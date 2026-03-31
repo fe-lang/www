@@ -177,7 +177,7 @@ fn do_transfer(from: Address, to: u256, amount: u256) -> bool uses (store: mut T
         return false
     }
 
-    store.balances.set(to, from_bal - amount)
+    store.balances.set(key: to, value: from_bal - amount)
     true
 }
 
@@ -186,7 +186,7 @@ contract Token uses (ctx: Ctx) {
 
     recv TokenMsg {
         Transfer { to, amount } -> bool uses (ctx, mut store) {
-            do_transfer(ctx.caller(), to, amount)
+            do_transfer(from: ctx.caller(), to, amount)
         }
     }
 }

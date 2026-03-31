@@ -236,8 +236,8 @@ fn process(data: MyStruct) {
 fn __ownership_example() {
 //</hide>
 let a = MyStruct { x: 1 }
-process(a)
-process(a)  // Fine: view mode doesn't consume the value
+process(data: a)
+process(data: a)  // Fine: view mode doesn't consume the value
 //<hide>
 }
 //</hide>

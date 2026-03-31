@@ -112,7 +112,7 @@ impl Printable for Token {
 //<hide>
 fn __example_describe() {
 //</hide>
-describe(Token { id: 1 })  // Works: Token implements both
+describe(value: Token { id: 1 })  // Works: Token implements both
 //<hide>
 }
 //</hide>
@@ -222,12 +222,12 @@ trait Comparable {
 }
 
 fn min<T: Comparable>(a: T, b: T) -> T {
-    if a.less_than(b) { a } else { b }
+    if a.less_than(other: b) { a } else { b }
 }
 
 fn find<T: Comparable>(items: [T; 8], target: T) -> bool {
     for item in items {
-        if item.equals(target) {
+        if item.equals(other: target) {
             return true
         }
     }
