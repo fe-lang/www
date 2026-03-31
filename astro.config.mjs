@@ -19,7 +19,7 @@ export default defineConfig({
 	integrations: [
 		starlight({
 			expressiveCode: {
-				themes: ['catppuccin-latte', 'catppuccin-mocha'],
+				themes: ['catppuccin-mocha'],
 				shiki: {
 					langs: [{ ...feGrammar, id: 'fe', aliases: ['fe'] }],
 				},
