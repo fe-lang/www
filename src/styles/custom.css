@@ -1,22 +1,7 @@
 /* Fe Guide - Custom Color Scheme */
 
+/* Light mode defaults */
 :root {
-  /* Indigo-based accent colors */
-  --sl-color-accent-low: #1e1b4b;
-  --sl-color-accent: #6366f1;
-  --sl-color-accent-high: #c7d2fe;
-
-  /* Background tones */
-  --sl-color-bg: #0f0f1a;
-  --sl-color-bg-nav: #16162a;
-  --sl-color-bg-sidebar: #16162a;
-
-  /* Text colors */
-  --sl-color-text: #e2e8f0;
-  --sl-color-text-accent: #a5b4fc;
-}
-
-:root[data-theme='light'] {
   --sl-color-accent-low: #e0e7ff;
   --sl-color-accent: #4f46e5;
   --sl-color-accent-high: #312e81;
@@ -27,6 +12,20 @@
 
   --sl-color-text: #1e293b;
   --sl-color-text-accent: #4338ca;
+}
+
+/* Dark mode */
+:root[data-theme='dark'] {
+  --sl-color-accent-low: #1e1b4b;
+  --sl-color-accent: #6366f1;
+  --sl-color-accent-high: #c7d2fe;
+
+  --sl-color-bg: #0f0f1a;
+  --sl-color-bg-nav: #16162a;
+  --sl-color-bg-sidebar: #16162a;
+
+  --sl-color-text: #e2e8f0;
+  --sl-color-text-accent: #a5b4fc;
 }
 
 /* Sidebar styling */
