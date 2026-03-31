@@ -8,21 +8,21 @@
      --fe-code-bg, --fe-code-border, --fe-code-text, --fe-code-font,
      --fe-code-size, --fe-code-line-height */
 
-.hl-keyword { color: var(--fe-hl-keyword, #c678dd); }
-.hl-type, .hl-type-builtin { color: var(--fe-hl-type, #e5c07b); }
-.hl-type-interface { color: var(--fe-hl-type-interface, #e77ee7); }
-.hl-type-enum-variant { color: var(--fe-hl-type-variant, #e7c77e); }
-.hl-function, .hl-function-definition, .hl-function-method { color: var(--fe-hl-function, #61afef); }
-.hl-string { color: var(--fe-hl-string, #98c379); }
-.hl-string-escape { color: var(--fe-hl-string-escape, #56b6c2); }
-.hl-number { color: var(--fe-hl-number, #d19a66); }
-.hl-comment, .hl-comment-doc { color: var(--fe-hl-comment, #5c6370); font-style: italic; }
-.hl-operator { color: var(--fe-hl-operator, #abb2bf); }
-.hl-property, .hl-variable-parameter { color: var(--fe-hl-variable, #e06c75); }
-.hl-variable { color: var(--fe-hl-variable, #e06c75); }
-.hl-attribute { color: var(--fe-hl-attribute, #d19a66); }
-.hl-constant { color: var(--fe-hl-constant, #d19a66); font-weight: bold; }
-.hl-punctuation-bracket, .hl-punctuation-delimiter, .hl-punctuation-special { color: var(--fe-hl-punctuation, #abb2bf); }
+.hl-keyword { color: var(--fe-hl-keyword, #C792EA); }
+.hl-type, .hl-type-builtin { color: var(--fe-hl-type, #FFCB6B); }
+.hl-type-interface { color: var(--fe-hl-type-interface, #FFCB6B); }
+.hl-type-enum-variant { color: var(--fe-hl-type-variant, #FFCB6B); }
+.hl-function, .hl-function-definition, .hl-function-method { color: var(--fe-hl-function, #82AAFF); }
+.hl-string { color: var(--fe-hl-string, #C3E88D); }
+.hl-string-escape { color: var(--fe-hl-string-escape, #89DDFF); }
+.hl-number { color: var(--fe-hl-number, #F78C6C); }
+.hl-comment, .hl-comment-doc { color: var(--fe-hl-comment, #676E95); font-style: italic; }
+.hl-operator { color: var(--fe-hl-operator, #89DDFF); }
+.hl-property, .hl-variable-parameter { color: var(--fe-hl-variable, #f07178); }
+.hl-variable { color: var(--fe-hl-variable, #babed8); }
+.hl-attribute { color: var(--fe-hl-attribute, #F78C6C); }
+.hl-constant { color: var(--fe-hl-constant, #F78C6C); font-weight: bold; }
+.hl-punctuation-bracket, .hl-punctuation-delimiter, .hl-punctuation-special { color: var(--fe-hl-punctuation, #89DDFF); }
 
 /* Smooth transition for SCIP symbol hover highlights.
    feHighlight() sets inline styles; the browser tweens the change. */
@@ -39,7 +39,7 @@ fe-code-block {
 
 .fe-code-block-wrapper {
     display: flex;
-    background: var(--fe-code-bg, #0d1117);
+    background: var(--fe-code-bg, #292D3E);
     border: 1px solid var(--fe-code-border, #2d3748);
     border-radius: var(--fe-code-radius, 6px);
     overflow-x: auto;

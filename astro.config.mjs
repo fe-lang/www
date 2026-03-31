@@ -8,7 +8,6 @@ import { dirname, join } from 'node:path';
 
 const __dirname = dirname(fileURLToPath(import.meta.url));
 const feGrammar = JSON.parse(fs.readFileSync(join(__dirname, 'src/fe.tmLanguage.json'), 'utf-8'));
-const feTheme = JSON.parse(fs.readFileSync(join(__dirname, 'src/fe-theme.json'), 'utf-8'));
 
 // https://astro.build/config
 export default defineConfig({
@@ -20,7 +19,7 @@ export default defineConfig({
 	integrations: [
 		starlight({
 			expressiveCode: {
-				themes: [feTheme],
+				themes: ['material-theme-palenight'],
 				shiki: {
 					langs: [{ ...feGrammar, id: 'fe', aliases: ['fe'] }],
 				},
