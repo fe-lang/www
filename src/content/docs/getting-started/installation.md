@@ -29,7 +29,7 @@ source ~/.fe/env
 To install a specific version:
 
 ```bash
-curl -fsSL https://raw.githubusercontent.com/argotorg/fe/master/feup/feup.sh | bash -s -- --version v26.0.0-alpha.5
+curl -fsSL https://raw.githubusercontent.com/argotorg/fe/master/feup/feup.sh | bash -s -- --version v26.0.0
 ```
 
 ## Homebrew
@@ -48,6 +48,7 @@ Fe provides pre-built binaries for:
 |----------|-------------|
 | Linux    | x86_64, ARM64 |
 | macOS    | x86_64, ARM64 (Apple Silicon) |
+| Windows  | x86_64 |
 
 ## Verify Installation
 
