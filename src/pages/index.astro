@@ -21,6 +21,13 @@ const installCommands = [
 <html lang="en" class="antialiased">
 <head>
   <meta charset="UTF-8" />
+  <script is:inline>
+    (function() {
+      var saved = localStorage.getItem('fe-theme');
+      var theme = saved || (matchMedia('(prefers-color-scheme: dark)').matches ? 'dark' : 'light');
+      document.documentElement.setAttribute('data-theme', theme);
+    })();
+  </script>
   <meta http-equiv="X-UA-Compatible" content="IE=edge">
   <meta name="description" content="Fe is a statically typed language for the Ethereum Virtual Machine, designed for safety and auditability.">
   <title>The Fe Programming Language</title>
@@ -74,33 +81,29 @@ const installCommands = [
     /* Light mode defaults */
     html { color: #111827; background: #fff; }
 
-    @media (prefers-color-scheme: dark) {
-      html { color: #cdd6f4; background: #1e1e2e; }
-      body.bg-gray-50 { background: #1e1e2e !important; }
-      /* Cards and sections */
-      .bg-white { background: #181825 !important; }
-      .bg-gray-50 { background: #11111b !important; }
-      .border-gray-100 { border-color: #2d3748 !important; }
-      .border-gray-200 { border-color: #2d3748 !important; }
-      .border-gray-300 { border-color: #4b5563 !important; }
-      /* Text */
-      .text-gray-900 { color: #e2e8f0 !important; }
-      .text-gray-800 { color: #e2e8f0 !important; }
-      .text-gray-700 { color: #cbd5e1 !important; }
-      .text-gray-600 { color: #9ba3af !important; }
-      .text-gray-500 { color: #6b7280 !important; }
-      .text-gray-400 { color: #6b7280 !important; }
-      /* Code inline */
-      .text-indigo-600 { color: #a5b4fc !important; }
-      .bg-indigo-50 { background: #1e1e3a !important; }
-      /* Buttons */
-      .bg-white.border { background: #16162a !important; color: #e2e8f0 !important; }
-      .hover\:bg-gray-50:hover { background: #1e1e3a !important; }
-      /* Footer */
-      .bg-gray-900 { background: #0a0a14 !important; }
-      /* Shadows soften */
-      .shadow-sm, .shadow-2xl { box-shadow: 0 1px 3px rgba(0,0,0,0.3) !important; }
-    }
+    html[data-theme="dark"] { color: #cdd6f4; background: #1e1e2e; }
+    html[data-theme="dark"] body.bg-gray-50 { background: #1e1e2e !important; }
+    html[data-theme="dark"] .bg-white { background: #181825 !important; }
+    html[data-theme="dark"] .bg-gray-50 { background: #11111b !important; }
+    html[data-theme="dark"] .border-gray-100 { border-color: #313244 !important; }
+    html[data-theme="dark"] .border-gray-200 { border-color: #313244 !important; }
+    html[data-theme="dark"] .border-gray-300 { border-color: #45475a !important; }
+    html[data-theme="dark"] .text-gray-900 { color: #cdd6f4 !important; }
+    html[data-theme="dark"] .text-gray-800 { color: #cdd6f4 !important; }
+    html[data-theme="dark"] .text-gray-700 { color: #bac2de !important; }
+    html[data-theme="dark"] .text-gray-600 { color: #9399b2 !important; }
+    html[data-theme="dark"] .text-gray-500 { color: #6c7086 !important; }
+    html[data-theme="dark"] .text-gray-400 { color: #6c7086 !important; }
+    html[data-theme="dark"] .text-indigo-600 { color: #a5b4fc !important; }
+    html[data-theme="dark"] .bg-indigo-50 { background: #1e1e3a !important; }
+    html[data-theme="dark"] .bg-white.border { background: #181825 !important; color: #cdd6f4 !important; }
+    html[data-theme="dark"] .hover\:bg-gray-50:hover { background: #1e1e3a !important; }
+    html[data-theme="dark"] .bg-gray-900 { background: #0a0a14 !important; }
+    html[data-theme="dark"] .shadow-sm,
+    html[data-theme="dark"] .shadow-2xl { box-shadow: 0 1px 3px rgba(0,0,0,0.3) !important; }
+    /* Theme toggle */
+    .theme-toggle { background: none; border: none; color: #e0e7ff; cursor: pointer; padding: 0.25rem; font-size: 1.1rem; }
+    .theme-toggle:hover { color: white; }
   </style>
 </head>
 <body class="bg-gray-50">
@@ -125,6 +128,7 @@ const installCommands = [
         <a href={`${base}getting-started/key-concepts/`} class="transition duration-100 ease-in-out mt-1 text-sm text-indigo-100 block px-2 py-2 hover:bg-indigo-700 hover:text-white rounded-md sm:mt-0 sm:ml-2 sm:px-4" title="Learn">Learn</a>
         <a href="https://fe-lang.zulipchat.com/join/dqvssgylulrmjmp2dx7vcbrq" class="transition duration-100 ease-in-out mt-1 text-sm text-indigo-100 block px-2 py-2 hover:bg-indigo-700 hover:text-white rounded-md sm:mt-0 sm:ml-2 sm:px-4" title="Community">Community</a>
         <a href="https://blog.fe-lang.org" class="transition duration-100 ease-in-out mt-1 text-sm text-indigo-100 block px-2 py-2 hover:bg-indigo-700 hover:text-white rounded-md sm:mt-0 sm:ml-2 sm:px-4" title="Blog">Blog</a>
+        <button id="theme-toggle" class="theme-toggle sm:ml-2" title="Toggle dark mode" aria-label="Toggle dark mode"></button>
       </nav>
     </div>
   </header>
@@ -388,6 +392,24 @@ const installCommands = [
           }, 2000);
         });
       });
+    });
+
+    // Theme toggle — icon shows what clicking will switch TO
+    var toggleBtn = document.getElementById('theme-toggle');
+    function updateToggle() {
+      var isDark = document.documentElement.getAttribute('data-theme') === 'dark';
+      toggleBtn.innerHTML = isDark
+        ? '<svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><circle cx="12" cy="12" r="5"/><path d="M12 1v2M12 21v2M4.22 4.22l1.42 1.42M18.36 18.36l1.42 1.42M1 12h2M21 12h2M4.22 19.78l1.42-1.42M18.36 5.64l1.42-1.42"/></svg>'
+        : '<svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M21 12.79A9 9 0 1111.21 3 7 7 0 0021 12.79z"/></svg>';
+      toggleBtn.title = isDark ? 'Switch to light mode' : 'Switch to dark mode';
+    }
+    updateToggle();
+    toggleBtn.addEventListener('click', function() {
+      var isDark = document.documentElement.getAttribute('data-theme') === 'dark';
+      var next = isDark ? 'light' : 'dark';
+      document.documentElement.setAttribute('data-theme', next);
+      localStorage.setItem('fe-theme', next);
+      updateToggle();
     });
   </script>
 </body>
