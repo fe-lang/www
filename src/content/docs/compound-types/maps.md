@@ -88,11 +88,11 @@ pub struct Token {
 
 impl Token {
     pub fn allowance(self, owner_id: u256, spender_id: u256) -> u256 {
-        self.allowances.get((owner_id, spender_id))
+        self.allowances.get(key: (owner_id, spender_id))
     }
 
     pub fn set_allowance(mut self, owner_id: u256, spender_id: u256, amount: u256) {
-        self.allowances.set((owner_id, spender_id), amount)
+        self.allowances.set(key: (owner_id, spender_id), value: amount)
     }
 }
 ```
@@ -156,7 +156,7 @@ pub struct Token {
 
 impl Token {
     pub fn approve(mut self, owner_id: u256, spender_id: u256, amount: u256) {
-        self.allowances.set((owner_id, spender_id), amount)
+        self.allowances.set(key: (owner_id, spender_id), value: amount)
     }
 
     pub fn transfer_from(
@@ -166,15 +166,15 @@ impl Token {
         to_id: u256,
         amount: u256
     ) {
-        let allowed = self.allowances.get((owner_id, spender_id))
+        let allowed = self.allowances.get(key: (owner_id, spender_id))
         // Check and update allowance
-        self.allowances.set((owner_id, spender_id), allowed - amount)
+        self.allowances.set(key: (owner_id, spender_id), value: allowed - amount)
 
         // Perform transfer
-        let from_balance = self.balances.get(owner_id)
-        let to_balance = self.balances.get(to_id)
-        self.balances.set(owner_id, from_balance - amount)
-        self.balances.set(to_id, to_balance + amount)
+        let from_balance = self.balances.get(key: owner_id)
+        let to_balance = self.balances.get(key: to_id)
+        self.balances.set(key: owner_id, value: from_balance - amount)
+        self.balances.set(key: to_id, value: to_balance + amount)
     }
 }
 ```
@@ -189,15 +189,15 @@ pub struct AccessControl {
 
 impl AccessControl {
     pub fn has_role(self, account_id: u256, role_id: u256) -> bool {
-        self.roles.get((account_id, role_id))
+        self.roles.get(key: (account_id, role_id))
     }
 
     pub fn grant_role(mut self, account_id: u256, role_id: u256) {
-        self.roles.set((account_id, role_id), true)
+        self.roles.set(key: (account_id, role_id), value: true)
     }
 
     pub fn revoke_role(mut self, account_id: u256, role_id: u256) {
-        self.roles.set((account_id, role_id), false)
+        self.roles.set(key: (account_id, role_id), value: false)
     }
 }
 ```

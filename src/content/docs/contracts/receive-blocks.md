@@ -37,11 +37,11 @@ contract Token {
 
     recv TokenMsg {
         BalanceOf { account } -> u256 uses (store) {
-            store.balances.get(account)
+            store.balances.get(key: account)
         }
 
         Transfer { to, amount } -> bool uses (mut store) {
-            do_transfer(caller(), to, amount)
+            do_transfer(from: caller(), to, amount)
         }
     }
 }
@@ -65,7 +65,7 @@ contract Token {
 //</hide>
         BalanceOf { account } -> u256 uses (store) {
             // store is available here
-            store.balances.get(account)
+            store.balances.get(key: account)
         }
 //<hide>
     }
@@ -96,19 +96,19 @@ msg TokenMsg {
 //</hide>
 
 fn get_balance(account: u256) -> u256 uses (store: TokenStorage) {
-    store.balances.get(account)
+    store.balances.get(key: account)
 }
 
 fn do_transfer(from: u256, to: u256, amount: u256) -> bool uses (store: mut TokenStorage) {
-    let from_bal = store.balances.get(from)
+    let from_bal = store.balances.get(key: from)
     if from_bal < amount {
         return false
     }
 
-    store.balances.set(from, from_bal - amount)
+    store.balances.set(key: from, value: from_bal - amount)
 
-    let to_bal = store.balances.get(to)
-    store.balances.set(to, to_bal + amount)
+    let to_bal = store.balances.get(key: to)
+    store.balances.set(key: to, value: to_bal + amount)
     true
 }
 
@@ -121,7 +121,7 @@ contract Token {
         }
 
         Transfer { to, amount } -> bool uses (mut store) {
-            do_transfer(caller(), to, amount)
+            do_transfer(from: caller(), to, amount)
         }
     }
 }
@@ -161,7 +161,7 @@ contract Token {
 
     recv TokenMsg {
         TransferFrom { from, to, amount } -> bool uses (mut balances, mut allowances) {
-            do_transfer_from(caller(), from, to, amount)
+            do_transfer_from(c: caller(), from, to, amount)
         }
     }
 }

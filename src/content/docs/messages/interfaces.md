@@ -53,6 +53,8 @@ struct Transfer {
 // ABI size: two u256 fields = 64 bytes
 impl AbiSize for Transfer {
     const ENCODED_SIZE: u256 = 64
+    const IS_DYNAMIC: bool = false
+    const NEEDS_PARENT_WRAPPER: bool = false
 }
 
 // ABI encoding: write each field as a word
@@ -64,7 +66,7 @@ impl Encode<Sol> for Transfer {
         self.amount.encode(mut e)
     }
 
-    fn encode_to_ptr(own self, ptr: u256) {
+    fn encode_to_ptr(own self, _ ptr: u256) {
         let _ = ptr
         core::panic()
     }

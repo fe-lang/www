@@ -14,9 +14,9 @@ fn max(a: u256, b: u256) -> u256 {
 
 #[test]
 fn test_max() {
-    assert(max(3, 7) == 7)
-    assert(max(10, 2) == 10)
-    assert(max(5, 5) == 5)
+    assert(max(a: 3, b: 7) == 7)
+    assert(max(a: 10, b: 2) == 10)
+    assert(max(a: 5, b: 5) == 5)
 }
 ```
 
@@ -56,7 +56,7 @@ impl Point {
 fn test_distance() {
     let a = Point { x: 0, y: 0 }
     let b = Point { x: 3, y: 4 }
-    assert(a.distance_squared(b) == 25)
+    assert(a.distance_squared(other: b) == 25)
 }
 ```
 
@@ -97,7 +97,7 @@ fn add(a: u256, b: u256) -> u256 { a + b }
 #[test]
 fn test_assertions() {
     // Equality
-    assert(add(2, 3) == 5)
+    assert(add(a: 2, b: 3) == 5)
 
     // Comparison
     let a: u256 = 10

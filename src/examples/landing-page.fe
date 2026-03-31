@@ -61,27 +61,27 @@ pub contract Vault uses (ctx: Ctx, log: mut Log) {
         Deposit {} uses (ctx, mut store, mut log) {
             let who = ctx.caller()
             store.balances.set(
-                who,
-                store.balances.get(who) + ctx.value()
+                key: who,
+                value: store.balances.get(key: who) + ctx.value()
             )
-            log.emit(Deposited { owner: who, amount: ctx.value() })
+            log.emit(event: Deposited { owner: who, amount: ctx.value() })
         }
 
         // Pattern match on Result for control flow
         Withdraw { amount } uses (ctx, mut store) {
             let who = ctx.caller()
             let req = Withdrawal {
-                balance: store.balances.get(who), 
+                balance: store.balances.get(key: who),
                 amount
             }
             match req.validate() {
-                Ok(new_bal) => { store.balances.set(who, new_bal) }
+                Ok(new_bal) => { store.balances.set(key: who, value: new_bal) }
                 Err(e) => { revert(e) }
             }
         }
 
         BalanceOf { addr } -> u256 uses (store) {
-            store.balances.get(addr)
+            store.balances.get(key: addr)
         }
     }
 }
@@ -99,6 +99,8 @@ impl VaultError {
 
 impl AbiSize for VaultError {
     const ENCODED_SIZE: u256 = 32
+    const IS_DYNAMIC: bool = false
+    const NEEDS_PARENT_WRAPPER: bool = false
 }
 
 impl<A: Abi> Encode<A> for VaultError {
@@ -108,7 +110,7 @@ impl<A: Abi> Encode<A> for VaultError {
         e.write_word(self.to_code())
     }
 
-    fn encode_to_ptr(own self, ptr: u256) {
-        A::store_word(ptr, self.to_code())
+    fn encode_to_ptr(own self, _ ptr: u256) {
+        A::store_word(ptr, value: self.to_code())
     }
 }

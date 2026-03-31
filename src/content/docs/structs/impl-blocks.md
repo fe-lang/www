@@ -125,7 +125,7 @@ let mut counter = Counter { value: 0 }
 let v = counter.get()      // 0
 counter.increment()
 let v2 = counter.get()     // 1
-counter.set(100)
+counter.set(new_value: 100)
 let v3 = counter.get()     // 100
 //<hide>
 let _ = (v, v2, v3)
@@ -174,9 +174,9 @@ impl Builder {
 fn example() {
 //</hide>
 let b = Builder { width: 0, height: 0, depth: 0 }
-    .with_width(10)
-    .with_height(20)
-    .with_depth(30)
+    .with_width(w: 10)
+    .with_height(h: 20)
+    .with_depth(d: 30)
 //<hide>
 let _ = b
 }

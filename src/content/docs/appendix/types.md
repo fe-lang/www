@@ -277,7 +277,7 @@ fn __example_map(account: Address, new_balance: u256) uses (storage: mut Storage
 let balance = storage.balances.get(account)
 
 // Update
-storage.balances.set(account, new_balance)
+storage.balances.set(key: account, value: new_balance)
 //<hide>
 let _ = balance
 }

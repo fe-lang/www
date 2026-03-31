@@ -106,7 +106,7 @@ impl Counter {
 //<hide>
 fn example() {
 //</hide>
-let counter = Counter::new(100)
+let counter = Counter::new(max: 100)
 //<hide>
 let _ = counter
 }
@@ -151,8 +151,8 @@ impl Config {
 fn example() {
 //</hide>
 let c1 = Config::new()
-let c2 = Config::with_threshold(50)
-let c3 = Config::create(100, true, 0x123)
+let c2 = Config::with_threshold(threshold: 50)
+let c3 = Config::create(threshold: 100, enabled: true, owner: 0x123)
 //<hide>
 let _ = (c1, c2, c3)
 }
@@ -186,8 +186,8 @@ impl Rectangle {
 //<hide>
 fn example() {
 //</hide>
-let rect = Rectangle::new(10, 20)
-let sq = Rectangle::square(15)
+let rect = Rectangle::new(width: 10, height: 20)
+let sq = Rectangle::square(size: 15)
 let unit = Rectangle::unit()
 //<hide>
 let _ = (rect, sq, unit)
@@ -232,9 +232,9 @@ impl Percentage {
 //<hide>
 fn example() {
 //</hide>
-let p = Percentage::from_percent(50)  // 50%
-let valid = Percentage::is_valid_basis_points(5000)  // true
-let result = p.apply(1000)  // 500
+let p = Percentage::from_percent(percent: 50)  // 50%
+let valid = Percentage::is_valid_basis_points(bp: 5000)  // true
+let result = p.apply(amount: 1000)  // 500
 //<hide>
 let _ = (valid, result)
 }

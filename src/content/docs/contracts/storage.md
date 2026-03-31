@@ -80,11 +80,11 @@ pub struct TokenStorage { pub balances: StorageMap<u256, u256> }
 //</hide>
 
 fn get_balance(account: u256) -> u256 uses (store: TokenStorage) {
-    store.balances.get(account)
+    store.balances.get(key: account)
 }
 
 fn set_balance(account: u256, amount: u256) uses (store: mut TokenStorage) {
-    store.balances.set(account, amount)
+    store.balances.set(key: account, value: amount)
 }
 ```
 
@@ -105,7 +105,7 @@ contract Token {
 
     recv TokenMsg {
         BalanceOf { account } -> u256 uses (store) {
-            store.balances.get(account)
+            store.balances.get(key: account)
         }
     }
 }
@@ -122,7 +122,7 @@ Retrieve a value (returns zero/default if not set):
 pub struct TokenStorage { pub balances: StorageMap<u256, u256> }
 fn example(account: u256) uses (store: TokenStorage) {
 //</hide>
-let balance = store.balances.get(account)
+let balance = store.balances.get(key: account)
 //<hide>
 let _ = balance
 }
@@ -138,7 +138,7 @@ Store a value:
 pub struct TokenStorage { pub balances: StorageMap<u256, u256> }
 fn example(account: u256, new_balance: u256) uses (store: mut TokenStorage) {
 //</hide>
-store.balances.set(account, new_balance)
+store.balances.set(key: account, value: new_balance)
 //<hide>
 }
 //</hide>
@@ -155,11 +155,11 @@ pub struct AllowanceStorage {
 }
 
 fn get_allowance(owner: u256, spender: u256) -> u256 uses (store: AllowanceStorage) {
-    store.allowances.get((owner, spender))
+    store.allowances.get(key: (owner, spender))
 }
 
 fn set_allowance(owner: u256, spender: u256, amount: u256) uses (store: mut AllowanceStorage) {
-    store.allowances.set((owner, spender), amount)
+    store.allowances.set(key: (owner, spender), value: amount)
 }
 ```
 
@@ -204,7 +204,7 @@ contract OwnableToken {
 
     recv TokenMsg {
         Transfer { to, amount } -> bool uses (mut tokens) {
-            do_transfer(caller(), to, amount)
+            do_transfer(from: caller(), to, amount)
         }
     }
 

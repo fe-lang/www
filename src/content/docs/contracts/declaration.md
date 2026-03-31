@@ -100,7 +100,7 @@ pub struct TokenStorage {
 
 impl TokenStorage {
     fn get_balance(self, account: u256) -> u256 {
-        self.balances.get(account)
+        self.balances.get(key: account)
     }
 }
 
@@ -144,14 +144,14 @@ pub struct TokenStorage {
 // 2. Methods on the storage struct
 impl TokenStorage {
     fn do_transfer(mut self, from: u256, to: u256, amount: u256) -> bool {
-        let from_bal = self.balances.get(from)
+        let from_bal = self.balances.get(key: from)
         if from_bal < amount {
             return false
         }
-        self.balances.set(from, from_bal - amount)
+        self.balances.set(key: from, value: from_bal - amount)
 
-        let to_bal = self.balances.get(to)
-        self.balances.set(to, to_bal + amount)
+        let to_bal = self.balances.get(key: to)
+        self.balances.set(key: to, value: to_bal + amount)
         true
     }
 }
@@ -175,11 +175,11 @@ contract Token {
 
     recv TokenMsg {
         Transfer { to, amount } -> bool uses (ctx: Ctx, mut store) {
-            store.do_transfer(ctx.caller(), to, amount)
+            store.do_transfer(from: ctx.caller(), to, amount)
         }
 
         BalanceOf { account } -> u256 uses store {
-            store.balances.get(account)
+            store.balances.get(key: account)
         }
     }
 }

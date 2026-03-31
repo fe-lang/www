@@ -26,7 +26,7 @@ struct TransferParams {
 
 fn execute_transfer(params: TransferParams) -> bool uses (store: mut TokenStorage) {
     // Use params.from, params.to, params.amount
-    transfer(params.from, params.to, params.amount)
+    transfer(from: params.from, to: params.to, amount: params.amount)
 }
 ```
 
@@ -125,7 +125,7 @@ impl ValidatedAmount {
 
 fn safe_transfer(to: u256, amount: ValidatedAmount) -> bool uses (store: mut TokenStorage) {
     // amount is guaranteed to be valid
-    transfer(caller(), to, amount.get())
+    transfer(from: caller(), to, amount: amount.get())
 }
 ```
 
@@ -149,21 +149,21 @@ fn transfer_with_result(
     to: u256,
     amount: u256
 ) -> TransferResult uses (store: mut TokenStorage) {
-    let from_bal = store.balances.get(from)
+    let from_bal = store.balances.get(key: from)
 
     if from_bal < amount {
         return TransferResult {
             success: false,
             new_sender_balance: from_bal,
-            new_recipient_balance: store.balances.get(to),
+            new_recipient_balance: store.balances.get(key: to),
         }
     }
 
     let new_from = from_bal - amount
-    let new_to = store.balances.get(to) + amount
+    let new_to = store.balances.get(key: to) + amount
 
-    store.balances.set(from, new_from)
-    store.balances.set(to, new_to)
+    store.balances.set(key: from, value: new_from)
+    store.balances.set(key: to, value: new_to)
 
     TransferResult {
         success: true,
@@ -204,8 +204,8 @@ impl Percentage {
 fn example() {
 //</hide>
 // Usage
-let fee_rate = Percentage::from_percent(3)  // 3%
-let fee = fee_rate.apply(1000)  // 30
+let fee_rate = Percentage::from_percent(pct: 3)  // 3%
+let fee = fee_rate.apply(value: 1000)  // 30
 //<hide>
 let _ = fee
 }
@@ -287,8 +287,8 @@ impl TokenConfig {
 fn example() {
 //</hide>
 let config = TokenConfig::new()
-    .with_decimals(6)
-    .with_supply(1000000)
+    .with_decimals(d: 6)
+    .with_supply(supply: 1000000)
     .mintable()
 //<hide>
 let _ = config
@@ -315,7 +315,7 @@ impl MathUtils {
     }
 
     fn clamp(value: u256, min_val: u256, max_val: u256) -> u256 {
-        MathUtils::max(min_val, MathUtils::min(value, max_val))
+        MathUtils::max(a: min_val, b: MathUtils::min(a: value, b: max_val))
     }
 
     fn abs_diff(a: u256, b: u256) -> u256 {
@@ -328,7 +328,7 @@ fn example() {
 let value: u256 = 50
 //</hide>
 // Usage
-let clamped = MathUtils::clamp(value, 10, 100)
+let clamped = MathUtils::clamp(value, min_val: 10, max_val: 100)
 //<hide>
 let _ = clamped
 }
@@ -365,11 +365,11 @@ impl TransferRequest {
     }
 
     fn execute(self) -> bool uses (store: mut TokenStorage) {
-        transfer(self.from, self.to, self.amount)
+        transfer(from: self.from, to: self.to, amount: self.amount)
     }
 
     fn validate(self) -> bool uses (store: TokenStorage) {
-        let balance = store.balances.get(self.from)
+        let balance = store.balances.get(key: self.from)
         balance >= self.amount && self.to != 0
     }
 }

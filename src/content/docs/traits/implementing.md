@@ -87,7 +87,7 @@ impl Shape for Rectangle {
 
 Missing any method causes a compile error:
 
-```fe
+```fe ignore
 impl Shape for Rectangle {
     fn area(self) -> u256 {
         self.width * self.height
@@ -307,8 +307,8 @@ impl Printable for Wallet {
 
 fn use_wallet() {
 //</hide>
-let wallet = Wallet::new(100)  // Associated function
-let wallet = wallet.deposit(50)                  // Regular method
+let wallet = Wallet::new(initial: 100)  // Associated function
+let wallet = wallet.deposit(amount: 50)                  // Regular method
 let s = wallet.to_string()          // Trait method
 //<hide>
     let _ = (wallet, s)

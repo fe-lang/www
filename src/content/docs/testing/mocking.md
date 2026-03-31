@@ -28,7 +28,7 @@ fn test_fee_calculation() {
     let config = Config { max_transfer: 1000, fee_rate: 250 }
 
     let fee = with (config) {
-        calculate_fee(400)
+        calculate_fee(amount: 400)
     }
     assert(fee == 10)  // 400 * 250 / 10000 = 10
 }
@@ -37,10 +37,10 @@ fn test_fee_calculation() {
 fn test_transfer_limit() {
     let config = Config { max_transfer: 1000, fee_rate: 250 }
 
-    let ok = with (config) { is_within_limit(500) }
+    let ok = with (config) { is_within_limit(amount: 500) }
     assert(ok == true)
 
-    let too_much = with (config) { is_within_limit(2000) }
+    let too_much = with (config) { is_within_limit(amount: 2000) }
     assert(too_much == false)
 }
 ```
@@ -67,17 +67,17 @@ fn calculate_fee(amount: u256) -> u256 uses (config: Config) {
 fn test_fee_rates() {
     // No fee
     let zero_fee = Config { max_transfer: 1000, fee_rate: 0 }
-    let fee = with (zero_fee) { calculate_fee(1000) }
+    let fee = with (zero_fee) { calculate_fee(amount: 1000) }
     assert(fee == 0)
 
     // 1% fee
     let low_fee = Config { max_transfer: 1000, fee_rate: 100 }
-    let fee = with (low_fee) { calculate_fee(1000) }
+    let fee = with (low_fee) { calculate_fee(amount: 1000) }
     assert(fee == 10)
 
     // 5% fee
     let high_fee = Config { max_transfer: 1000, fee_rate: 500 }
-    let fee = with (high_fee) { calculate_fee(1000) }
+    let fee = with (high_fee) { calculate_fee(amount: 1000) }
     assert(fee == 50)
 }
 ```

@@ -59,7 +59,7 @@ fn bump_nonce(n: mut u8) {
 #[test]
 fn test_mut_parameter() {
     let mut x: u256 = 7
-    double_in_place(mut x)
+    double_in_place(v: mut x)
     // The caller sees the modification
     assert(x == 14)
 }
@@ -67,13 +67,13 @@ fn test_mut_parameter() {
 #[test]
 fn test_mut_param_on_field() {
     let mut w = Wallet { balance: 100, nonce: 1 }
-    bump_nonce(mut w.nonce)
+    bump_nonce(n: mut w.nonce)
     assert(w.nonce == 2)
 }
 ```
 
 Key rules:
-- The caller must write `double_in_place(mut x)` — the `mut` at the call site makes the mutation visible and intentional
+- The caller must write `double_in_place(v: mut x)` — the label and `mut` at the call site make the mutation visible and intentional
 - The variable being passed must itself be `mut`
 
 ### `mut self` — Mutable Methods
@@ -96,7 +96,7 @@ impl Point {
 #[test]
 fn test_mut_self() {
     let mut p = Point { x: 1, y: 2 }
-    p.translate(10, 20)
+    p.translate(dx: 10, dy: 20)
     // Modifications are visible on p
     assert(p.x == 11)
     assert(p.y == 22)
@@ -218,7 +218,7 @@ impl Point {
 #[test]
 fn test_mut_own_self() {
     let p = Point { x: 2, y: 3 }
-    let p2 = p.scale_and_consume(10)
+    let p2 = p.scale_and_consume(factor: 10)
     assert(p2.x == 20)
     assert(p2.y == 30)
 }
@@ -292,7 +292,7 @@ fn live_view(d: ref Data) -> LiveView {
 fn test_ref_is_not_a_copy() {
     let d = Data { x: 10, y: 20 }
 
-    let live = live_view(ref d)
+    let live = live_view(d: ref d)
 
     // live.x and live.y point to d's fields — they are NOT copies.
     // The compiler guarantees this: writing `LiveView { x: d.x }` would
@@ -334,11 +334,11 @@ fn test_slice_no_copy() {
     let arr: [u256; 8] = [10, 20, 30, 40, 50, 60, 70, 80]
 
     // Create two slices over the same array — no data is copied
-    let first_half = slice(ref arr, 0, 4)
-    let second_half = slice(ref arr, 4, 4)
+    let first_half = slice(arr: ref arr, start: 0, len: 4)
+    let second_half = slice(arr: ref arr, start: 4, len: 4)
 
-    assert(sum_slice(first_half) == 100)   // 10+20+30+40
-    assert(sum_slice(second_half) == 260)  // 50+60+70+80
+    assert(sum_slice(s: first_half) == 100)   // 10+20+30+40
+    assert(sum_slice(s: second_half) == 260)  // 50+60+70+80
 
     // arr is still fully usable
     assert(arr[0] == 10)

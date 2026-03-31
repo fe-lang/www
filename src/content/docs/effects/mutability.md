@@ -201,21 +201,21 @@ pub struct Balances {
 
 // Read-only: safe to call anywhere
 fn get_balance(account: u256) -> u256 uses (balances: Balances) {
-    balances.data.get(account)
+    balances.data.get(key: account)
 }
 
 // Mutable: changes state
 fn set_balance(account: u256, amount: u256) uses (balances: mut Balances) {
-    balances.data.set(account, amount)
+    balances.data.set(key: account, value: amount)
 }
 
 // Mutable: combines read and write
 fn transfer(from: u256, to: u256, amount: u256) uses (balances: mut Balances) {
-    let from_balance = get_balance(from)  // Calls read-only function
-    let to_balance = get_balance(to)
+    let from_balance = get_balance(account: from)  // Calls read-only function
+    let to_balance = get_balance(account: to)
 
-    set_balance(from, from_balance - amount)
-    set_balance(to, to_balance + amount)
+    set_balance(account: from, amount: from_balance - amount)
+    set_balance(account: to, amount: to_balance + amount)
 }
 ```
 

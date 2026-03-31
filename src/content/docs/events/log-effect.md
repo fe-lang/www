@@ -33,7 +33,7 @@ impl TokenStorage {
         //<hide>
         let _ = (from, to, amount)
         //</hide>
-        log.emit(Transfer { from, to, amount })
+        log.emit(event: Transfer { from, to, amount })
     }
 
     // This method CANNOT emit events
@@ -64,7 +64,7 @@ struct Transfer {
 
 // Read-only logging isn't meaningful, so always use mut
 fn emit_transfer(from: u256, to: u256, amount: u256) uses (log: mut Log) {
-    log.emit(Transfer { from, to, amount })
+    log.emit(event: Transfer { from, to, amount })
 }
 ```
 
@@ -146,8 +146,8 @@ impl Balances {
 
     // Public interface - with logging
     fn deposit(mut self, account: u256, amount: u256) uses (log: mut Log) {
-        self.update_balance(account, amount)
-        log.emit(Deposit { account, amount })
+        self.update_balance(account, delta: amount)
+        log.emit(event: Deposit { account, amount })
     }
 }
 ```
@@ -171,7 +171,7 @@ struct Transfer {
 //</hide>
 
 fn emit_transfer(from: u256, to: u256, amount: u256) uses (log: mut Log) {
-    log.emit(Transfer { from, to, amount })
+    log.emit(event: Transfer { from, to, amount })
 }
 
 impl TokenStorage {
@@ -226,7 +226,7 @@ contract Token uses (log: mut Log) {
 
     recv TokenMsg {
         Transfer { to, amount } -> bool uses (mut store, mut log) {
-            store.do_transfer(caller(), to, amount)
+            store.do_transfer(from: caller(), to, amount)
         }
     }
 }
@@ -277,7 +277,7 @@ impl TokenStorage {
         //<hide>
         let _ = (from, to, amount)
         //</hide>
-        log.emit(Transfer { from, to, amount })
+        log.emit(event: Transfer { from, to, amount })
     }
 }
 
@@ -285,7 +285,7 @@ impl AdminStorage {
     fn transfer_ownership(mut self, new_owner: u256) uses (log: mut AdminLog) {
         let previous = self.owner
         self.owner = new_owner
-        log.emit(OwnershipTransferred { previous_owner: previous, new_owner })
+        log.emit(event: OwnershipTransferred { previous_owner: previous, new_owner })
     }
 }
 ```
@@ -322,9 +322,9 @@ impl TokenEvents {
 
 impl TokenStorage {
     fn mint(mut self, to: u256, amount: u256) uses (log: mut TokenEvents) {
-        self.balances.set(to, self.balances.get(to) + amount)
+        self.balances.set(key: to, value: self.balances.get(key: to) + amount)
         self.total_supply = self.total_supply + amount
-        log.emit(Transfer { from: 0, to, amount })
+        log.emit(event: Transfer { from: 0, to, amount })
     }
 }
 ```
@@ -344,7 +344,7 @@ struct DebugMessage {
 }
 
 fn log_debug(message: u256) uses (log: mut DebugLog) {
-    log.emit(DebugMessage { value: message })
+    log.emit(event: DebugMessage { value: message })
 }
 ```
 
@@ -372,7 +372,7 @@ impl Config {
     // With logging wrapper
     fn compute_fee_logged(self, amount: u256) -> u256 uses (log: mut Log) {
         let fee = self.compute_fee(amount)
-        log.emit(FeeComputed { amount, fee })
+        log.emit(event: FeeComputed { amount, fee })
         fee
     }
 }

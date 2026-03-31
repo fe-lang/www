@@ -38,12 +38,12 @@ pub struct Balances { pub data: StorageMap<u256, u256> }
 
 // This function can only read
 fn get_balance(account: u256) -> u256 uses (balances: Balances) {
-    balances.data.get(account)
+    balances.data.get(key: account)
 }
 
 // This function can read AND write
 fn set_balance(account: u256, amount: u256) uses (balances: mut Balances) {
-    balances.data.set(account, amount)
+    balances.data.set(key: account, value: amount)
 }
 ```
 
@@ -96,7 +96,7 @@ impl Logger {
 fn process_payment(amount: u256) uses (config: Config, balances: mut Balances, logger: mut Logger) {
     let fee = amount * config.fee_rate / 10000
 
-    balances.credit(amount - fee)
+    balances.credit(amount: amount - fee)
     logger.log_payment(amount, fee)
 }
 
@@ -107,7 +107,7 @@ fn test_payment() {
     let mut logger = Logger::new()
 
     with (Config = config, Balances = balances, Logger = logger) {
-        process_payment(1000)
+        process_payment(amount: 1000)
     }
 
     // Assert on mock state
@@ -137,15 +137,15 @@ impl Balances {
 }
 
 fn validate_transfer(from: u256, amount: u256) -> bool uses (balances: Balances) {
-    balances.get(from) >= amount
+    balances.get(account: from) >= amount
 }
 
 fn test_validate_transfer() {
     let balances = Balances { balance: 100 }
 
     with (Balances = balances) {
-        assert(validate_transfer(1, 50) == true, "should allow 50")
-        assert(validate_transfer(1, 150) == false, "should reject 150")
+        assert(validate_transfer(from: 1, amount: 50) == true, "should allow 50")
+        assert(validate_transfer(from: 1, amount: 150) == false, "should reject 150")
     }
 }
 ```
@@ -179,8 +179,8 @@ fn calculate_shares(amount: u256, total: u256, supply: u256) -> u256 {
 
 fn test_calculate_shares() {
     // No setup needed, just call the function
-    assert(calculate_shares(100, 1000, 500) == 50, "shares calc 1")
-    assert(calculate_shares(100, 0, 0) == 100, "shares calc 2")
+    assert(calculate_shares(amount: 100, total: 1000, supply: 500) == 50, "shares calc 1")
+    assert(calculate_shares(amount: 100, total: 0, supply: 0) == 100, "shares calc 2")
 }
 ```
 

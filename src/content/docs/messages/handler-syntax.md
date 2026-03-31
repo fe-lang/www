@@ -378,7 +378,7 @@ impl TokenStorage {
 
     fn add_balance(mut self, account: u256, amount: u256) {
         let current = self.balances.get(account)
-        self.balances.set(account, current + amount)
+        self.balances.set(key: account, value: current + amount)
     }
 }
 
@@ -391,7 +391,7 @@ contract Token {
         }
 
         Transfer { to, amount } -> bool uses (mut store) {
-            store.add_balance(to, amount)
+            store.add_balance(account: to, amount)
             true
         }
     }
@@ -419,7 +419,7 @@ contract Token {
     recv TokenMsg {
         Transfer { to, amount } -> bool {
             let sender = caller()  // Get the message sender
-            do_transfer(sender, to, amount)
+            do_transfer(from: sender, to, amount)
         }
     }
 //<hide>

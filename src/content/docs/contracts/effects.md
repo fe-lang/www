@@ -28,7 +28,7 @@ contract Token {
     recv TokenMsg {
         BalanceOf { account } -> u256 uses (store) {
             // Access storage through the uses clause
-            store.balances.get(account)
+            store.balances.get(key: account)
         }
     }
 }
@@ -59,12 +59,12 @@ msg TokenMsg {
 //</hide>
 
 fn get_balance(account: u256) -> u256 uses (store: TokenStorage) {
-    store.balances.get(account)
+    store.balances.get(key: account)
 }
 
 fn add_balance(account: u256, amount: u256) uses (store: mut TokenStorage) {
-    let current = store.balances.get(account)
-    store.balances.set(account, current + amount)
+    let current = store.balances.get(key: account)
+    store.balances.set(key: account, value: current + amount)
 }
 
 contract Token {
@@ -76,7 +76,7 @@ contract Token {
         }
 
         Transfer { to, amount } -> bool uses (mut store) {
-            add_balance(to, amount)
+            add_balance(account: to, amount)
             true
         }
     }
@@ -108,12 +108,12 @@ contract Token {
     recv TokenMsg {
         // Read-only: no mut needed
         BalanceOf { account } -> u256 uses (store) {
-            store.balances.get(account)
+            store.balances.get(key: account)
         }
 
         // Writing: mut required
         Transfer { to, amount } -> bool uses (mut store) {
-            store.balances.set(to, amount)
+            store.balances.set(key: to, value: amount)
             true
         }
     }
@@ -168,17 +168,17 @@ contract Token {
 
     recv TokenMsg {
         Transfer { to, amount } -> bool uses (mut tokens) {
-            do_transfer(caller(), to, amount)
+            do_transfer(c: caller(), to, amount)
         }
 
         Approve { spender, amount } -> bool uses (mut permits) {
-            set_allowance(caller(), spender, amount)
+            set_allowance(c: caller(), spender, amount)
             true
         }
 
         TransferFrom { from, to, amount } -> bool uses (mut tokens, mut permits) {
             // Multiple effects in one handler
-            do_transfer_from(caller(), from, to, amount)
+            do_transfer_from(c: caller(), from, to, amount)
         }
     }
 }
@@ -207,7 +207,7 @@ contract Token {
     recv TokenMsg {
         Transfer { to, amount } -> bool uses (store) {
             // store is available throughout this handler
-            let balance = store.balances.get(caller())
+            let balance = store.balances.get(key: caller())
             let _ = (to, amount, balance)
             true
         }
@@ -248,7 +248,7 @@ pub struct TokenStorage { pub balances: StorageMap<u256, u256> }
 // Fe - explicit effect dependency
 fn transfer(to: u256, amount: u256) -> bool uses (store: mut TokenStorage) {
     // Clear that this function needs TokenStorage
-    store.balances.set(to, amount)
+    store.balances.set(key: to, value: amount)
     true
 }
 ```

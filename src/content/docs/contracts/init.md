@@ -42,7 +42,7 @@ contract Token {
 
     init(initial_supply: u256, owner: u256) uses (mut store) {
         store.total_supply = initial_supply
-        store.balances.set(owner, initial_supply)
+        store.balances.set(key: owner, value: initial_supply)
     }
 }
 ```
@@ -73,7 +73,7 @@ contract Token {
         store.owner = caller()
 
         // Set map entries
-        store.balances.set(caller(), initial_supply)
+        store.balances.set(key: caller(), value: initial_supply)
     }
 }
 ```
@@ -169,7 +169,7 @@ contract Token {
 
         // Initialize supply
         store.total_supply = initial_supply
-        store.balances.set(deployer, initial_supply)
+        store.balances.set(key: deployer, value: initial_supply)
 
         // Contract starts unpaused
         store.paused = false

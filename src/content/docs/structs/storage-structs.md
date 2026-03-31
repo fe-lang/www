@@ -36,12 +36,12 @@ pub struct TokenStorage {
 impl TokenStorage {
     // Read-only access
     fn get_balance(self, account: u256) -> u256 {
-        self.balances.get(account)
+        self.balances.get(key: account)
     }
 
     // Write access
     fn set_balance(mut self, account: u256, amount: u256) {
-        self.balances.set(account, amount)
+        self.balances.set(key: account, value: amount)
     }
 }
 ```
@@ -57,7 +57,7 @@ use _boilerplate::caller
 pub struct TokenStorage { pub balances: StorageMap<u256, u256> }
 impl TokenStorage {
     fn get_balance(self, account: u256) -> u256 {
-        self.balances.get(account)
+        self.balances.get(key: account)
     }
     fn transfer(mut self, from: u256, to: u256, amount: u256) -> bool {
         let _ = (from, to, amount)
@@ -81,7 +81,7 @@ contract Token {
         }
 
         Transfer { to, amount } -> bool uses (mut store) {
-            store.transfer(caller(), to, amount)
+            store.transfer(from: caller(), to, amount)
         }
     }
 }
@@ -193,11 +193,11 @@ impl Registry {
     }
 
     fn get_nested(self, outer: u256, inner: u256) -> u256 {
-        self.nested.get((outer, inner))
+        self.nested.get(key: (outer, inner))
     }
 
     fn set_nested(mut self, outer: u256, inner: u256, value: u256) {
-        self.nested.set((outer, inner), value)
+        self.nested.set(key: (outer, inner), value)
     }
 }
 ```
@@ -256,18 +256,18 @@ pub struct TokenStorage {
 
 impl TokenStorage {
     fn get_balance(self, account: u256) -> u256 {
-        self.balances.get(account)
+        self.balances.get(key: account)
     }
 
     fn transfer(mut self, from: u256, to: u256, amount: u256) -> bool {
-        let from_bal = self.balances.get(from)
+        let from_bal = self.balances.get(key: from)
         if from_bal < amount {
             return false
         }
-        self.balances.set(from, from_bal - amount)
+        self.balances.set(key: from, value: from_bal - amount)
 
-        let to_bal = self.balances.get(to)
-        self.balances.set(to, to_bal + amount)
+        let to_bal = self.balances.get(key: to)
+        self.balances.set(key: to, value: to_bal + amount)
         true
     }
 }
@@ -291,7 +291,7 @@ contract Token {
 
     recv Erc20 {
         Transfer { to, amount } -> bool uses (mut tokens) {
-            tokens.transfer(caller(), to, amount)
+            tokens.transfer(from: caller(), to, amount)
         }
 
         BalanceOf { account } -> u256 uses (tokens) {

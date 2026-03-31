@@ -314,7 +314,7 @@ fn process(data: u256, flag: bool) -> u256 { if flag { data } else { 0 } }
 fn example() {
 let data: u256 = 100
 //</hide>
-let value = compute(10, 20)
+let value = compute(a: 10, b: 20)
 let result = process(data, flag: true)  // with labeled argument
 //<hide>
 let _ = (value, result)
