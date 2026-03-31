@@ -368,17 +368,15 @@ const installCommands = [
       });
     });
     // Intercept SCIP click navigation: redirect hash changes to /docs/ viewer
-    // Suppress landing-page:: links (no doc page for those)
+    // Use replaceState + replace so back button returns to clean landing page
     window.addEventListener('hashchange', function(e) {
       var hash = location.hash;
       if (!hash || !hash.includes('::')) return;
-      if (hash.includes('landing-page::')) {
-        // No doc page for landing page symbols - just clear the hash
-        history.replaceState(null, '', location.pathname);
-        return;
-      }
-      // Navigate to the doc viewer with this hash
-      location.href = '/docs/index.html' + hash;
+      // Clean up the hash from the landing page URL first
+      history.replaceState(null, '', location.pathname);
+      if (hash.includes('landing-page::')) return;
+      // Navigate to doc viewer without creating extra history entry
+      location.replace('/docs/' + hash);
     });
   </script>
 </body>
