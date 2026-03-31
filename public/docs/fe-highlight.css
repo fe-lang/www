@@ -1,12 +1,12 @@
 /* Fe syntax highlighting — CSS custom properties define all colors.
-   Light mode defaults, dark mode via prefers-color-scheme.
-   Host pages can override any --fe-* variable to re-theme. */
+   Default: Catppuccin Mocha (dark). Light override via prefers-color-scheme
+   or data-theme="light". Host pages can override any --fe-* variable. */
 
 /* ============================================================================
-   Color variables — the single source of truth
+   Color variables
    ============================================================================ */
 
-/* Default: Catppuccin Mocha (dark code blocks everywhere) */
+/* Default: Catppuccin Mocha (dark) */
 :root {
     --fe-hl-keyword: #cba6f7;
     --fe-hl-variable-builtin: #94e2d5;
@@ -34,7 +34,7 @@
     --fe-code-radius: 6px;
 }
 
-/* Light mode override: Catppuccin Latte syntax on light code bg */
+/* Light override: Catppuccin Latte — via OS preference */
 @media (prefers-color-scheme: light) {
     :root:not([data-theme="dark"]) {
         --fe-hl-keyword: #7c3aed;
@@ -60,6 +60,7 @@
     }
 }
 
+/* Light override: explicit toggle */
 :root[data-theme="light"] {
     --fe-hl-keyword: #7c3aed;
     --fe-hl-variable-builtin: #0891b2;
@@ -84,7 +85,7 @@
 }
 
 /* ============================================================================
-   Syntax highlight rules — just read variables, no fallbacks
+   Syntax highlight rules — read variables, no fallbacks
    ============================================================================ */
 
 .hl-keyword { color: var(--fe-hl-keyword); }
@@ -111,7 +112,7 @@
 }
 
 /* ============================================================================
-   <fe-code-block> component layout — reads variables via inheritance
+   <fe-code-block> component layout
    ============================================================================ */
 
 fe-code-block {
@@ -127,7 +128,6 @@ fe-code-block {
     overflow-x: auto;
 }
 
-/* Inline signature contexts: suppress border */
 .member-header fe-code-block,
 .code-header fe-code-block,
 .implementor-sig fe-code-block {
