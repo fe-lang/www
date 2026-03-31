@@ -37,7 +37,7 @@ curl -fsSL https://raw.githubusercontent.com/argotorg/fe/master/feup/feup.sh | b
 On macOS and Linux you can also install Fe via Homebrew:
 
 ```bash
-brew install argotorg/tap/fe
+brew install fe-lang/tap/fe
 ```
 
 ## Supported Platforms
