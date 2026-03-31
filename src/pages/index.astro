@@ -18,7 +18,7 @@ const installCommands = [
 ];
 ---
 <!doctype html>
-<html lang="en" class="text-gray-900 antialiased bg-white">
+<html lang="en" class="antialiased">
 <head>
   <meta charset="UTF-8" />
   <meta http-equiv="X-UA-Compatible" content="IE=edge">
@@ -70,6 +70,36 @@ const installCommands = [
       --fe-code-border: transparent;
       --fe-code-bg: #0d1117;
       --fe-code-radius: 0;
+    }
+
+    /* Light mode defaults */
+    html { color: #111827; background: #fff; }
+
+    @media (prefers-color-scheme: dark) {
+      html { color: #e2e8f0; background: #0f0f1a; }
+      body.bg-gray-50 { background: #0f0f1a !important; }
+      /* Cards and sections */
+      .bg-white { background: #16162a !important; }
+      .bg-gray-50 { background: #111827 !important; }
+      .border-gray-100 { border-color: #2d3748 !important; }
+      .border-gray-200 { border-color: #2d3748 !important; }
+      .border-gray-300 { border-color: #4b5563 !important; }
+      /* Text */
+      .text-gray-900 { color: #e2e8f0 !important; }
+      .text-gray-800 { color: #e2e8f0 !important; }
+      .text-gray-700 { color: #cbd5e1 !important; }
+      .text-gray-600 { color: #9ba3af !important; }
+      .text-gray-500 { color: #6b7280 !important; }
+      .text-gray-400 { color: #6b7280 !important; }
+      /* Code inline */
+      .bg-indigo-50 { background: #1e1e3a !important; }
+      /* Buttons */
+      .bg-white.border { background: #16162a !important; color: #e2e8f0 !important; }
+      .hover\:bg-gray-50:hover { background: #1e1e3a !important; }
+      /* Footer */
+      .bg-gray-900 { background: #0a0a14 !important; }
+      /* Shadows soften */
+      .shadow-sm, .shadow-2xl { box-shadow: 0 1px 3px rgba(0,0,0,0.3) !important; }
     }
   </style>
 </head>
