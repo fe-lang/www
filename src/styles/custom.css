@@ -28,8 +28,8 @@
   --sl-color-text-accent: #a5b4fc;
 }
 
-/* Content link hover — scoped to avoid conflicting with sidebar */
-.sl-markdown-content a:hover {
+/* Link hover — exclude sidebar to let Starlight handle it */
+a:hover:not(nav a) {
   color: var(--sl-color-accent);
 }
 
