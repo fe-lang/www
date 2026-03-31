@@ -60,6 +60,7 @@ export default defineConfig({
 					items: [
 						{ label: 'What is Fe?', slug: 'getting-started/what-is-fe' },
 						{ label: 'Installation', slug: 'getting-started/installation' },
+						{ label: 'Editor Setup', slug: 'getting-started/editor-setup' },
 						{ label: 'Your First Contract', slug: 'getting-started/first-contract' },
 						{ label: 'Key Concepts at a Glance', slug: 'getting-started/key-concepts' },
 					],
