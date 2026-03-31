@@ -234,9 +234,18 @@
             "match": "\\b[A-Z][A-Z0-9_]+\\b"
         },
         "type": {
-            "comment": "CamelCase identifiers treated as types.",
-            "name": "support.type.fe",
-            "match": "\\b[A-Z][a-zA-Z0-9_]*\\b"
+            "patterns": [
+                {
+                    "comment": "Built-in primitive types.",
+                    "name": "support.type.primitive.fe",
+                    "match": "\\b(?:u8|u16|u32|u64|u128|u256|i8|i16|i32|i64|i128|i256|bool)\\b"
+                },
+                {
+                    "comment": "CamelCase identifiers treated as types.",
+                    "name": "support.type.fe",
+                    "match": "\\b[A-Z][a-zA-Z0-9_]*\\b"
+                }
+            ]
         },
         "identifier": {
             "name": "variable.other.fe",
