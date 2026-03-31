@@ -3,8 +3,8 @@ title: Installation
 description: Setting up the Fe compiler
 ---
 
-:::caution[Pre-Release Software]
-Fe is in active development. The current releases are alpha versions and not yet suitable for production use.
+:::caution[Not Production-Ready]
+Fe 26.0 is an initial release of a new compiler. Not recommended for production use.
 :::
 
 ## Quick Install (recommended)

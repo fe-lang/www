@@ -26,3 +26,6 @@ openspec/changes/
 
 # Claude
 .claude/worktrees/
+
+# Local MCP config
+.mcp.json

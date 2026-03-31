@@ -1,0 +1,25 @@
+{
+  "name": "Fe Dracula",
+  "type": "dark",
+  "colors": {
+    "editor.background": "#282a36",
+    "editor.foreground": "#f8f8f2"
+  },
+  "tokenColors": [
+    { "scope": "comment", "settings": { "foreground": "#6272a4", "fontStyle": "italic" } },
+    { "scope": "string", "settings": { "foreground": "#f1fa8c" } },
+    { "scope": "constant.character.escape", "settings": { "foreground": "#ff79c6" } },
+    { "scope": "constant.numeric", "settings": { "foreground": "#bd93f9" } },
+    { "scope": "constant.language", "settings": { "foreground": "#bd93f9" } },
+    { "scope": "constant.other.caps", "settings": { "foreground": "#bd93f9", "fontStyle": "bold" } },
+    { "scope": ["keyword", "storage.type", "storage.modifier"], "settings": { "foreground": "#ff79c6" } },
+    { "scope": "variable.language", "settings": { "foreground": "#f8f8f2" } },
+    { "scope": "variable.other", "settings": { "foreground": "#f8f8f2" } },
+    { "scope": "variable.parameter", "settings": { "foreground": "#ffb86c" } },
+    { "scope": ["entity.name.type", "support.type"], "settings": { "foreground": "#8be9fd" } },
+    { "scope": "entity.name.function", "settings": { "foreground": "#50fa7b" } },
+    { "scope": "meta.attribute", "settings": { "foreground": "#50fa7b" } },
+    { "scope": "punctuation", "settings": { "foreground": "#f8f8f2" } },
+    { "scope": "keyword.operator", "settings": { "foreground": "#ff79c6" } }
+  ]
+}

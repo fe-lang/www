@@ -1,0 +1,27 @@
+---
+// API documentation viewer at /docs/
+// Standalone page (not Starlight) with doc viewer styles.
+---
+<html lang="en">
+<head>
+  <meta charset="UTF-8">
+  <script is:inline>
+    (function() {
+      var saved = localStorage.getItem('fe-theme');
+      var theme = saved || (matchMedia('(prefers-color-scheme: dark)').matches ? 'dark' : 'light');
+      document.documentElement.setAttribute('data-theme', theme);
+    })();
+  </script>
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>Fe Standard Library</title>
+  <link rel="icon" type="image/svg+xml" href="/favicon.svg">
+  <link rel="stylesheet" href="/docs/styles.css">
+  <link rel="stylesheet" href="/docs/fe-highlight.css">
+  <link rel="stylesheet" href="/docs/theme.css">
+  <script src="/docs/fe-web.js" defer></script>
+</head>
+<body>
+  <fe-doc-viewer src="/docs/docs.json" title="Fe Standard Library"
+    routing="hash" />
+</body>
+</html>

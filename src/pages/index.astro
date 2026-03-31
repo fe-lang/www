@@ -1,25 +1,11 @@
 ---
 import exampleCodeRaw from '../examples/landing-page.fe?raw';
-
 const base = import.meta.env.BASE_URL;
 
 // Extract only the display portion (before stubs comment)
 const stubsMarker = '// Stubs for type checking';
 const displayCode = exampleCodeRaw.split(stubsMarker)[0].trim();
 
-// HTML-escape the code for safe rendering
-function escapeHtml(text: string): string {
-  return text
-    .replace(/&/g, '&amp;')
-    .replace(/</g, '&lt;')
-    .replace(/>/g, '&gt;')
-    .replace(/"/g, '&quot;')
-    .replace(/'/g, '&#039;');
-}
-
-const escapedCode = escapeHtml(displayCode);
-const lineCount = displayCode.split('\n').length;
-const lineNumbers = Array.from({ length: lineCount }, (_, i) => i + 1).join('\n');
 const installCommands = [
   {
     command: 'curl -fsSL https://raw.githubusercontent.com/argotorg/fe/master/feup/feup.sh | bash',
@@ -32,12 +18,19 @@ const installCommands = [
 ];
 ---
 <!doctype html>
-<html lang="en" class="text-gray-900 antialiased bg-white">
+<html lang="en" class="antialiased">
 <head>
   <meta charset="UTF-8" />
+  <script is:inline>
+    (function() {
+      var saved = localStorage.getItem('fe-theme');
+      var theme = saved || (matchMedia('(prefers-color-scheme: dark)').matches ? 'dark' : 'light');
+      document.documentElement.setAttribute('data-theme', theme);
+    })();
+  </script>
   <meta http-equiv="X-UA-Compatible" content="IE=edge">
   <meta name="description" content="Fe is a statically typed language for the Ethereum Virtual Machine, designed for safety and auditability.">
-  <title>Fe - A next generation language for Ethereum</title>
+  <title>The Fe Programming Language</title>
   <meta name="viewport" content="width=device-width, initial-scale=1.0" />
   <script defer src="https://cloud.umami.is/script.js" data-website-id="3a2884db-bde9-480f-99b0-d43feee064f9"></script>
 
@@ -52,18 +45,65 @@ const installCommands = [
   <meta property="og:url" content="https://fe-lang.org">
 
   <meta property="twitter:card" content="summary">
-  <meta property="twitter:title" content="Fe - A next generation language for Ethereum">
+  <meta property="twitter:title" content="The Fe Programming Language">
   <meta property="twitter:site" content="fe-lang.org">
 
+  <link rel="icon" type="image/svg+xml" href="/favicon.svg">
   <link rel="preconnect" href="https://fonts.googleapis.com">
   <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
   <link href="https://fonts.googleapis.com/css2?family=Ubuntu+Sans:wght@400;600;700&display=swap" rel="stylesheet">
   <link href="https://unpkg.com/tailwindcss@^2/dist/tailwind.min.css" rel="stylesheet">
-  <link rel="stylesheet" href="https://unpkg.com/@highlightjs/cdn-assets@11.9.0/styles/vs2015.min.css">
+  <script src="/docs/fe-web.js" defer></script>
+  <link rel="stylesheet" href="/docs/fe-highlight.css">
   <style>
     body { font-family: 'Ubuntu Sans', sans-serif; }
     .no-scrollbar { -ms-overflow-style: none; scrollbar-width: none; }
     .no-scrollbar::-webkit-scrollbar { display: none; }
+    /* Fallback: hide raw code text until fe-code-block upgrades, show dark bg */
+    .landing-code-wrap fe-code-block:not(:defined) {
+      display: block;
+      background: #232136;
+      color: #e4e4e4;
+      font-family: "JetBrains Mono", "Fira Code", monospace;
+      font-size: 0.8rem;
+      line-height: 1.6;
+      padding: 0.75rem 1rem;
+      overflow: hidden;
+      white-space: pre;
+      max-height: 600px;
+    }
+    .landing-code-wrap fe-code-block {
+      margin: 0;
+      --fe-code-border: transparent;
+      --fe-code-radius: 0;
+    }
+
+    /* Light mode defaults */
+    html { color: #111827; background: #fff; }
+
+    html[data-theme="dark"] { color: #cdd6f4; background: #1e1e2e; }
+    html[data-theme="dark"] body.bg-gray-50 { background: #1e1e2e !important; }
+    html[data-theme="dark"] .bg-white { background: #181825 !important; }
+    html[data-theme="dark"] .bg-gray-50 { background: #11111b !important; }
+    html[data-theme="dark"] .border-gray-100 { border-color: #313244 !important; }
+    html[data-theme="dark"] .border-gray-200 { border-color: #313244 !important; }
+    html[data-theme="dark"] .border-gray-300 { border-color: #45475a !important; }
+    html[data-theme="dark"] .text-gray-900 { color: #cdd6f4 !important; }
+    html[data-theme="dark"] .text-gray-800 { color: #cdd6f4 !important; }
+    html[data-theme="dark"] .text-gray-700 { color: #bac2de !important; }
+    html[data-theme="dark"] .text-gray-600 { color: #9399b2 !important; }
+    html[data-theme="dark"] .text-gray-500 { color: #6c7086 !important; }
+    html[data-theme="dark"] .text-gray-400 { color: #6c7086 !important; }
+    html[data-theme="dark"] .text-indigo-600 { color: #a5b4fc !important; }
+    html[data-theme="dark"] .bg-indigo-50 { background: #1e1e3a !important; }
+    html[data-theme="dark"] .bg-white.border { background: #181825 !important; color: #cdd6f4 !important; }
+    html[data-theme="dark"] .hover\:bg-gray-50:hover { background: #1e1e3a !important; }
+    html[data-theme="dark"] .bg-gray-900 { background: #0a0a14 !important; }
+    html[data-theme="dark"] .shadow-sm,
+    html[data-theme="dark"] .shadow-2xl { box-shadow: 0 1px 3px rgba(0,0,0,0.3) !important; }
+    /* Theme toggle */
+    .theme-toggle { background: none; border: none; color: #e0e7ff; cursor: pointer; padding: 0.25rem; font-size: 1.1rem; }
+    .theme-toggle:hover { color: white; }
   </style>
 </head>
 <body class="bg-gray-50">
@@ -88,11 +128,12 @@ const installCommands = [
         <a href={`${base}getting-started/key-concepts/`} class="transition duration-100 ease-in-out mt-1 text-sm text-indigo-100 block px-2 py-2 hover:bg-indigo-700 hover:text-white rounded-md sm:mt-0 sm:ml-2 sm:px-4" title="Learn">Learn</a>
         <a href="https://fe-lang.zulipchat.com/join/dqvssgylulrmjmp2dx7vcbrq" class="transition duration-100 ease-in-out mt-1 text-sm text-indigo-100 block px-2 py-2 hover:bg-indigo-700 hover:text-white rounded-md sm:mt-0 sm:ml-2 sm:px-4" title="Community">Community</a>
         <a href="https://blog.fe-lang.org" class="transition duration-100 ease-in-out mt-1 text-sm text-indigo-100 block px-2 py-2 hover:bg-indigo-700 hover:text-white rounded-md sm:mt-0 sm:ml-2 sm:px-4" title="Blog">Blog</a>
+        <button id="theme-toggle" class="theme-toggle sm:ml-2" title="Toggle dark mode" aria-label="Toggle dark mode"></button>
       </nav>
     </div>
   </header>
   <main role="main">
-    <section class="px-4 sm:px-8 py-6 sm:py-8 max-w-4xl mx-auto">
+    <section class="px-4 sm:px-8 py-6 sm:py-8 max-w-6xl mx-auto">
       <div class="max-w-3xl">
         <p class="text-base sm:text-lg text-gray-700 leading-relaxed">Fe is a Rust-like language for the EVM, with explicit effects, message-passing contracts, and an integrated toolchain.</p>
         <div class="mt-4 flex flex-wrap items-center gap-3">
@@ -129,9 +170,9 @@ const installCommands = [
         </div>
       </div>
     </section>
-    <section class="max-w-4xl mx-auto mt-1 bg-white sm:rounded-xl overflow-hidden border border-gray-100 shadow-sm">
-      <div class="mx-auto max-w-7xl flex flex-col gap-3 lg:flex-row lg:items-stretch lg:justify-around p-3 xl:pb-3">
-        <div class="flex flex-col gap-3 lg:max-w-md sm:grid sm:grid-cols-2 sm:gap-3 lg:flex lg:flex-col lg:justify-between order-2 lg:order-1">
+    <section class="max-w-6xl mx-auto mt-1 bg-white sm:rounded-xl overflow-hidden border border-gray-100 shadow-sm">
+      <div class="mx-auto flex flex-col lg:flex-row lg:items-stretch p-3 xl:pb-3 lg:gap-4">
+        <div class="flex flex-col gap-3 lg:max-w-md lg:flex-shrink-0 sm:grid sm:grid-cols-2 sm:gap-3 lg:flex lg:flex-col lg:justify-between order-2 lg:order-1">
           <div class="p-4 bg-gray-50 rounded-lg border border-gray-100">
             <h3 class="text-xl font-semibold mb-1 text-gray-900">
               <svg xmlns="http://www.w3.org/2000/svg" class="h-6 w-6 inline-block align-text-top mr-1 text-indigo-500" viewBox="0 0 20 20" fill="currentColor">
@@ -215,25 +256,17 @@ const installCommands = [
           </div>
         </div>
         <div class="lg:max-w-2xl lg:flex-1 lg:-mr-18 order-1 lg:order-2">
-          <div class="relative overflow-hidden md:rounded-xl md:rounded-b-none xl:rounded-b-xl shadow-2xl flex bg-gray-900 pb-6 md:pb-0">
-            <div class="relative w-full flex flex-col">
-              <div class="flex-none h-11 flex items-center px-4 bg-gray-800">
-                <div class="flex space-x-1.5">
-                  <div class="w-3 h-3 rounded-full bg-red-500"></div>
-                  <div class="w-3 h-3 rounded-full bg-yellow-400"></div>
-                  <div class="w-3 h-3 rounded-full bg-green-500"></div>
-                </div>
-                <span class="flex-1 text-center text-sm font-semibold text-gray-400 -ml-12">Fe at a glance</span>
+          <div class="overflow-hidden rounded-lg shadow-2xl landing-code-wrap">
+            <div class="flex items-center px-3 py-1.5" style="background:#181825;">
+              <div class="flex space-x-1.5">
+                <div class="w-2.5 h-2.5 rounded-full bg-red-500"></div>
+                <div class="w-2.5 h-2.5 rounded-full bg-yellow-400"></div>
+                <div class="w-2.5 h-2.5 rounded-full bg-green-500"></div>
               </div>
-              <div class="relative min-h-0 flex-auto flex flex-col">
-                <div class="hidden md:block absolute inset-y-0 left-0 bg-gray-800" style="width: 50px;"></div>
-                <div class="w-full flex-auto flex min-h-0 overflow-auto">
-                  <div class="w-full relative flex-auto">
-                    <pre class="flex min-h-full text-sm md:text-sm"><div aria-hidden="true" class="hidden md:block text-gray-500 flex-none py-4 pr-4 text-right select-none" style="width: 50px;" set:html={lineNumbers}></div><code class="language-fe flex-auto relative block text-gray-100 pt-4 pb-4 px-4 overflow-auto" set:html={escapedCode}></code></pre>
-                  </div>
-                </div>
-              </div>
+              <span class="flex-1 text-center text-xs font-semibold text-gray-400 -ml-10">Fe at a glance</span>
             </div>
+            <fe-code-block lang="fe" line-numbers data-file="landing-page.fe"
+              src="/docs/docs.json" base="/docs/" link-filter="core::*,std::*">{displayCode}</fe-code-block>
           </div>
         </div>
       </div>
@@ -360,42 +393,23 @@ const installCommands = [
         });
       });
     });
-  </script>
-  <script is:inline src="https://unpkg.com/@highlightjs/cdn-assets@11.9.0/highlight.min.js"></script>
-  <script is:inline>
-    document.addEventListener('DOMContentLoaded', function() {
-      // Register Fe language (based on Rust with Fe-specific keywords)
-      hljs.registerLanguage('fe', function(hljs) {
-        return {
-          name: 'Fe',
-          keywords: {
-            keyword: 'pub contract struct enum fn let mut if else match return true false self use const impl trait where for in loop break continue msg recv uses init',
-            type: 'u8 u16 u32 u64 u128 u256 i8 i16 i32 i64 i128 i256 bool Address String Map Option Result Self',
-            built_in: 'ctx log Ctx Log Default Add Sub Encode Decode'
-          },
-          contains: [
-            hljs.COMMENT('//', '$'),
-            hljs.COMMENT('/\\*', '\\*/'),
-            hljs.QUOTE_STRING_MODE,
-            {
-              className: 'meta',
-              begin: '#\\[', end: '\\]'
-            },
-            hljs.C_NUMBER_MODE,
-            {
-              className: 'function',
-              beginKeywords: 'fn', end: '\\(',
-              contains: [hljs.TITLE_MODE]
-            },
-            {
-              className: 'class',
-              beginKeywords: 'struct enum contract msg trait', end: '[\\{<]',
-              contains: [hljs.TITLE_MODE]
-            }
-          ]
-        };
-      });
-      hljs.highlightAll();
+
+    // Theme toggle — icon shows what clicking will switch TO
+    var toggleBtn = document.getElementById('theme-toggle');
+    function updateToggle() {
+      var isDark = document.documentElement.getAttribute('data-theme') === 'dark';
+      toggleBtn.innerHTML = isDark
+        ? '<svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><circle cx="12" cy="12" r="5"/><path d="M12 1v2M12 21v2M4.22 4.22l1.42 1.42M18.36 18.36l1.42 1.42M1 12h2M21 12h2M4.22 19.78l1.42-1.42M18.36 5.64l1.42-1.42"/></svg>'
+        : '<svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M21 12.79A9 9 0 1111.21 3 7 7 0 0021 12.79z"/></svg>';
+      toggleBtn.title = isDark ? 'Switch to light mode' : 'Switch to dark mode';
+    }
+    updateToggle();
+    toggleBtn.addEventListener('click', function() {
+      var isDark = document.documentElement.getAttribute('data-theme') === 'dark';
+      var next = isDark ? 'light' : 'dark';
+      document.documentElement.setAttribute('data-theme', next);
+      localStorage.setItem('fe-theme', next);
+      updateToggle();
     });
   </script>
 </body>

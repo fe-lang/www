@@ -1,0 +1,39 @@
+/* Dark mode overrides for doc viewer — triggered by data-theme attribute.
+   Loaded after styles.css so these win by specificity. */
+:root[data-theme="dark"] {
+    --bg: #1e1e2e;
+    --bg-secondary: #181825;
+    --text: #cdd6f4;
+    --text-muted: #9399b2;
+    --accent: #89b4fa;
+    --accent-hover: #b4d0fb;
+    --text-accent: #89b4fa;
+    --border: #313244;
+    --code-bg: var(--fe-code-bg);
+    --hl-ref-bg: rgba(99, 102, 241, 0.18);
+    --hl-def-bg: rgba(99, 102, 241, 0.30);
+    --hl-def-underline: rgba(99, 102, 241, 0.6);
+    --target-bg: color-mix(in srgb, var(--accent) 10%, var(--bg-secondary));
+}
+
+/* Dark kind badges */
+:root[data-theme="dark"] .kind-badge.struct { background: #2d4a3e; color: #7ee787; }
+:root[data-theme="dark"] .kind-badge.enum { background: #3d3a2d; color: #e7c77e; }
+:root[data-theme="dark"] .kind-badge.function,
+:root[data-theme="dark"] .kind-badge.fn { background: #2d3a4a; color: #7eb8e7; }
+:root[data-theme="dark"] .kind-badge.trait { background: #4a2d4a; color: #e77ee7; }
+:root[data-theme="dark"] .kind-badge.module,
+:root[data-theme="dark"] .kind-badge.mod { background: #2d2d4a; color: #9d7ee7; }
+:root[data-theme="dark"] .kind-badge.contract { background: #4a3d2d; color: #e7b87e; }
+:root[data-theme="dark"] .kind-badge.type { background: #2d4a4a; color: #7ee7e7; }
+:root[data-theme="dark"] .kind-badge.const { background: #3a2d4a; color: #b87ee7; }
+
+/* Dark nav badges */
+:root[data-theme="dark"] .fe-nav-badge.struct { background: #2d4a3e; color: #7ee787; }
+:root[data-theme="dark"] .fe-nav-badge.enum { background: #3d3a2d; color: #e7c77e; }
+:root[data-theme="dark"] .fe-nav-badge.fn { background: #2d3a4a; color: #7eb8e7; }
+:root[data-theme="dark"] .fe-nav-badge.trait { background: #4a2d4a; color: #e77ee7; }
+:root[data-theme="dark"] .fe-nav-badge.mod { background: #2d2d4a; color: #9d7ee7; }
+:root[data-theme="dark"] .fe-nav-badge.contract { background: #4a3d2d; color: #e7b87e; }
+:root[data-theme="dark"] .fe-nav-badge.type { background: #2d4a4a; color: #7ee7e7; }
+:root[data-theme="dark"] .fe-nav-badge.const { background: #3a2d4a; color: #b87ee7; }

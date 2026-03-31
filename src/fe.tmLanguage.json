@@ -1,185 +1,289 @@
 {
-  "$schema": "https://raw.githubusercontent.com/martinring/tmlanguage/master/tmlanguage.json",
-  "name": "Fe",
-  "scopeName": "source.fe",
-  "patterns": [
-    { "include": "#comments" },
-    { "include": "#attributes" },
-    { "include": "#strings" },
-    { "include": "#numbers" },
-    { "include": "#keywords" },
-    { "include": "#types" },
-    { "include": "#functions" },
-    { "include": "#operators" },
-    { "include": "#punctuation" }
-  ],
-  "repository": {
-    "comments": {
-      "patterns": [
-        {
-          "name": "comment.line.double-slash.fe",
-          "match": "//.*$"
+    "$schema": "https://raw.githubusercontent.com/martinring/tmlanguage/master/tmlanguage.json",
+    "name": "Fe",
+    "scopeName": "source.fe",
+    "comment": "Fe language TextMate grammar, derived from the tree-sitter-fe grammar and highlights.scm.",
+    "patterns": [
+        { "include": "#block-comment" },
+        { "include": "#doc-comment" },
+        { "include": "#line-comment" },
+        { "include": "#attribute" },
+        { "include": "#string" },
+        { "include": "#declaration" },
+        { "include": "#boolean" },
+        { "include": "#keyword" },
+        { "include": "#method-call" },
+        { "include": "#function-call" },
+        { "include": "#field-access" },
+        { "include": "#number" },
+        { "include": "#constant" },
+        { "include": "#type" },
+        { "include": "#identifier" },
+        { "include": "#operator" },
+        { "include": "#punctuation" }
+    ],
+    "repository": {
+        "block-comment": {
+            "comment": "Block comments /* ... */ with nesting support.",
+            "name": "comment.block.fe",
+            "begin": "/\\*",
+            "end": "\\*/",
+            "patterns": [
+                { "include": "#block-comment" }
+            ]
         },
-        {
-          "name": "comment.block.fe",
-          "begin": "/\\*",
-          "end": "\\*/"
-        }
-      ]
-    },
-    "attributes": {
-      "patterns": [
-        {
-          "name": "meta.attribute.fe",
-          "begin": "#\\[",
-          "end": "\\]",
-          "beginCaptures": {
-            "0": { "name": "punctuation.definition.attribute.fe" }
-          },
-          "endCaptures": {
-            "0": { "name": "punctuation.definition.attribute.fe" }
-          },
-          "patterns": [
-            {
-              "name": "entity.name.attribute.fe",
-              "match": "\\b(selector|indexed)\\b"
+        "doc-comment": {
+            "comment": "Documentation comments: /// ...",
+            "name": "comment.block.documentation.fe",
+            "begin": "///",
+            "end": "$"
+        },
+        "line-comment": {
+            "comment": "Line comments: // ...",
+            "name": "comment.line.double-slash.fe",
+            "begin": "//",
+            "end": "$"
+        },
+        "attribute": {
+            "comment": "Attributes: #[name], #[name(args)], #[name = value]",
+            "name": "meta.attribute.fe",
+            "begin": "(#)(\\[)",
+            "beginCaptures": {
+                "1": { "name": "punctuation.definition.attribute.fe" },
+                "2": { "name": "punctuation.brackets.square.fe" }
             },
-            { "include": "#numbers" },
-            { "include": "#operators" }
-          ]
-        }
-      ]
-    },
-    "strings": {
-      "patterns": [
-        {
-          "name": "string.quoted.double.fe",
-          "begin": "\"",
-          "end": "\"",
-          "patterns": [
-            {
-              "name": "constant.character.escape.fe",
-              "match": "\\\\."
+            "end": "\\]",
+            "endCaptures": {
+                "0": { "name": "punctuation.brackets.square.fe" }
+            },
+            "patterns": [
+                { "include": "#string" },
+                { "include": "#number" },
+                { "include": "#boolean" },
+                {
+                    "name": "entity.other.attribute-name.fe",
+                    "match": "\\b[a-zA-Z_][a-zA-Z0-9_]*\\b"
+                },
+                { "include": "#punctuation" }
+            ]
+        },
+        "string": {
+            "comment": "String literals with escape sequences.",
+            "name": "string.quoted.double.fe",
+            "begin": "\"",
+            "end": "\"",
+            "patterns": [
+                {
+                    "name": "constant.character.escape.fe",
+                    "match": "\\\\(?:[\\\\\"'nrt0]|x[0-9a-fA-F]{2}|u\\{[0-9a-fA-F]+\\})"
+                }
+            ]
+        },
+        "declaration": {
+            "comment": "Declaration keywords followed by the name they introduce.",
+            "patterns": [
+                {
+                    "comment": "Function definition: fn name",
+                    "match": "\\b(fn)[ \\t]+([a-zA-Z_][a-zA-Z0-9_]*)",
+                    "captures": {
+                        "1": { "name": "storage.type.function.fe" },
+                        "2": { "name": "entity.name.function.fe" }
+                    }
+                },
+                {
+                    "comment": "Struct definition: struct Name",
+                    "match": "\\b(struct)[ \\t]+([a-zA-Z_][a-zA-Z0-9_]*)",
+                    "captures": {
+                        "1": { "name": "storage.type.struct.fe" },
+                        "2": { "name": "entity.name.type.struct.fe" }
+                    }
+                },
+                {
+                    "comment": "Enum definition: enum Name",
+                    "match": "\\b(enum)[ \\t]+([a-zA-Z_][a-zA-Z0-9_]*)",
+                    "captures": {
+                        "1": { "name": "storage.type.enum.fe" },
+                        "2": { "name": "entity.name.type.enum.fe" }
+                    }
+                },
+                {
+                    "comment": "Contract definition: contract Name",
+                    "match": "\\b(contract)[ \\t]+([a-zA-Z_][a-zA-Z0-9_]*)",
+                    "captures": {
+                        "1": { "name": "storage.type.contract.fe" },
+                        "2": { "name": "entity.name.type.contract.fe" }
+                    }
+                },
+                {
+                    "comment": "Msg definition: msg Name",
+                    "match": "\\b(msg)[ \\t]+([a-zA-Z_][a-zA-Z0-9_]*)",
+                    "captures": {
+                        "1": { "name": "storage.type.msg.fe" },
+                        "2": { "name": "entity.name.type.msg.fe" }
+                    }
+                },
+                {
+                    "comment": "Trait definition: trait Name",
+                    "match": "\\b(trait)[ \\t]+([a-zA-Z_][a-zA-Z0-9_]*)",
+                    "captures": {
+                        "1": { "name": "storage.type.trait.fe" },
+                        "2": { "name": "entity.name.type.trait.fe" }
+                    }
+                },
+                {
+                    "comment": "Type alias: type Name",
+                    "match": "\\b(type)[ \\t]+([a-zA-Z_][a-zA-Z0-9_]*)",
+                    "captures": {
+                        "1": { "name": "storage.type.type.fe" },
+                        "2": { "name": "entity.name.type.fe" }
+                    }
+                },
+                {
+                    "comment": "Module definition: mod name",
+                    "match": "\\b(mod)[ \\t]+([a-zA-Z_][a-zA-Z0-9_]*)",
+                    "captures": {
+                        "1": { "name": "storage.type.mod.fe" },
+                        "2": { "name": "entity.name.module.fe" }
+                    }
+                }
+            ]
+        },
+        "boolean": {
+            "name": "constant.language.boolean.fe",
+            "match": "\\b(?:true|false)\\b"
+        },
+        "keyword": {
+            "patterns": [
+                {
+                    "comment": "Control flow keywords.",
+                    "name": "keyword.control.fe",
+                    "match": "\\b(?:if|else|for|while|match|return|break|continue)\\b"
+                },
+                {
+                    "comment": "Other keywords: imports, clauses, contract handlers.",
+                    "name": "keyword.control.import.fe",
+                    "match": "\\b(?:as|in|where|use|uses|with|init|recv)\\b"
+                },
+                {
+                    "comment": "Storage/declaration keywords.",
+                    "name": "storage.type.fe",
+                    "match": "\\b(?:fn|struct|enum|contract|msg|trait|impl|type|mod|extern|const|let)\\b"
+                },
+                {
+                    "comment": "Modifiers.",
+                    "name": "storage.modifier.fe",
+                    "match": "\\b(?:pub|mut|unsafe)\\b"
+                },
+                {
+                    "comment": "Self type.",
+                    "name": "entity.name.type.fe",
+                    "match": "\\bSelf\\b"
+                },
+                {
+                    "comment": "Language variables: self, super, ingot.",
+                    "name": "variable.language.fe",
+                    "match": "\\b(?:self|super|ingot)\\b"
+                }
+            ]
+        },
+        "method-call": {
+            "comment": "Method call: .name( or .name::<",
+            "match": "(?<=\\.)([a-zA-Z_][a-zA-Z0-9_]*)[ \\t]*(?=\\(|::<)",
+            "captures": {
+                "1": { "name": "entity.name.function.method.fe" }
             }
-          ]
+        },
+        "function-call": {
+            "comment": "Function call: name(",
+            "match": "\\b([a-z_][a-zA-Z0-9_]*)[ \\t]*(?=\\()",
+            "captures": {
+                "1": { "name": "entity.name.function.fe" }
+            }
+        },
+        "field-access": {
+            "comment": "Field access: .name (not followed by a call).",
+            "match": "(?<=\\.)([a-zA-Z_][a-zA-Z0-9_]*)(?![ \\t]*(?:\\(|::<))",
+            "captures": {
+                "1": { "name": "variable.other.member.fe" }
+            }
+        },
+        "number": {
+            "comment": "Numeric literals: hex, binary, octal, decimal. Underscore separators supported.",
+            "patterns": [
+                {
+                    "name": "constant.numeric.hex.fe",
+                    "match": "\\b0[xX][0-9a-fA-F][0-9a-fA-F_]*\\b"
+                },
+                {
+                    "name": "constant.numeric.binary.fe",
+                    "match": "\\b0[bB][01][01_]*\\b"
+                },
+                {
+                    "name": "constant.numeric.octal.fe",
+                    "match": "\\b0[oO][0-7][0-7_]*\\b"
+                },
+                {
+                    "name": "constant.numeric.decimal.fe",
+                    "match": "\\b[0-9][0-9_]*\\b"
+                }
+            ]
+        },
+        "constant": {
+            "comment": "ALL_CAPS identifiers treated as constants.",
+            "name": "constant.other.caps.fe",
+            "match": "\\b[A-Z][A-Z0-9_]+\\b"
+        },
+        "type": {
+            "patterns": [
+                {
+                    "comment": "Built-in primitive types.",
+                    "name": "support.type.primitive.fe",
+                    "match": "\\b(?:u8|u16|u32|u64|u128|u256|i8|i16|i32|i64|i128|i256|bool)\\b"
+                },
+                {
+                    "comment": "CamelCase identifiers treated as types.",
+                    "name": "support.type.fe",
+                    "match": "\\b[A-Z][a-zA-Z0-9_]*\\b"
+                }
+            ]
+        },
+        "identifier": {
+            "name": "variable.other.fe",
+            "match": "\\b[a-zA-Z_][a-zA-Z0-9_]*\\b"
+        },
+        "operator": {
+            "comment": "Operators, ordered longest-match-first within each group.",
+            "patterns": [
+                { "name": "keyword.operator.namespace.fe", "match": "::" },
+                { "name": "keyword.operator.range.fe", "match": "\\.\\." },
+                { "name": "keyword.operator.fat-arrow.fe", "match": "=>" },
+                { "name": "keyword.operator.arrow.fe", "match": "->" },
+                {
+                    "name": "keyword.operator.assignment.compound.fe",
+                    "match": "\\*\\*=|<<=|>>=|\\+=|-=|\\*=|/=|%=|\\|=|&=|\\^="
+                },
+                { "name": "keyword.operator.comparison.fe", "match": "==|!=|<=|>=" },
+                { "name": "keyword.operator.arithmetic.fe", "match": "\\*\\*" },
+                { "name": "keyword.operator.logical.fe", "match": "\\|\\||&&" },
+                { "name": "keyword.operator.bitwise.fe", "match": "<<|>>" },
+                { "name": "keyword.operator.assignment.fe", "match": "=" },
+                { "name": "keyword.operator.comparison.fe", "match": "[<>]" },
+                { "name": "keyword.operator.arithmetic.fe", "match": "[+\\-*/%]" },
+                { "name": "keyword.operator.logical.fe", "match": "!" },
+                { "name": "keyword.operator.bitwise.fe", "match": "[&|^~]" }
+            ]
+        },
+        "punctuation": {
+            "patterns": [
+                { "name": "punctuation.brackets.round.fe", "match": "[()]" },
+                { "name": "punctuation.brackets.curly.fe", "match": "[{}]" },
+                { "name": "punctuation.brackets.square.fe", "match": "[\\[\\]]" },
+                { "name": "punctuation.comma.fe", "match": "," },
+                { "name": "punctuation.semi.fe", "match": ";" },
+                { "name": "punctuation.colon.fe", "match": ":" },
+                { "name": "punctuation.dot.fe", "match": "\\." },
+                { "name": "punctuation.hash.fe", "match": "#" }
+            ]
         }
-      ]
-    },
-    "numbers": {
-      "patterns": [
-        {
-          "name": "constant.numeric.hex.fe",
-          "match": "\\b0x[0-9a-fA-F_]+\\b"
-        },
-        {
-          "name": "constant.numeric.decimal.fe",
-          "match": "\\b[0-9][0-9_]*\\b"
-        }
-      ]
-    },
-    "keywords": {
-      "patterns": [
-        {
-          "name": "keyword.control.fe",
-          "match": "\\b(if|else|match|for|while|loop|break|continue|return|in)\\b"
-        },
-        {
-          "name": "keyword.declaration.fe",
-          "match": "\\b(const|let|mut|fn|struct|enum|trait|impl|type|contract|msg|pub|extern|ingot|mod)\\b"
-        },
-        {
-          "name": "keyword.effect.fe",
-          "match": "\\b(uses|with)\\b"
-        },
-        {
-          "name": "keyword.contract.fe",
-          "match": "\\b(init|recv)\\b"
-        },
-        {
-          "name": "constant.language.fe",
-          "match": "\\b(true|false)\\b"
-        },
-        {
-          "name": "variable.language.fe",
-          "match": "\\b(self|Self)\\b"
-        },
-        {
-          "name": "keyword.other.fe",
-          "match": "\\b(assert|revert|todo)\\b"
-        }
-      ]
-    },
-    "types": {
-      "patterns": [
-        {
-          "name": "storage.type.primitive.fe",
-          "match": "\\b(u8|u16|u32|u64|u128|u256|i8|i16|i32|i64|i128|i256|bool)\\b"
-        },
-        {
-          "name": "storage.type.builtin.fe",
-          "match": "\\b(Address|String|Map|Option|Ctx|Log)\\b"
-        },
-        {
-          "name": "entity.name.type.fe",
-          "match": "\\b[A-Z][a-zA-Z0-9_]*\\b"
-        }
-      ]
-    },
-    "functions": {
-      "patterns": [
-        {
-          "name": "entity.name.function.fe",
-          "match": "\\b([a-z_][a-zA-Z0-9_]*)\\s*(?=\\()"
-        }
-      ]
-    },
-    "operators": {
-      "patterns": [
-        {
-          "name": "keyword.operator.comparison.fe",
-          "match": "(==|!=|<=|>=|<|>)"
-        },
-        {
-          "name": "keyword.operator.logical.fe",
-          "match": "(&&|\\|\\||!)"
-        },
-        {
-          "name": "keyword.operator.arithmetic.fe",
-          "match": "(\\+|-|\\*|/|%)"
-        },
-        {
-          "name": "keyword.operator.assignment.fe",
-          "match": "(\\+=|-=|\\*=|/=|%=|=)"
-        },
-        {
-          "name": "keyword.operator.arrow.fe",
-          "match": "->"
-        },
-        {
-          "name": "keyword.operator.access.fe",
-          "match": "::"
-        }
-      ]
-    },
-    "punctuation": {
-      "patterns": [
-        {
-          "name": "punctuation.separator.fe",
-          "match": "[,;]"
-        },
-        {
-          "name": "punctuation.brackets.fe",
-          "match": "[\\[\\]\\(\\)\\{\\}]"
-        },
-        {
-          "name": "punctuation.accessor.fe",
-          "match": "\\."
-        },
-        {
-          "name": "punctuation.colon.fe",
-          "match": ":"
-        }
-      ]
     }
-  }
 }

@@ -1,0 +1,176 @@
+/* Fe syntax highlighting — CSS custom properties define all colors.
+   Light mode defaults, dark mode via prefers-color-scheme.
+   Host pages can override any --fe-* variable to re-theme. */
+
+/* ============================================================================
+   Color variables — the single source of truth
+   ============================================================================ */
+
+/* Light mode */
+:root {
+    --fe-hl-keyword: #7c3aed;
+    --fe-hl-variable-builtin: #0891b2;
+    --fe-hl-type: #b08800;
+    --fe-hl-type-interface: #7c3aed;
+    --fe-hl-type-variant: #b08800;
+    --fe-hl-function: #2563eb;
+    --fe-hl-string: #16a34a;
+    --fe-hl-string-escape: #0d9488;
+    --fe-hl-number: #0891b2;
+    --fe-hl-comment: #9ca0b0;
+    --fe-hl-operator: #0891b2;
+    --fe-hl-variable: #0d9488;
+    --fe-hl-attribute: #7c3aed;
+    --fe-hl-constant: #0891b2;
+    --fe-hl-punctuation: #6b7280;
+
+    --fe-code-bg: #eff1f5;
+    --fe-code-border: #ccd0da;
+    --fe-code-text: #4c4f69;
+    --fe-code-line-number: #9ca0b0;
+    --fe-code-font: "JetBrains Mono", "Fira Code", monospace;
+    --fe-code-size: 0.8rem;
+    --fe-code-line-height: 1.6;
+    --fe-code-radius: 6px;
+}
+
+/* Dark mode: Catppuccin Mocha — via prefers-color-scheme or data-theme */
+@media (prefers-color-scheme: dark) {
+    :root:not([data-theme="light"]) {
+        --fe-hl-keyword: #cba6f7;
+        --fe-hl-type: #f9e2af;
+        --fe-hl-type-interface: #cba6f7;
+        --fe-hl-type-variant: #f9e2af;
+        --fe-hl-function: #89b4fa;
+        --fe-hl-string: #a6e3a1;
+        --fe-hl-string-escape: #94e2d5;
+        --fe-hl-number: #fab387;
+        --fe-hl-comment: #9399b2;
+        --fe-hl-operator: #94e2d5;
+        --fe-hl-variable: #cdd6f4;
+        --fe-hl-attribute: #f9e2af;
+        --fe-hl-constant: #fab387;
+        --fe-hl-punctuation: #9399b2;
+
+        --fe-code-bg: #1e1e2e;
+        --fe-code-border: #313244;
+        --fe-code-text: #cdd6f4;
+        --fe-code-line-number: #6c7086;
+    }
+}
+
+/* Explicit dark toggle override — Catppuccin Mocha */
+:root[data-theme="dark"] {
+    --fe-hl-keyword: #cba6f7;
+    --fe-hl-variable-builtin: #94e2d5;
+    --fe-hl-type: #f9e2af;
+    --fe-hl-type-interface: #cba6f7;
+    --fe-hl-type-variant: #f9e2af;
+    --fe-hl-function: #89b4fa;
+    --fe-hl-string: #a6e3a1;
+    --fe-hl-string-escape: #94e2d5;
+    --fe-hl-number: #94e2d5;
+    --fe-hl-comment: #6c7086;
+    --fe-hl-operator: #94e2d5;
+    --fe-hl-variable: #a6e3a1;
+    --fe-hl-attribute: #cba6f7;
+    --fe-hl-constant: #94e2d5;
+    --fe-hl-punctuation: #6c7086;
+
+    --fe-code-bg: #1e1e2e;
+    --fe-code-border: #313244;
+    --fe-code-text: #cdd6f4;
+    --fe-code-line-number: #6c7086;
+}
+
+/* ============================================================================
+   Syntax highlight rules — just read variables, no fallbacks
+   ============================================================================ */
+
+.hl-keyword { color: var(--fe-hl-keyword); }
+.hl-variable-builtin { color: var(--fe-hl-variable-builtin); font-style: italic; }
+.hl-type, .hl-type-builtin { color: var(--fe-hl-type); }
+.hl-type-interface { color: var(--fe-hl-type-interface); }
+.hl-type-enum-variant { color: var(--fe-hl-type-variant); }
+.hl-function, .hl-function-definition, .hl-function-method { color: var(--fe-hl-function); }
+.hl-string { color: var(--fe-hl-string); }
+.hl-string-escape { color: var(--fe-hl-string-escape); }
+.hl-number { color: var(--fe-hl-number); }
+.hl-comment, .hl-comment-doc { color: var(--fe-hl-comment); font-style: italic; }
+.hl-operator { color: var(--fe-hl-operator); }
+.hl-property, .hl-variable-parameter { color: var(--fe-hl-variable); }
+.hl-variable { color: var(--fe-hl-variable); }
+.hl-attribute { color: var(--fe-hl-attribute); }
+.hl-constant { color: var(--fe-hl-constant); font-weight: bold; }
+.hl-punctuation-bracket, .hl-punctuation-delimiter, .hl-punctuation-special { color: var(--fe-hl-punctuation); }
+
+/* SCIP symbol hover highlight transitions */
+[class*="sym-"] {
+    transition: background 0.2s ease-out, text-decoration 0.2s ease-out,
+                text-decoration-color 0.2s ease-out;
+}
+
+/* ============================================================================
+   <fe-code-block> component layout — reads variables via inheritance
+   ============================================================================ */
+
+fe-code-block {
+    display: block;
+    margin: 1rem 0;
+}
+
+.fe-code-block-wrapper {
+    display: flex;
+    background: var(--fe-code-bg);
+    border: 1px solid var(--fe-code-border);
+    border-radius: var(--fe-code-radius);
+    overflow-x: auto;
+}
+
+/* Inline signature contexts: suppress border */
+.member-header fe-code-block,
+.code-header fe-code-block,
+.implementor-sig fe-code-block {
+    margin: 0;
+}
+
+.member-header,
+.code-header,
+.implementor-sig {
+    --fe-code-border: transparent;
+}
+
+.fe-line-numbers {
+    display: flex;
+    flex-direction: column;
+    padding: 0.75rem 0.5rem;
+    border-right: 1px solid var(--fe-code-border);
+    text-align: right;
+    user-select: none;
+    color: var(--fe-code-line-number);
+    font-family: var(--fe-code-font);
+    font-size: var(--fe-code-size);
+    line-height: var(--fe-code-line-height);
+}
+
+.fe-line-numbers span {
+    line-height: var(--fe-code-line-height);
+}
+
+.fe-code-pre {
+    flex: 1;
+    margin: 0;
+    padding: 0.75rem 1rem;
+    background: transparent;
+    overflow-x: auto;
+    font-family: var(--fe-code-font);
+    font-size: var(--fe-code-size);
+    line-height: var(--fe-code-line-height);
+}
+
+.fe-code-pre code {
+    font-family: inherit;
+    font-size: inherit;
+    line-height: inherit;
+    color: var(--fe-code-text);
+}

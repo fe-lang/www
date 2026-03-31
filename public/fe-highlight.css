@@ -1,0 +1,100 @@
+/* Fe syntax highlighting (tree-sitter) — One Dark inspired
+   Standalone version with hardcoded colors for embedding in Starlight/Astro.
+   Override these CSS custom properties to theme the syntax colors:
+     --fe-hl-keyword, --fe-hl-type, --fe-hl-type-interface, --fe-hl-type-variant,
+     --fe-hl-function, --fe-hl-string, --fe-hl-string-escape, --fe-hl-number,
+     --fe-hl-comment, --fe-hl-operator, --fe-hl-variable, --fe-hl-attribute,
+     --fe-hl-constant, --fe-hl-punctuation,
+     --fe-code-bg, --fe-code-border, --fe-code-text, --fe-code-font,
+     --fe-code-size, --fe-code-line-height */
+
+.hl-keyword { color: var(--fe-hl-keyword, #C792EA); }
+.hl-type, .hl-type-builtin { color: var(--fe-hl-type, #FFCB6B); }
+.hl-type-interface { color: var(--fe-hl-type-interface, #FFCB6B); }
+.hl-type-enum-variant { color: var(--fe-hl-type-variant, #FFCB6B); }
+.hl-function, .hl-function-definition, .hl-function-method { color: var(--fe-hl-function, #82AAFF); }
+.hl-string { color: var(--fe-hl-string, #C3E88D); }
+.hl-string-escape { color: var(--fe-hl-string-escape, #89DDFF); }
+.hl-number { color: var(--fe-hl-number, #F78C6C); }
+.hl-comment, .hl-comment-doc { color: var(--fe-hl-comment, #676E95); font-style: italic; }
+.hl-operator { color: var(--fe-hl-operator, #89DDFF); }
+.hl-property, .hl-variable-parameter { color: var(--fe-hl-variable, #f07178); }
+.hl-variable { color: var(--fe-hl-variable, #babed8); }
+.hl-attribute { color: var(--fe-hl-attribute, #F78C6C); }
+.hl-constant { color: var(--fe-hl-constant, #F78C6C); font-weight: bold; }
+.hl-punctuation-bracket, .hl-punctuation-delimiter, .hl-punctuation-special { color: var(--fe-hl-punctuation, #89DDFF); }
+
+/* Smooth transition for SCIP symbol hover highlights.
+   feHighlight() sets inline styles; the browser tweens the change. */
+[class*="sym-"] {
+    transition: background 0.2s ease-out, text-decoration 0.2s ease-out,
+                text-decoration-color 0.2s ease-out;
+}
+
+/* <fe-code-block> custom element */
+fe-code-block {
+    display: block;
+    margin: 1rem 0;
+}
+
+.fe-code-block-wrapper {
+    display: flex;
+    background: var(--fe-code-bg, #292D3E);
+    border: 1px solid var(--fe-code-border, #2d3748);
+    border-radius: var(--fe-code-radius, 6px);
+    overflow-x: auto;
+}
+
+/* Tighter margins in inline contexts (member headers, code headers, etc.)
+   These target the fe-code-block element in the light DOM. The shadow DOM
+   wrapper styles (border, background) are controlled via CSS custom
+   properties that inherit through the shadow boundary. */
+.member-header fe-code-block,
+.code-header fe-code-block,
+.implementor-sig fe-code-block {
+    margin: 0;
+}
+
+/* Inline signature contexts: suppress border/background via custom properties
+   (these inherit into the shadow root where .fe-code-block-wrapper reads them). */
+.member-header,
+.code-header,
+.implementor-sig {
+    --fe-code-bg: transparent;
+    --fe-code-border: transparent;
+}
+
+.fe-line-numbers {
+    display: flex;
+    flex-direction: column;
+    padding: 0.75rem 0.5rem;
+    border-right: 1px solid var(--fe-code-border, #2d3748);
+    text-align: right;
+    user-select: none;
+    color: var(--fe-code-line-number, #9ba3af);
+    font-family: var(--fe-code-font, "JetBrains Mono", "Fira Code", monospace);
+    font-size: var(--fe-code-size, 0.8rem);
+    line-height: var(--fe-code-line-height, 1.6);
+}
+
+.fe-line-numbers span {
+    line-height: var(--fe-code-line-height, 1.6);
+}
+
+.fe-code-pre {
+    flex: 1;
+    margin: 0;
+    padding: 0.75rem 1rem;
+    background: transparent;
+    overflow-x: auto;
+    font-family: var(--fe-code-font, "JetBrains Mono", "Fira Code", monospace);
+    font-size: var(--fe-code-size, 0.8rem);
+    line-height: var(--fe-code-line-height, 1.6);
+}
+
+.fe-code-pre code {
+    font-family: inherit;
+    font-size: inherit;
+    line-height: inherit;
+    color: var(--fe-code-text, #e4e4e4);
+}
