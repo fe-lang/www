@@ -48,3 +48,4 @@ print('Done.')
 "
 
 echo "Generated: $OUTDIR/index.html + $OUTDIR/docs.json"
+echo "Theme overrides applied via src/pages/docs/index.astro + public/docs/theme.css"
