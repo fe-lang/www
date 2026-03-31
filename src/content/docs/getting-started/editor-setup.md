@@ -9,12 +9,13 @@ Fe ships with a built-in language server (`fe lsp`) that provides diagnostics, g
 
 Install the [Fe extension](https://github.com/fe-lang/vscode-fe) from a `.vsix` file:
 
-1. Download the latest `.vsix` from the [releases page](https://github.com/fe-lang/vscode-fe/releases)
-2. Install via the command line:
+1. Download the latest `.vsix` from the [releases page](https://github.com/fe-lang/vscode-fe/releases/latest)
+2. In VS Code, open the command palette (`Ctrl+Shift+P`) and run **Extensions: Install from VSIX...**, then select the downloaded file.
+
+   Or from the command line:
    ```bash
    code --install-extension fe-*.vsix
    ```
-   Or in VS Code: open the command palette (`Ctrl+Shift+P`), run **Extensions: Install from VSIX...**, and select the downloaded file.
 
 Provides syntax highlighting, diagnostics, go-to-definition, and find references.
 
