@@ -28,6 +28,11 @@
   --sl-color-text-accent: #a5b4fc;
 }
 
+/* Content link hover — scoped to avoid conflicting with sidebar */
+.sl-markdown-content a:hover {
+  color: var(--sl-color-accent);
+}
+
 /* Sidebar styling */
 .sidebar-content {
   border-right: 1px solid var(--sl-color-gray-5);
