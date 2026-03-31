@@ -55,7 +55,7 @@ const installCommands = [
     /* Fallback: hide raw code text until fe-code-block upgrades, show dark bg */
     .landing-code-wrap fe-code-block:not(:defined) {
       display: block;
-      background: #0d1117;
+      background: #232136;
       color: #e4e4e4;
       font-family: "JetBrains Mono", "Fira Code", monospace;
       font-size: 0.8rem;
@@ -68,19 +68,37 @@ const installCommands = [
     .landing-code-wrap fe-code-block {
       margin: 0;
       --fe-code-border: transparent;
-      --fe-code-bg: #0d1117;
       --fe-code-radius: 0;
+    }
+    /* Force dark syntax colors on landing code block (dark bg always) */
+    .landing-code-wrap {
+      --fe-code-bg: #1e1e2e;
+      --fe-code-text: #cdd6f4;
+      --fe-hl-keyword: #cba6f7;
+      --fe-hl-type: #f9e2af;
+      --fe-hl-type-interface: #cba6f7;
+      --fe-hl-type-variant: #f9e2af;
+      --fe-hl-function: #89b4fa;
+      --fe-hl-string: #a6e3a1;
+      --fe-hl-string-escape: #94e2d5;
+      --fe-hl-number: #fab387;
+      --fe-hl-comment: #9399b2;
+      --fe-hl-operator: #94e2d5;
+      --fe-hl-variable: #cdd6f4;
+      --fe-hl-attribute: #f9e2af;
+      --fe-hl-constant: #fab387;
+      --fe-hl-punctuation: #9399b2;
     }
 
     /* Light mode defaults */
     html { color: #111827; background: #fff; }
 
     @media (prefers-color-scheme: dark) {
-      html { color: #e2e8f0; background: #0f0f1a; }
-      body.bg-gray-50 { background: #0f0f1a !important; }
+      html { color: #cdd6f4; background: #1e1e2e; }
+      body.bg-gray-50 { background: #1e1e2e !important; }
       /* Cards and sections */
-      .bg-white { background: #16162a !important; }
-      .bg-gray-50 { background: #111827 !important; }
+      .bg-white { background: #181825 !important; }
+      .bg-gray-50 { background: #11111b !important; }
       .border-gray-100 { border-color: #2d3748 !important; }
       .border-gray-200 { border-color: #2d3748 !important; }
       .border-gray-300 { border-color: #4b5563 !important; }
@@ -92,6 +110,7 @@ const installCommands = [
       .text-gray-500 { color: #6b7280 !important; }
       .text-gray-400 { color: #6b7280 !important; }
       /* Code inline */
+      .text-indigo-600 { color: #a5b4fc !important; }
       .bg-indigo-50 { background: #1e1e3a !important; }
       /* Buttons */
       .bg-white.border { background: #16162a !important; color: #e2e8f0 !important; }
@@ -253,7 +272,7 @@ const installCommands = [
         </div>
         <div class="lg:max-w-2xl lg:flex-1 lg:-mr-18 order-1 lg:order-2">
           <div class="overflow-hidden rounded-lg shadow-2xl landing-code-wrap">
-            <div class="flex items-center px-3 py-1.5" style="background:#1e2030;">
+            <div class="flex items-center px-3 py-1.5" style="background:#181825;">
               <div class="flex space-x-1.5">
                 <div class="w-2.5 h-2.5 rounded-full bg-red-500"></div>
                 <div class="w-2.5 h-2.5 rounded-full bg-yellow-400"></div>

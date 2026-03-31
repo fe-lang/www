@@ -1,26 +1,3 @@
-/* Override fe doc viewer variables to match Starlight guide theme.
-   Only apply in dark mode — light mode uses styles.css defaults. */
-@media (prefers-color-scheme: dark) {
-    :root {
-        --bg: #0f0f1a;
-        --bg-secondary: #16162a;
-        --text: #e2e8f0;
-        --text-muted: #676E95;
-        --accent: #6366f1;
-        --accent-hover: #c7d2fe;
-        --text-accent: #a5b4fc;
-        --border: #2d3748;
-        --fe-code-bg: #292D3E;
-        --fe-hl-keyword: #C792EA;
-        --fe-hl-type: #FFCB6B;
-        --fe-hl-function: #82AAFF;
-        --fe-hl-string: #C3E88D;
-        --fe-hl-number: #F78C6C;
-        --fe-hl-comment: #676E95;
-        --fe-hl-operator: #89DDFF;
-        --fe-hl-variable: #babed8;
-        --fe-hl-attribute: #F78C6C;
-        --fe-hl-constant: #F78C6C;
-        --fe-hl-punctuation: #89DDFF;
-    }
-}
+/* Theme overrides for the Fe website doc viewer.
+   All syntax/code variables are defined in fe-highlight.css.
+   Override here only for site-specific page layout tweaks. */
