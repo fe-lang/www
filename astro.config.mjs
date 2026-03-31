@@ -28,11 +28,11 @@ export default defineConfig({
 			head: [
 				{
 					tag: 'script',
-					attrs: { defer: true, src: '/fe-web.js', 'data-src': '/docs/docs.json', 'data-docs': '/docs/' },
+					attrs: { defer: true, src: '/docs/fe-web.js' },
 				},
 				{
-					tag: 'script',
-					content: 'document.addEventListener("fe-web-ready",function(){document.querySelectorAll("fe-code-block").forEach(function(cb){if(cb.refresh)cb.refresh()});setTimeout(function(){document.querySelectorAll("fe-code-block").forEach(function(cb){var sr=cb.shadowRoot;if(!sr)return;sr.querySelectorAll("a").forEach(function(a){var h=a.getAttribute("href");if(h&&h.startsWith("#")&&h.includes("::")){a.href="/docs/index.html"+h}})})},200)});',
+					tag: 'link',
+					attrs: { rel: 'stylesheet', href: '/docs/fe-highlight.css' },
 				},
 				{
 					tag: 'script',
