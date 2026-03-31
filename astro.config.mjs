@@ -13,8 +13,6 @@ const feGrammar = JSON.parse(fs.readFileSync(join(__dirname, 'src/fe.tmLanguage.
 export default defineConfig({
 	site: 'https://fe-lang.org',
 	base: '/',
-	server: { host: true },
-	vite: { server: { allowedHosts: ['.loca.lt'] } },
 	markdown: {
 		remarkPlugins: [remarkHideDirective],
 	},
