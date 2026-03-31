@@ -361,24 +361,24 @@ const installCommands = [
     });
   </script>
   <script is:inline>
-    // Refresh fe-code-block components after docs.json loads, then fix links
+    // Refresh fe-code-block after docs.json loads
     document.addEventListener('fe-web-ready', function() {
       document.querySelectorAll('fe-code-block').forEach(function(cb) {
         if (cb.refresh) cb.refresh();
       });
-      // Fix hash links to point to /docs/ viewer
-      setTimeout(function() {
-        document.querySelectorAll('fe-code-block').forEach(function(cb) {
-          var sr = cb.shadowRoot;
-          if (!sr) return;
-          sr.querySelectorAll('a').forEach(function(a) {
-            var h = a.getAttribute('href');
-            if (h && h.startsWith('#') && h.includes('::')) {
-              a.href = '/docs/index.html' + h;
-            }
-          });
-        });
-      }, 200);
+    });
+    // Intercept SCIP click navigation: redirect hash changes to /docs/ viewer
+    // Suppress landing-page:: links (no doc page for those)
+    window.addEventListener('hashchange', function(e) {
+      var hash = location.hash;
+      if (!hash || !hash.includes('::')) return;
+      if (hash.includes('landing-page::')) {
+        // No doc page for landing page symbols - just clear the hash
+        history.replaceState(null, '', location.pathname);
+        return;
+      }
+      // Navigate to the doc viewer with this hash
+      location.href = '/docs/index.html' + hash;
     });
   </script>
 </body>
