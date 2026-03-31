@@ -4182,27 +4182,32 @@ class FeCodeBlock extends HTMLElement {
     });
   }
 
-  /** Adopt highlight styles into shadow root, with retry for late-loading stylesheets. */
+  /** Adopt highlight styles into shadow root, waiting for stylesheet if needed. */
   _adoptStyles() {
     var sheet = _getCodeBlockSheet();
     if (sheet) {
       this.shadowRoot.adoptedStyleSheets = [sheet];
-    } else {
-      // Fallback: clone page styles into shadow root
-      var pageStyles = document.querySelectorAll("style");
-      for (var i = 0; i < pageStyles.length; i++) {
-        this.shadowRoot.appendChild(pageStyles[i].cloneNode(true));
-      }
-      // If no styles found at all, retry after stylesheets finish loading
-      if (pageStyles.length === 0 && !this._styleRetryDone) {
-        this._styleRetryDone = true;
-        var self = this;
-        window.addEventListener("load", function () {
+      return;
+    }
+    // Stylesheet not ready — find the <link> that loads it and wait for load
+    var self = this;
+    var links = document.querySelectorAll('link[rel="stylesheet"]');
+    for (var i = 0; i < links.length; i++) {
+      var href = links[i].getAttribute("href") || "";
+      if (href.indexOf("highlight") !== -1) {
+        links[i].addEventListener("load", function onLoad() {
+          this.removeEventListener("load", onLoad);
           _invalidateCodeBlockSheet();
           self._adoptStyles();
           self._render();
         });
+        return;
       }
+    }
+    // No highlight <link> found — clone page <style> tags as fallback
+    var pageStyles = document.querySelectorAll("style");
+    for (var j = 0; j < pageStyles.length; j++) {
+      this.shadowRoot.appendChild(pageStyles[j].cloneNode(true));
     }
   }
 
