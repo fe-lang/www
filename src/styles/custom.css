@@ -33,6 +33,13 @@ a:hover {
   color: var(--sl-color-accent);
 }
 
+/* Sidebar current item — lighter in light mode */
+:root[data-theme='light'] [aria-current='page'],
+:root[data-theme='light'] [aria-current='page']:hover {
+  background: #e0e7ff;
+  color: #3730a3;
+}
+
 /* Sidebar styling */
 .sidebar-content {
   border-right: 1px solid var(--sl-color-gray-5);
