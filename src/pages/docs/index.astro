@@ -1,9 +1,5 @@
 ---
-import fs from 'node:fs';
-import { fileURLToPath } from 'node:url';
-import { dirname, join } from 'node:path';
-
-const dir = dirname(fileURLToPath(import.meta.url));
-const html = fs.readFileSync(join(dir, '../../../public/docs/index.html'), 'utf-8');
+// Redirect /docs/ to /docs/index.html to bypass Starlight's catch-all.
+// The static doc viewer lives in public/docs/index.html.
+return Astro.redirect('/docs/index.html', 301);
 ---
-<Fragment set:html={html} />
