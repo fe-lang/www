@@ -8,6 +8,7 @@ import { dirname, join } from 'node:path';
 
 const __dirname = dirname(fileURLToPath(import.meta.url));
 const feGrammar = JSON.parse(fs.readFileSync(join(__dirname, 'src/fe.tmLanguage.json'), 'utf-8'));
+const docUrl = process.env.PUBLIC_DOC_URL || 'https://fe-lang.github.io/fe-docs/';
 
 // https://astro.build/config
 export default defineConfig({
@@ -200,7 +201,8 @@ export default defineConfig({
 				},
 				{
 					label: 'API Reference',
-					link: '/docs/',
+					link: docUrl,
+					attrs: { target: '_blank', rel: 'noopener' },
 				},
 				{
 					label: 'Appendices',

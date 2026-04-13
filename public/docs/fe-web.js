@@ -23,9 +23,13 @@
 
   if (dataSrc) {
     fetch(dataSrc)
-      .then(function(r) { return r.json(); })
+      .then(function(r) {
+        if (!r.ok) throw new Error("HTTP " + r.status + " loading " + dataSrc);
+        return r.json();
+      })
       .then(function(data) {
-        if (data.index) {
+        data = feMigrate(data);
+        if (data && data.index) {
           window.FE_DOC_INDEX = data.index;
           if (data.scip) {
             window.FE_SCIP_DATA = data.scip;
@@ -35,8 +39,8 @@
               }
             }
           }
-        } else {
-          // Plain DocIndex without SCIP wrapper
+        } else if (data) {
+          // Fallback — should not happen after migration
           window.FE_DOC_INDEX = data;
         }
         window._feWebResolve();
@@ -136,6 +140,40 @@ function feClearDefaultHighlight() {
   _defaultHighlightHash = null;
   feUnhighlight();
 }
+
+// ============================================================================
+// Schema migration — normalizes old docs.json to the current format.
+// When SCHEMA_VERSION is bumped in model.rs, add a migration case here
+// and update FE_CURRENT_SCHEMA to match.
+// ============================================================================
+var FE_CURRENT_SCHEMA = 1;
+
+function feMigrate(data) {
+  if (!data) return data;
+  var v = (data.schema_version != null) ? data.schema_version : 0;
+
+  // Bare DocIndex (no envelope) — wrap it
+  if (v === 0 && !data.index && data.items) {
+    data = { schema_version: 0, index: data, scip: null };
+  }
+
+  if (v > FE_CURRENT_SCHEMA) {
+    console.warn("[fe-web] docs.json schema v" + v + " > viewer v" + FE_CURRENT_SCHEMA);
+    return data;
+  }
+  if (v === FE_CURRENT_SCHEMA) return data;
+
+  if (v < 1) {
+    // v0 → v1: envelope normalization only, no field changes
+    data.schema_version = 1;
+  }
+
+  return data;
+}
+
+// ============================================================================
+// ScipStore
+// ============================================================================
 
 function ScipStore(data) {
   this._symbols = data.symbols || {};
@@ -424,16 +462,22 @@ var _feSrcCache = {};
 function feLoadSrc(url) {
   if (_feSrcCache[url]) return _feSrcCache[url];
   _feSrcCache[url] = fetch(url)
-    .then(function (r) { return r.json(); })
+    .then(function (r) {
+      if (!r.ok) throw new Error("HTTP " + r.status + " loading " + url);
+      return r.json();
+    })
     .then(function (data) {
+      // Migrate old docs.json formats to current schema
+      data = feMigrate(data);
+
       var result = { index: null, scip: null };
-      if (data.index) {
+      if (data && data.index) {
         result.index = data.index;
         if (data.scip) {
           result.scip = new ScipStore(data.scip);
         }
-      } else {
-        // Plain DocIndex without SCIP wrapper
+      } else if (data) {
+        // Should not happen after migration, but fallback
         result.index = data;
       }
       // Also populate globals if not already set (first component to load wins)
@@ -445,6 +489,12 @@ function feLoadSrc(url) {
         document.dispatchEvent(new CustomEvent("fe-web-ready"));
       }
       return result;
+    })
+    .catch(function (err) {
+      console.error("[fe-web] Failed to load", url, err);
+      // Evict from cache so a retry can succeed
+      delete _feSrcCache[url];
+      return { index: null, scip: null };
     });
   return _feSrcCache[url];
 }
@@ -459,6 +509,7 @@ window.feFindItem = feFindItem;
 window.feWhenReady = feWhenReady;
 window.feEnrichLink = feEnrichLink;
 window.feLoadSrc = feLoadSrc;
+window.feMigrate = feMigrate;
 
 // ============================================================================
 // LSP WebSocket Client (for `fe doc serve` live mode)
@@ -3986,6 +4037,11 @@ if (typeof exports === "object") {
 
 
 // ============================================================================
+// Highlight CSS (injected for shadow DOM adoption — no DOM scanning needed)
+// ============================================================================
+var __FE_HIGHLIGHT_CSS_INJECTED__ = "/* Fe syntax highlighting — CSS custom properties define all colors.\n   Default: Catppuccin Mocha (dark). Light override via prefers-color-scheme\n   or data-theme=\"light\". Host pages can override any --fe-* variable. */\n\n/* ============================================================================\n   Color variables\n   ============================================================================ */\n\n/* Default: Catppuccin Mocha (dark) */\n:root {\n    --fe-hl-keyword: #cba6f7;\n    --fe-hl-variable-builtin: #94e2d5;\n    --fe-hl-type: #f9e2af;\n    --fe-hl-type-interface: #cba6f7;\n    --fe-hl-type-variant: #f9e2af;\n    --fe-hl-function: #89b4fa;\n    --fe-hl-string: #a6e3a1;\n    --fe-hl-string-escape: #94e2d5;\n    --fe-hl-number: #94e2d5;\n    --fe-hl-comment: #6c7086;\n    --fe-hl-operator: #94e2d5;\n    --fe-hl-variable: #a6e3a1;\n    --fe-hl-attribute: #cba6f7;\n    --fe-hl-constant: #94e2d5;\n    --fe-hl-punctuation: #6c7086;\n\n    --fe-code-bg: #1e1e2e;\n    --fe-code-border: #313244;\n    --fe-code-text: #cdd6f4;\n    --fe-code-line-number: #6c7086;\n    --fe-code-font: \"JetBrains Mono\", \"Fira Code\", monospace;\n    --fe-code-size: 0.8rem;\n    --fe-code-line-height: 1.6;\n    --fe-code-radius: 6px;\n}\n\n/* Light override: Catppuccin Latte — via OS preference */\n@media (prefers-color-scheme: light) {\n    :root:not([data-theme=\"dark\"]) {\n        --fe-hl-keyword: #7c3aed;\n        --fe-hl-variable-builtin: #0891b2;\n        --fe-hl-type: #b08800;\n        --fe-hl-type-interface: #7c3aed;\n        --fe-hl-type-variant: #b08800;\n        --fe-hl-function: #2563eb;\n        --fe-hl-string: #16a34a;\n        --fe-hl-string-escape: #0d9488;\n        --fe-hl-number: #0891b2;\n        --fe-hl-comment: #9ca0b0;\n        --fe-hl-operator: #0891b2;\n        --fe-hl-variable: #0d9488;\n        --fe-hl-attribute: #7c3aed;\n        --fe-hl-constant: #0891b2;\n        --fe-hl-punctuation: #6b7280;\n\n        --fe-code-bg: #eff1f5;\n        --fe-code-border: #ccd0da;\n        --fe-code-text: #4c4f69;\n        --fe-code-line-number: #9ca0b0;\n    }\n}\n\n/* Light override: explicit toggle */\n:root[data-theme=\"light\"] {\n    --fe-hl-keyword: #7c3aed;\n    --fe-hl-variable-builtin: #0891b2;\n    --fe-hl-type: #b08800;\n    --fe-hl-type-interface: #7c3aed;\n    --fe-hl-type-variant: #b08800;\n    --fe-hl-function: #2563eb;\n    --fe-hl-string: #16a34a;\n    --fe-hl-string-escape: #0d9488;\n    --fe-hl-number: #0891b2;\n    --fe-hl-comment: #9ca0b0;\n    --fe-hl-operator: #0891b2;\n    --fe-hl-variable: #0d9488;\n    --fe-hl-attribute: #7c3aed;\n    --fe-hl-constant: #0891b2;\n    --fe-hl-punctuation: #6b7280;\n\n    --fe-code-bg: #eff1f5;\n    --fe-code-border: #ccd0da;\n    --fe-code-text: #4c4f69;\n    --fe-code-line-number: #9ca0b0;\n}\n\n/* ============================================================================\n   Syntax highlight rules — read variables, no fallbacks\n   ============================================================================ */\n\n.hl-keyword { color: var(--fe-hl-keyword); }\n.hl-variable-builtin { color: var(--fe-hl-variable-builtin); font-style: italic; }\n.hl-type, .hl-type-builtin { color: var(--fe-hl-type); }\n.hl-type-interface { color: var(--fe-hl-type-interface); }\n.hl-type-enum-variant { color: var(--fe-hl-type-variant); }\n.hl-function, .hl-function-definition, .hl-function-method { color: var(--fe-hl-function); }\n.hl-string { color: var(--fe-hl-string); }\n.hl-string-escape { color: var(--fe-hl-string-escape); }\n.hl-number { color: var(--fe-hl-number); }\n.hl-comment, .hl-comment-doc { color: var(--fe-hl-comment); font-style: italic; }\n.hl-operator { color: var(--fe-hl-operator); }\n.hl-property, .hl-variable-parameter { color: var(--fe-hl-variable); }\n.hl-variable { color: var(--fe-hl-variable); }\n.hl-attribute { color: var(--fe-hl-attribute); }\n.hl-constant { color: var(--fe-hl-constant); font-weight: bold; }\n.hl-punctuation-bracket, .hl-punctuation-delimiter, .hl-punctuation-special { color: var(--fe-hl-punctuation); }\n\n/* SCIP symbol hover highlight transitions */\n[class*=\"sym-\"] {\n    transition: background 0.2s ease-out, text-decoration 0.2s ease-out,\n                text-decoration-color 0.2s ease-out;\n}\n\n/* ============================================================================\n   <fe-code-block> component layout\n   ============================================================================ */\n\nfe-code-block {\n    display: block;\n    margin: 1rem 0;\n}\n\n.fe-code-block-wrapper {\n    display: flex;\n    background: var(--fe-code-bg);\n    border: 1px solid var(--fe-code-border);\n    border-radius: var(--fe-code-radius);\n    overflow-x: auto;\n    max-width: 100%;\n}\n\n.member-header fe-code-block,\n.code-header fe-code-block,\n.implementor-sig fe-code-block {\n    margin: 0;\n}\n\n.member-header,\n.code-header,\n.implementor-sig {\n    --fe-code-border: transparent;\n}\n\n.fe-line-numbers {\n    display: flex;\n    flex-direction: column;\n    padding: 0.75rem 0.5rem;\n    border-right: 1px solid var(--fe-code-border);\n    text-align: right;\n    user-select: none;\n    color: var(--fe-code-line-number);\n    font-family: var(--fe-code-font);\n    font-size: var(--fe-code-size);\n    line-height: var(--fe-code-line-height);\n    -webkit-text-size-adjust: 100%;\n    text-size-adjust: 100%;\n}\n\n.fe-line-numbers span {\n    line-height: var(--fe-code-line-height);\n}\n\n.fe-code-pre {\n    flex: 1;\n    min-width: 0;\n    margin: 0;\n    padding: 0.75rem 1rem;\n    background: transparent;\n    overflow-x: auto;\n    font-family: var(--fe-code-font);\n    font-size: var(--fe-code-size);\n    line-height: var(--fe-code-line-height);\n    /* Prevent iOS Safari TextAutoSizing from inflating font-size in code blocks.\n       Without this, the algorithm selectively enlarges text in blocks whose\n       intrinsic width exceeds the viewport (timing-dependent on first load),\n       causing inconsistent sizes across code blocks with identical styles.\n       Using 100% (not none) preserves user zoom and accessibility settings. */\n    -webkit-text-size-adjust: 100%;\n    text-size-adjust: 100%;\n}\n\n.fe-code-pre code {\n    font-family: inherit;\n    font-size: inherit;\n    line-height: inherit;\n    color: var(--fe-code-text);\n    -webkit-text-size-adjust: 100%;\n    text-size-adjust: 100%;\n}\n";
+
+// ============================================================================
 // Custom elements
 // ============================================================================
 // <fe-code-block> — Custom element for syntax-highlighted Fe code blocks.
@@ -4006,58 +4062,33 @@ if (typeof exports === "object") {
 //   data-line-offset — 0-based line offset for source excerpts (maps local line 0 to file line N)
 //   data-scope   — SCIP scope path for signature code blocks (set by server)
 
-// Shared stylesheet adopted by all <fe-code-block> shadow roots.
-// Only includes fe-highlight.css (syntax + layout), NOT the full page styles,
-// so that CSS custom properties from the host page inherit through the
-// shadow boundary without being overridden by a copied :root block.
+// Shared CSSStyleSheet adopted by all <fe-code-block> shadow roots.
+//
+// In bundled mode (fe-web.js), the CSS is available as _FE_HIGHLIGHT_CSS
+// (injected at build time). In standalone mode (external <link>), we
+// extract rules from the loaded stylesheet. Either way, the sheet is
+// constructed once and shared.
 var _codeBlockSheet = null;
+
+// Injected at bundle build time. When loaded standalone (not via the
+// bundle), this is undefined and we fall back to reading page styles.
+var _FE_HIGHLIGHT_CSS = (typeof __FE_HIGHLIGHT_CSS_INJECTED__ !== "undefined")
+    ? __FE_HIGHLIGHT_CSS_INJECTED__ : null;
 
 function _getCodeBlockSheet() {
   if (_codeBlockSheet) return _codeBlockSheet;
+
+  var css = _FE_HIGHLIGHT_CSS;
+
+  // Not bundled — try to read from page <style> or <link> stylesheets
+  if (!css) {
+    css = _extractHighlightCSS();
+  }
+
+  if (!css) return null;
+
   try {
     _codeBlockSheet = new CSSStyleSheet();
-    // Look for the highlight-specific <style> tag first (static site injects
-    // it separately). Fall back to scanning for fe-highlight content.
-    var css = "";
-    var styles = document.querySelectorAll("style");
-    for (var i = 0; i < styles.length; i++) {
-      var text = styles[i].textContent || "";
-      if (text.indexOf(".hl-keyword") !== -1 && text.indexOf(".fe-code-block-wrapper") !== -1) {
-        css = text;
-        break;
-      }
-    }
-    // Also check linked stylesheets (e.g. <link rel="stylesheet" href="fe-highlight.css">)
-    if (!css) {
-      try {
-        var sheets = document.styleSheets;
-        for (var s = 0; s < sheets.length; s++) {
-          try {
-            var rules = sheets[s].cssRules || sheets[s].rules;
-            if (!rules) continue;
-            var sheetText = "";
-            var hasHighlight = false;
-            for (var r = 0; r < rules.length; r++) {
-              var ruleText = rules[r].cssText || "";
-              sheetText += ruleText + "\n";
-              if (ruleText.indexOf(".hl-keyword") !== -1) hasHighlight = true;
-            }
-            if (hasHighlight) {
-              css = sheetText;
-              break;
-            }
-          } catch (_) {
-            // CORS: can't read cross-origin stylesheet rules
-          }
-        }
-      } catch (_) {}
-    }
-    // If no highlight stylesheet found, use all page styles as fallback
-    if (!css) {
-      for (var j = 0; j < styles.length; j++) {
-        css += styles[j].textContent + "\n";
-      }
-    }
     _codeBlockSheet.replaceSync(css);
   } catch (e) {
     _codeBlockSheet = null;
@@ -4065,29 +4096,58 @@ function _getCodeBlockSheet() {
   return _codeBlockSheet;
 }
 
-// Invalidate cached sheet (e.g. after live reload rebuilds styles).
+// Extract highlight CSS from page stylesheets (for non-bundled usage).
+function _extractHighlightCSS() {
+  // Check inline <style> tags
+  var styles = document.querySelectorAll("style");
+  for (var i = 0; i < styles.length; i++) {
+    var text = styles[i].textContent || "";
+    if (text.indexOf(".hl-keyword") !== -1 && text.indexOf(".fe-code-block-wrapper") !== -1) {
+      return text;
+    }
+  }
+  // Check loaded <link> stylesheets
+  try {
+    for (var s = 0; s < document.styleSheets.length; s++) {
+      try {
+        var rules = document.styleSheets[s].cssRules;
+        if (!rules) continue;
+        var sheetText = "";
+        var found = false;
+        for (var r = 0; r < rules.length; r++) {
+          var rt = rules[r].cssText || "";
+          sheetText += rt + "\n";
+          if (rt.indexOf(".hl-keyword") !== -1) found = true;
+        }
+        if (found) return sheetText;
+      } catch (_) { /* CORS */ }
+    }
+  } catch (_) {}
+  return null;
+}
+
+// Invalidate cached sheet (e.g. after live reload or stylesheet load).
 function _invalidateCodeBlockSheet() {
   _codeBlockSheet = null;
 }
 
-// Shared list of code blocks waiting for the highlight stylesheet to load.
-var _pendingStyleAdoptions = [];
-var _stylesheetWatchStarted = false;
+// Shared queue for code blocks waiting on a <link> stylesheet to load.
+// One load listener serves all pending blocks — no per-instance scanning.
+var _pendingStyleBlocks = [];
+var _stylesheetWatchActive = false;
 
-function _waitForHighlightStylesheet(codeBlock) {
-  _pendingStyleAdoptions.push(codeBlock);
-  if (_stylesheetWatchStarted) return;
-  _stylesheetWatchStarted = true;
-
+function _startStylesheetWatch() {
+  if (_stylesheetWatchActive) return;
+  _stylesheetWatchActive = true;
   var links = document.querySelectorAll('link[rel="stylesheet"]');
   for (var i = 0; i < links.length; i++) {
-    var href = links[i].getAttribute("href") || "";
-    if (href.indexOf("highlight") !== -1) {
+    if ((links[i].getAttribute("href") || "").indexOf("highlight") !== -1) {
       links[i].addEventListener("load", function onLoad() {
         this.removeEventListener("load", onLoad);
         _invalidateCodeBlockSheet();
-        var pending = _pendingStyleAdoptions;
-        _pendingStyleAdoptions = [];
+        var pending = _pendingStyleBlocks;
+        _pendingStyleBlocks = [];
+        _stylesheetWatchActive = false;
         for (var j = 0; j < pending.length; j++) {
           pending[j]._adoptStyles();
           pending[j]._render();
@@ -4096,6 +4156,8 @@ function _waitForHighlightStylesheet(codeBlock) {
       return;
     }
   }
+  // No highlight <link> found — nothing to wait for
+  _stylesheetWatchActive = false;
 }
 
 /**
@@ -4210,33 +4272,17 @@ class FeCodeBlock extends HTMLElement {
     });
   }
 
-  /** Adopt highlight styles into shadow root, waiting for stylesheet if needed. */
+  /** Adopt highlight stylesheet into shadow root. */
   _adoptStyles() {
     var sheet = _getCodeBlockSheet();
     if (sheet) {
       this.shadowRoot.adoptedStyleSheets = [sheet];
       return;
     }
-    // Stylesheet not ready — find the <link> that loads it and wait for load
-    var self = this;
-    var links = document.querySelectorAll('link[rel="stylesheet"]');
-    for (var i = 0; i < links.length; i++) {
-      var href = links[i].getAttribute("href") || "";
-      if (href.indexOf("highlight") !== -1) {
-        links[i].addEventListener("load", function onLoad() {
-          this.removeEventListener("load", onLoad);
-          _invalidateCodeBlockSheet();
-          self._adoptStyles();
-          self._render();
-        });
-        return;
-      }
-    }
-    // No highlight <link> found — clone page <style> tags as fallback
-    var pageStyles = document.querySelectorAll("style");
-    for (var j = 0; j < pageStyles.length; j++) {
-      this.shadowRoot.appendChild(pageStyles[j].cloneNode(true));
-    }
+    // Stylesheet not available yet (non-bundled, <link> still loading).
+    // Wait for it via the shared pending queue.
+    _pendingStyleBlocks.push(this);
+    _startStylesheetWatch();
   }
 
   /** Look up an item by path in per-component or global index. */
