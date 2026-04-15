@@ -5,10 +5,12 @@ import { DOC_URL as docUrl } from '../../consts';
 <html lang="en">
 <head>
   <meta charset="UTF-8">
-  <meta http-equiv="refresh" content={`0; url=${docUrl}`}>
   <title>Fe API Documentation</title>
 </head>
 <body>
-  <p>API documentation has moved to <a href={docUrl}>docs.fe-lang.dev</a>.</p>
+  <p>Redirecting to <a href={docUrl}>docs.fe-lang.dev</a>...</p>
+  <script define:vars={{ docUrl }}>
+    window.location.replace(docUrl + window.location.hash);
+  </script>
 </body>
 </html>
