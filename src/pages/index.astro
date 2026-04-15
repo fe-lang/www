@@ -1,7 +1,8 @@
 ---
 import exampleCodeRaw from '../examples/landing-page.fe?raw';
 const base = import.meta.env.BASE_URL;
-const docUrl = import.meta.env.PUBLIC_DOC_URL || 'https://fe-lang.github.io/fe-docs/';
+import { DOC_URL as docUrl } from '../consts';
+
 
 // Extract only the display portion (before stubs comment)
 const stubsMarker = '// Stubs for type checking';
