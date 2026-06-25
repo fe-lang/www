@@ -194,6 +194,7 @@ export default defineConfig({
 					label: 'Part 14: By Example',
 					items: [
 						{ label: 'Complete ERC20', slug: 'examples/erc20' },
+						{ label: 'Deposit Contract', slug: 'examples/deposit-contract' },
 						{ label: 'NFT Contract', slug: 'examples/erc721' },
 						{ label: 'Voting Contract', slug: 'examples/voting' },
 						{ label: 'Simple DEX', slug: 'examples/dex' },
