@@ -197,7 +197,7 @@ msg Erc20 {
 
 msg Erc20Metadata {
     #[selector = sol("name()")]
-    Name {} -> String<32>,
+    Name {} -> String<31>,
     #[selector = sol("symbol()")]
     Symbol {} -> String<8>,
     #[selector = sol("decimals()")]
@@ -206,7 +206,7 @@ msg Erc20Metadata {
 //</hide>
 
 contract Token {
-    store: TokenStorage,
+    mut store: TokenStorage,
 
     // Core ERC20 operations
     recv Erc20 {
@@ -235,7 +235,7 @@ contract Token {
 
     // Metadata extension
     recv Erc20Metadata {
-        Name {} -> String<32> { "Token" }
+        Name {} -> String<31> { "Token" }
         Symbol {} -> String<8> { "TKN" }
         Decimals {} -> u8 { 18 }
     }

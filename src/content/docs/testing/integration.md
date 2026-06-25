@@ -30,7 +30,7 @@ pub contract MyContract {
 fn test_my_contract() uses (evm: mut Evm) {
     // evm provides the EVM runtime for deploying and calling contracts
     let addr = evm.create2<MyContract>(value: 0, args: (), salt: 0)
-    assert(addr.inner != 0)
+    assert!(addr.inner != 0)
 }
 ```
 
@@ -66,7 +66,7 @@ fn test_deploy() uses (evm: mut Evm) {
     let addr = evm.create2<Counter>(value: 0, args: (5,), salt: 0)
 
     // The address is non-zero on success
-    assert(addr.inner != 0)
+    assert!(addr.inner != 0)
 }
 ```
 
@@ -127,7 +127,7 @@ fn test_counter() uses (evm: mut Evm) {
         addr: addr, gas: 100000, value: 0,
         message: CounterMsg::GetCount {},
     )
-    assert(count == 10)  // 2 increments × step of 5
+    assert!(count == 10)  // 2 increments × step of 5
 }
 ```
 
@@ -179,7 +179,7 @@ fn test_state_persists() uses (evm: mut Evm) {
         addr: addr, gas: 100000, value: 0,
         message: VaultMsg::GetBalance {},
     )
-    assert(bal == 300)
+    assert!(bal == 300)
 }
 ```
 
@@ -225,7 +225,7 @@ fn test_multiple_instances() uses (evm: mut Evm) {
     // They have independent state
     let fast_count: u256 = evm.call(addr: fast, gas: 100000, value: 0, message: CounterMsg::GetCount {})
     let slow_count: u256 = evm.call(addr: slow, gas: 100000, value: 0, message: CounterMsg::GetCount {})
-    assert(fast_count == 10)
-    assert(slow_count == 1)
+    assert!(fast_count == 10)
+    assert!(slow_count == 1)
 }
 ```

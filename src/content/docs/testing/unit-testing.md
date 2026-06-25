@@ -14,9 +14,9 @@ fn max(a: u256, b: u256) -> u256 {
 
 #[test]
 fn test_max() {
-    assert(max(a: 3, b: 7) == 7)
-    assert(max(a: 10, b: 2) == 10)
-    assert(max(a: 5, b: 5) == 5)
+    assert!(max(a: 3, b: 7) == 7)
+    assert!(max(a: 10, b: 2) == 10)
+    assert!(max(a: 5, b: 5) == 5)
 }
 ```
 
@@ -56,7 +56,7 @@ impl Point {
 fn test_distance() {
     let a = Point { x: 0, y: 0 }
     let b = Point { x: 3, y: 4 }
-    assert(a.distance_squared(other: b) == 25)
+    assert!(a.distance_squared(other: b) == 25)
 }
 ```
 
@@ -79,7 +79,7 @@ fn test_division_by_zero_reverts() {
 
 #[test(should_revert)]
 fn test_assert_false_reverts() {
-    assert(false)
+    assert!(false)
 }
 ```
 
@@ -87,7 +87,7 @@ This is useful for verifying that safety checks (overflow, access control, asser
 
 ## Assertions
 
-`assert(condition)` reverts the test if the condition is false. Since `assert` takes a single `bool`, use comparison expressions:
+`assert!(condition)` reverts the test if the condition is false. Since `assert!` takes a single `bool`, use comparison expressions:
 
 ```fe
 //<hide>
@@ -97,17 +97,17 @@ fn add(a: u256, b: u256) -> u256 { a + b }
 #[test]
 fn test_assertions() {
     // Equality
-    assert(add(a: 2, b: 3) == 5)
+    assert!(add(a: 2, b: 3) == 5)
 
     // Comparison
     let a: u256 = 10
-    assert(a > 5)
+    assert!(a > 5)
     let b: u256 = 3
-    assert(b <= 3)
+    assert!(b <= 3)
 
     // Boolean logic
-    assert(true && true)
-    assert(!false)
+    assert!(true && true)
+    assert!(!false)
 }
 ```
 

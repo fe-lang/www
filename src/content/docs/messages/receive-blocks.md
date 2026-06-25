@@ -103,7 +103,7 @@ msg TokenMsg {
 
 contract Token {
     // Fields
-    total_supply: u256,
+    mut total_supply: u256,
 
     // Init block
     init() {

@@ -25,16 +25,12 @@ These intrinsics provide information about the execution context:
 ### Usage
 
 ```fe
-//<hide>
-use _boilerplate::{Ctx, assert}
-//</hide>
-
 fn only_owner(owner: Address) uses (ctx: Ctx) {
-    assert(cond: ctx.caller() == owner, message: "not owner")
+    assert!(ctx.caller() == owner, "not owner")
 }
 
 fn get_timestamp() -> u256 uses (ctx: Ctx) {
-    ctx.block_timestamp()
+    ctx.timestamp()
 }
 ```
 
@@ -106,7 +102,7 @@ Control flow for error handling:
 
 | Intrinsic | Description |
 |-----------|-------------|
-| `assert(condition, message)` | Revert if condition is false |
+| `assert!(condition[, message])` | Revert if condition is false |
 | `revert` | Unconditionally revert execution |
 | `todo()` | Placeholder that always reverts |
 
@@ -114,9 +110,9 @@ Control flow for error handling:
 
 ```fe
 fn transfer(from: Address, to: Address, amount: u256, balance: u256) {
-    assert(from.inner != 0)
-    assert(to.inner != 0)
-    assert(balance >= amount)
+    assert!(from.inner != 0)
+    assert!(to.inner != 0)
+    assert!(balance >= amount)
     //<hide>
     let _ = (from, to, amount, balance)
     //</hide>
@@ -184,9 +180,6 @@ Event emission:
 ### Usage
 
 ```fe
-//<hide>
-use _boilerplate::Log
-//</hide>
 #[event]
 struct TransferEvent {
     #[indexed]
@@ -210,12 +203,8 @@ fn emit_transfer(from: own Address, to: own Address, value: u256) uses (log: mut
 ### Usage
 
 ```fe
-//<hide>
-use _boilerplate::Ctx
-//</hide>
-
 fn deposit() uses (ctx: Ctx) {
-    let amount = ctx.msg_value()
+    let amount = ctx.value()
     // Process deposit...
     //<hide>
     let _ = amount
@@ -248,7 +237,7 @@ fn get_recent_block_hash(block_num: u256) -> u256 {
 | Context | `caller`, `block_number`, `block_timestamp`, `chain_id`, etc. |
 | Contract | `self_address`, `balance`, `code_size`, `code_hash` |
 | Crypto | `keccak256`, `sha256`, `ecrecover` |
-| Control | `assert`, `revert`, `todo` |
+| Control | `assert!`, `revert`, `todo` |
 | Calls | `call`, `staticcall`, `delegatecall` |
 | Events | `log.emit` |
 

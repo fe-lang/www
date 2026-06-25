@@ -76,16 +76,16 @@ Now `print_value` only accepts types that implement `Printable`:
 //<hide>
 use _boilerplate::Printable
 
-fn print_value<T: Printable>(value: T) -> String<256> {
+fn print_value<T: Printable>(value: T) -> String<31> {
     value.to_string()
 }
 //</hide>
 struct Message {
-    text: String<256>,
+    text: String<31>,
 }
 
 impl Printable for Message {
-    fn to_string(self) -> String<256> {
+    fn to_string(self) -> String<31> {
         self.text
     }
 }
@@ -145,7 +145,7 @@ impl<T> Container<T> {
     }
 
     // Method with its own type parameter
-    fn wrap_with<U>(self, other: own U) -> Container<(T, U)> {
+    fn wrap_with<U>(own self, other: own U) -> Container<(T, U)> {
         Container { item: (self.item, other) }
     }
 }
@@ -258,9 +258,6 @@ let _ = (x, y)
 ### Optional/Default Pattern
 
 ```fe
-//<hide>
-use _boilerplate::Default
-//</hide>
 fn or_default<T: Default>(value: own Option<T>) -> T {
     match value {
         Option::Some(v) => v,
@@ -300,7 +297,7 @@ fn process<T: Hashable>(item: T) -> u256 {
 //<hide>
 use _boilerplate::{Hashable, Printable}
 //</hide>
-fn process<T: Hashable + Printable>(item: T) -> String<256> {
+fn process<T: Hashable + Printable>(item: T) -> String<31> {
     let hash = item.hash()
     //<hide>
     let _ = hash

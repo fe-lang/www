@@ -76,7 +76,7 @@ pub contract Example uses (ctx: Ctx) {
 #[test]
 fn test_with_evm() uses (evm: mut Evm) {
     let addr = evm.create2<Example>(value: 0, args: (), salt: 0)
-    assert(addr.inner != 0)
+    assert!(addr.inner != 0)
 }
 ```
 
@@ -108,12 +108,12 @@ fn test_custom_effect() {
     let result = with (validator) {
         validate(value: 50)
     }
-    assert(result == true)
+    assert!(result == true)
 
     let result2 = with (validator) {
         validate(value: 5)
     }
-    assert(result2 == false)
+    assert!(result2 == false)
 }
 ```
 

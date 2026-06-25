@@ -175,7 +175,7 @@ trait Identifiable {
 
 struct User {
     user_id: u256,
-    name: String<32>,
+    name: String<31>,
 }
 
 impl Identifiable for User {

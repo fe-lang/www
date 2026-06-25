@@ -52,9 +52,8 @@ struct Transfer {
 
 // ABI size: two u256 fields = 64 bytes
 impl AbiSize for Transfer {
-    const ENCODED_SIZE: u256 = 64
+    const HEAD_SIZE: u256 = 64
     const IS_DYNAMIC: bool = false
-    const NEEDS_PARENT_WRAPPER: bool = false
 }
 
 // ABI encoding: write each field as a word
@@ -74,10 +73,10 @@ impl Encode<Sol> for Transfer {
 
 // ABI decoding: read each field as a word
 impl Decode<Sol> for Transfer {
-    fn decode<D: AbiDecoder<Sol>>(_ d: mut D) -> Self {
+    fn decode_payload<D: AbiDecoder<Sol>>(_ d: mut D) -> Self {
         Transfer {
-            to: u256::decode(mut d),
-            amount: u256::decode(mut d),
+            to: u256::decode_payload(mut d),
+            amount: u256::decode_payload(mut d),
         }
     }
 }
@@ -129,7 +128,7 @@ msg Erc20 {
 // Metadata extension
 msg Erc20Metadata {
     #[selector = sol("name()")]
-    Name {} -> String<32>,
+    Name {} -> String<31>,
 
     #[selector = sol("symbol()")]
     Symbol {} -> String<8>,
@@ -163,7 +162,7 @@ msg Erc20 {
 
 msg Erc20Metadata {
     #[selector = sol("name()")]
-    Name {} -> String<32>,
+    Name {} -> String<31>,
     #[selector = sol("symbol()")]
     Symbol {} -> String<8>,
     #[selector = sol("decimals()")]
@@ -199,7 +198,7 @@ contract MetadataToken {
         }
     }
     recv Erc20Metadata {
-        Name {} -> String<32> { "Token" }
+        Name {} -> String<31> { "Token" }
         Symbol {} -> String<8> { "TKN" }
         Decimals {} -> u8 { 18 }
     }
@@ -214,7 +213,7 @@ contract FullToken {
         }
     }
     recv Erc20Metadata {
-        Name {} -> String<32> { "Token" }
+        Name {} -> String<31> { "Token" }
         Symbol {} -> String<8> { "TKN" }
         Decimals {} -> u8 { 18 }
     }

@@ -287,7 +287,7 @@ impl MetadataStorage {
 // Contract binding storage to effects
 contract Token {
     mut tokens: TokenStorage,
-    metadata: MetadataStorage,
+    mut metadata: MetadataStorage,
 
     recv Erc20 {
         Transfer { to, amount } -> bool uses (mut tokens) {

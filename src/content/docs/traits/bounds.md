@@ -88,7 +88,7 @@ The type must implement all specified traits:
 //<hide>
 use _boilerplate::{Hashable, Printable}
 
-fn describe<T: Hashable + Printable>(value: T) -> String<256> {
+fn describe<T: Hashable + Printable>(value: T) -> String<31> {
     let _hash = value.hash()
     value.to_string()
 }
@@ -104,7 +104,7 @@ impl Hashable for Token {
 }
 
 impl Printable for Token {
-    fn to_string(self) -> String<256> {
+    fn to_string(self) -> String<31> {
         "Token"
     }
 }
@@ -126,7 +126,7 @@ Each type parameter can have its own bounds:
 //<hide>
 use _boilerplate::{Hashable, Printable, Readable, Writable}
 //</hide>
-fn combine<A: Hashable, B: Printable>(a: A, b: B) -> String<256> {
+fn combine<A: Hashable, B: Printable>(a: A, b: B) -> String<31> {
     let hash = a.hash()
     //<hide>
     let _ = hash
@@ -238,9 +238,6 @@ fn find<T: Comparable>(items: [T; 8], target: T) -> bool {
 ### Default Values
 
 ```fe
-//<hide>
-use _boilerplate::Default
-//</hide>
 trait Default {
     fn default() -> Self
 }
@@ -256,9 +253,6 @@ fn or_default<T: Default>(value: own Option<T>) -> T {
 ### Cloneable Types
 
 ```fe
-//<hide>
-use _boilerplate::Clone
-//</hide>
 trait Clone {
     fn clone(self) -> Self
 }
@@ -274,7 +268,7 @@ Bounds and effects work together:
 
 ```fe
 //<hide>
-use _boilerplate::{Storable, Storage, Default}
+use _boilerplate::{Storable, Storage}
 //</hide>
 trait Storable {
     fn key(self) -> u256

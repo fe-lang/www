@@ -35,7 +35,7 @@ pub struct TokenStorage {
 
 contract Token {
     // Fields
-    store: TokenStorage,
+    mut store: TokenStorage,
 
     // Init block
     init(initial_supply: u256) {
@@ -62,7 +62,7 @@ pub struct TokenStorage {
 }
 
 contract Token {
-    store: TokenStorage,
+    mut store: TokenStorage,
 }
 ```
 
@@ -112,7 +112,7 @@ msg TokenMsg {
 //</hide>
 
 contract Token {
-    store: TokenStorage,
+    mut store: TokenStorage,
 
     recv TokenMsg {
         BalanceOf { account } -> u256 uses store {
@@ -197,11 +197,11 @@ pub struct TokenStorage {
 //</hide>
 
 contract TokenA {
-    store: TokenStorage,
+    mut store: TokenStorage,
 }
 
 contract TokenB {
-    store: TokenStorage,
+    mut store: TokenStorage,
 }
 ```
 

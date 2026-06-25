@@ -73,7 +73,7 @@ msg Query {
     TotalSupply -> u256,
 
     #[selector = sol("name()")]
-    Name -> String<256>,
+    Name -> String<31>,
 }
 ```
 

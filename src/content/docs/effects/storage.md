@@ -33,7 +33,7 @@ impl TokenStore {
     }
 
     fn do_mint(mut self, to: Address, amount: u256) uses (ctx: Ctx) {
-        assert(ctx.caller() == self.owner)
+        assert!(ctx.caller() == self.owner)
         self.total_supply += amount
     }
 }
@@ -68,7 +68,7 @@ fn test_token() uses (evm: mut Evm) {
         addr: addr, gas: 100000, value: 0,
         message: TokenMsg::GetSupply {},
     )
-    assert(supply == 0)
+    assert!(supply == 0)
 }
 ```
 
@@ -185,7 +185,7 @@ struct TokenStore {
 
 impl TokenStore {
     fn mint(mut self, to: Address, amount: u256) uses (ctx: Ctx, log: mut Log) {
-        assert(ctx.caller() == self.owner)
+        assert!(ctx.caller() == self.owner)
         self.total_supply += amount
 
         log.emit(Transfer {

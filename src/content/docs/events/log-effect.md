@@ -11,7 +11,6 @@ Unlike languages where logging is implicit, Fe treats it as a tracked capability
 
 ```fe
 //<hide>
-use _boilerplate::Log
 pub struct TokenStorage { pub balances: StorageMap<u256, u256> }
 //</hide>
 
@@ -51,7 +50,6 @@ Use it in function signatures:
 
 ```fe
 //<hide>
-use _boilerplate::Log
 #[event]
 struct Transfer {
     #[indexed]
@@ -76,7 +74,6 @@ Function signatures reveal side effects:
 
 ```fe
 //<hide>
-use _boilerplate::Log
 pub struct Config { pub fee: u256 }
 pub struct Balances { pub data: u256 }
 //</hide>
@@ -115,7 +112,7 @@ fn test_transfer() {
     }
 
     // Verify events were emitted
-    assert(mock_log.events.len() == 1)
+    assert!(mock_log.events.len() == 1)
 }
 ```
 
@@ -125,7 +122,6 @@ Compose functions while controlling which can log:
 
 ```fe
 //<hide>
-use _boilerplate::Log
 pub struct Balances { pub data: u256 }
 #[event]
 struct Deposit {
@@ -158,7 +154,6 @@ Functions calling logging functions must declare the effect:
 
 ```fe
 //<hide>
-use _boilerplate::Log
 pub struct TokenStorage { pub balances: StorageMap<u256, u256> }
 #[event]
 struct Transfer {
@@ -207,7 +202,7 @@ Contracts provide the Log effect via the `uses` clause on handlers:
 ```fe
 //<hide>
 use std::abi::sol
-use _boilerplate::{Log, caller}
+use _boilerplate::caller
 pub struct TokenStorage { pub balances: StorageMap<u256, u256> }
 impl TokenStorage {
     fn do_transfer(mut self, from: u256, to: u256, amount: u256) -> bool uses (log: mut Log) {
@@ -354,7 +349,7 @@ Make logging optional by separating concerns:
 
 ```fe
 //<hide>
-use _boilerplate::Log
+#[event]
 struct FeeComputed {
     amount: u256,
     fee: u256,

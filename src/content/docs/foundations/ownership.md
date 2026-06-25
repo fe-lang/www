@@ -14,7 +14,7 @@ Variables in Fe are immutable by default. Once bound, their value cannot change:
 fn test_immutable_by_default() {
     let x: u256 = 10
     // x = 20  would be a compile error — x is immutable
-    assert(x == 10)
+    assert!(x == 10)
 }
 ```
 
@@ -32,7 +32,7 @@ fn test_mut_variable() {
     let mut x: u256 = 10
     x = 20
     x += 5
-    assert(x == 25)
+    assert!(x == 25)
 }
 ```
 
@@ -61,14 +61,14 @@ fn test_mut_parameter() {
     let mut x: u256 = 7
     double_in_place(v: mut x)
     // The caller sees the modification
-    assert(x == 14)
+    assert!(x == 14)
 }
 
 #[test]
 fn test_mut_param_on_field() {
     let mut w = Wallet { balance: 100, nonce: 1 }
     bump_nonce(n: mut w.nonce)
-    assert(w.nonce == 2)
+    assert!(w.nonce == 2)
 }
 ```
 
@@ -98,8 +98,8 @@ fn test_mut_self() {
     let mut p = Point { x: 1, y: 2 }
     p.translate(dx: 10, dy: 20)
     // Modifications are visible on p
-    assert(p.x == 11)
-    assert(p.y == 22)
+    assert!(p.x == 11)
+    assert!(p.y == 22)
 }
 ```
 
@@ -122,7 +122,7 @@ fn test_mut_borrow_handle() {
     handle = 5
     handle += 1
     // Modifications through the handle are visible on x
-    assert(x == 6)
+    assert!(x == 6)
 }
 
 #[test]
@@ -133,8 +133,8 @@ fn test_disjoint_field_borrows() {
     let hy: mut u256 = mut p.y
     hx = 100
     hy = 200
-    assert(p.x == 100)
-    assert(p.y == 200)
+    assert!(p.x == 100)
+    assert!(p.y == 200)
 }
 ```
 
@@ -162,7 +162,7 @@ fn consume_point(p: own Point) -> u256 {
 fn test_own_parameter() {
     let p = Point { x: 10, y: 20 }
     let sum = consume_point(p)
-    assert(sum == 30)
+    assert!(sum == 30)
     // p has been moved — using it here would be a compile error
 }
 ```
@@ -189,8 +189,8 @@ impl Point {
 fn test_own_self() {
     let p = Point { x: 5, y: 6 }
     let (x, y) = p.into_tuple()
-    assert(x == 5)
-    assert(y == 6)
+    assert!(x == 5)
+    assert!(y == 6)
     // p has been consumed
 }
 ```
@@ -219,8 +219,8 @@ impl Point {
 fn test_mut_own_self() {
     let p = Point { x: 2, y: 3 }
     let p2 = p.scale_and_consume(factor: 10)
-    assert(p2.x == 20)
-    assert(p2.y == 30)
+    assert!(p2.x == 20)
+    assert!(p2.y == 30)
 }
 ```
 
@@ -260,12 +260,12 @@ fn test_copy_goes_stale() {
     d.y = tmp
 
     // The snapshot is stale — it still has the old values
-    assert(snap.x == 10)
-    assert(snap.y == 20)
+    assert!(snap.x == 10)
+    assert!(snap.y == 20)
 
     // The original has been swapped
-    assert(d.x == 20)
-    assert(d.y == 10)
+    assert!(d.x == 20)
+    assert!(d.y == 10)
 }
 ```
 
@@ -297,8 +297,8 @@ fn test_ref_is_not_a_copy() {
     // live.x and live.y point to d's fields — they are NOT copies.
     // The compiler guarantees this: writing `LiveView { x: d.x }` would
     // be a type error ("expected `ref u256`, but `u256` is given").
-    assert(live.x == d.x)
-    assert(live.y == d.y)
+    assert!(live.x == d.x)
+    assert!(live.y == d.y)
 }
 ```
 
@@ -337,11 +337,11 @@ fn test_slice_no_copy() {
     let first_half = slice(arr: ref arr, start: 0, len: 4)
     let second_half = slice(arr: ref arr, start: 4, len: 4)
 
-    assert(sum_slice(s: first_half) == 100)   // 10+20+30+40
-    assert(sum_slice(s: second_half) == 260)  // 50+60+70+80
+    assert!(sum_slice(s: first_half) == 100)   // 10+20+30+40
+    assert!(sum_slice(s: second_half) == 260)  // 50+60+70+80
 
     // arr is still fully usable
-    assert(arr[0] == 10)
+    assert!(arr[0] == 10)
 }
 ```
 
