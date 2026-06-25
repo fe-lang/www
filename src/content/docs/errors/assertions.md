@@ -1,13 +1,13 @@
 ---
 title: Assertions
-description: 'assert(condition, "message")'
+description: 'assert!(condition, "message")'
 ---
 
 Use assertions to verify conditions.
 
 ## Assert Syntax
 
-TODO: Document assert() syntax
+TODO: Document assert!() syntax
 
 ## When to Use Assertions
 

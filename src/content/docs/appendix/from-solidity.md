@@ -182,9 +182,6 @@ function transfer(...) {
 
 **Fe**:
 ```fe
-//<hide>
-use _boilerplate::Log
-//</hide>
 #[event]
 struct Transfer {
     #[indexed]
@@ -214,7 +211,7 @@ fn __error_example() {
 let balance: u256 = 100
 let amount: u256 = 50
 //</hide>
-assert(balance >= amount)
+assert!(balance >= amount)
 revert("Error message")
 //<hide>
 }
@@ -263,7 +260,7 @@ function transfer(address to, uint256 amount) public returns (bool) {
 ```fe ignore
 Transfer { to, amount } -> bool uses (ctx, mut store, mut log) {
     let from = ctx.caller()
-    assert(store.balances[from] >= amount, "Insufficient balance")
+    assert!(store.balances[from] >= amount, "Insufficient balance")
     store.balances[from] -= amount
     store.balances[to] += amount
     log.emit(TransferEvent { from, to, value: amount })
@@ -288,7 +285,7 @@ function mint(address to, uint256 amount) public onlyOwner {
 **Fe**:
 ```fe ignore
 fn require_owner(owner: Address) uses ctx: Ctx {
-    assert(ctx.caller() == owner, "Not owner")
+    assert!(ctx.caller() == owner, "Not owner")
 }
 
 Mint { to, amount } -> bool uses (ctx, mut store, auth) {
@@ -337,8 +334,8 @@ struct Pausable { paused: bool }
 //</hide>
 // Instead of: contract Token is Ownable, Pausable
 contract Token {
-    auth: AccessControl    // Composition
-    pause_state: Pausable  // Composition
+    mut auth: AccessControl    // Composition
+    mut pause_state: Pausable  // Composition
 }
 ```
 
@@ -348,7 +345,7 @@ Fe doesn't have function modifiers. Use helper functions:
 
 ```fe
 fn require_not_paused(paused: bool) {
-    assert(!paused)
+    assert!(!paused)
 }
 
 //<hide>
@@ -430,7 +427,7 @@ let _ = (x, y)
 | `msg.sender` | `ctx.caller()` |
 | `block.timestamp` | `ctx.block_timestamp()` |
 | `block.number` | `ctx.block_number()` |
-| `require(...)` | `assert(...)` |
+| `require(...)` | `assert!(...)` |
 | `emit Event(...)` | `log.emit(Event { ... })` |
 | `mapping(K => V)` | `Map<K, V>` |
 | `constructor` | `init` |

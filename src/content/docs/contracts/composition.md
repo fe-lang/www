@@ -29,8 +29,8 @@ fn only_owner() uses (ownership: OwnerStorage) {
 
 // Contract composes everything
 contract Token {
-    balances: BalanceStorage,
-    ownership: OwnerStorage,
+    mut balances: BalanceStorage,
+    mut ownership: OwnerStorage,
 }
 ```
 
@@ -137,7 +137,7 @@ msg AdminMsg {
 
 contract Token {
     mut balances: BalanceStorage,
-    ownership: OwnerStorage,
+    mut ownership: OwnerStorage,
     mut pause_state: PauseStorage,
 
     // Each handler uses only what it needs
@@ -296,7 +296,7 @@ fn set_paused(paused: bool) uses (pause_state: mut PauseStorage) {
 
 contract PausableToken {
     mut pause_state: PauseStorage,
-    ownership: OwnerStorage,
+    mut ownership: OwnerStorage,
     mut store: TokenStorage,
 
     recv TokenMsg {
@@ -376,8 +376,8 @@ fn guarded_transfer(
 
 contract Token {
     mut store: TokenStorage,
-    pause_state: PauseStorage,
-    ownership: OwnerStorage,
+    mut pause_state: PauseStorage,
+    mut ownership: OwnerStorage,
 
     recv TokenMsg {
         Transfer { to, amount } -> bool uses (ctx: Ctx, mut store, pause_state) {

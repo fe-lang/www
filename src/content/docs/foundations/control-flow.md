@@ -170,7 +170,7 @@ fn example() {
     let status = Status::Pending
 //</hide>
 
-let message: String<64> = match status {
+let message: String<31> = match status {
     Status::Pending => "Awaiting review"
     Status::Approved => "Request approved"
     Status::Rejected => "Request rejected"

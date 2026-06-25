@@ -180,9 +180,6 @@ let _ = entry
 Constrain generic types with trait bounds:
 
 ```fe
-//<hide>
-use _boilerplate::Default
-//</hide>
 
 struct Container<T: Default> {
     item: T,

@@ -50,18 +50,18 @@ pub contract CoolCoin uses (ctx: mut Ctx, log: mut Log) {
         }
 
         BalanceOf { account } -> u256 uses store {
-            store.balances[account]
+            store.balances.get(key: account)
         }
 
         Allowance { owner, spender } -> u256 uses (store) {
-            store.allowances[(owner, spender)]
+            store.allowances.get(key: (owner, spender))
         }
 
         TotalSupply {} -> u256 uses store {
             store.total_supply
         }
 
-        Name {} -> String<32> { "CoolCoin" }
+        Name {} -> String<31> { "CoolCoin" }
         Symbol {} -> String<8> { "COOL" }
         Decimals {} -> u8 { 18 }
     }
@@ -91,7 +91,7 @@ pub contract CoolCoin uses (ctx: mut Ctx, log: mut Log) {
         uses (ctx, mut store, mut log)
         {
             let owner = ctx.caller()
-            let current = store.allowances[(owner, spender)]
+            let current = store.allowances.get(key: (owner, spender))
             store.approve(owner, spender, amount: current + added_value)
             true
         }
@@ -99,8 +99,8 @@ pub contract CoolCoin uses (ctx: mut Ctx, log: mut Log) {
         DecreaseAllowance { spender, subtracted_value } -> bool
         uses (ctx, mut store, mut log) {
             let owner = ctx.caller()
-            let current = store.allowances[(owner, spender)]
-            assert(current >= subtracted_value, "decreased allowance below zero")
+            let current = store.allowances.get(key: (owner, spender))
+            assert!(current >= subtracted_value, "decreased allowance below zero")
             store.approve(owner, spender, amount: current - subtracted_value)
             true
         }
@@ -109,96 +109,90 @@ pub contract CoolCoin uses (ctx: mut Ctx, log: mut Log) {
 
 struct TokenStore {
     total_supply: u256,
-    balances: Map<Address, u256>,
-    allowances: Map<(Address, Address), u256>,
+    balances: StorageMap<Address, u256>,
+    allowances: StorageMap<(Address, Address), u256>,
 }
 
 impl TokenStore {
     fn transfer(mut self, from: Address, to: Address, amount: u256) uses (log: mut Log) {
-        assert(from != Address::zero(), "transfer from zero address")
-        assert(to != Address::zero(), "transfer to zero address")
+        assert!(from != Address::zero(), "transfer from zero address")
+        assert!(to != Address::zero(), "transfer to zero address")
 
-        let from_balance = self.balances[from]
-        assert(from_balance >= amount, "transfer amount exceeds balance")
+        let from_balance = self.balances.get(key: from)
+        assert!(from_balance >= amount, "transfer amount exceeds balance")
 
-        self.balances[from] = from_balance - amount
-        self.balances[to] += amount
+        self.balances.set(key: from, value: from_balance - amount)
+        self.balances.set(key: to, value: self.balances.get(key: to) + amount)
 
-        log.emit(TransferEvent { from, to, value: amount })
+        log.emit(event: TransferEvent { from, to, value: amount })
     }
 
     fn mint(mut self, to: Address, amount: u256) uses (log: mut Log) {
-        assert(to != Address::zero(), "mint to zero address")
+        assert!(to != Address::zero(), "mint to zero address")
 
         self.total_supply += amount
-        self.balances[to] += amount
+        self.balances.set(key: to, value: self.balances.get(key: to) + amount)
 
-        log.emit(TransferEvent { from: Address::zero(), to, value: amount })
+        log.emit(event: TransferEvent { from: Address::zero(), to, value: amount })
     }
 
     fn burn(mut self, from: Address, amount: u256) uses (log: mut Log) {
-        assert(from != Address::zero(), "burn from zero address")
+        assert!(from != Address::zero(), "burn from zero address")
 
-        let from_balance = self.balances[from]
-        assert(from_balance >= amount, "burn amount exceeds balance")
+        let from_balance = self.balances.get(key: from)
+        assert!(from_balance >= amount, "burn amount exceeds balance")
 
-        self.balances[from] = from_balance - amount
+        self.balances.set(key: from, value: from_balance - amount)
         self.total_supply -= amount
 
-        log.emit(TransferEvent { from, to: Address::zero(), value: amount })
+        log.emit(event: TransferEvent { from, to: Address::zero(), value: amount })
     }
 
     fn approve(mut self, owner: Address, spender: Address, amount: u256) uses (log: mut Log) {
-        assert(owner != Address::zero(), "approve from zero address")
-        assert(spender != Address::zero(), "approve to zero address")
+        assert!(owner != Address::zero(), "approve from zero address")
+        assert!(spender != Address::zero(), "approve to zero address")
 
-        self.allowances[(owner, spender)] = amount
+        self.allowances.set(key: (owner, spender), value: amount)
 
-        log.emit(ApprovalEvent { owner, spender, value: amount })
+        log.emit(event: ApprovalEvent { owner, spender, value: amount })
     }
 
     fn spend_allowance(mut self, owner: Address, spender: Address, amount: u256) {
-        let current = self.allowances[(owner, spender)]
+        let current = self.allowances.get(key: (owner, spender))
         // if current != u256::MAX { // TODO: define ::MAX constants
-            assert(current >= amount, "insufficient allowance")
-            self.allowances[(owner, spender)] = current - amount
+            assert!(current >= amount, "insufficient allowance")
+            self.allowances.set(key: (owner, spender), value: current - amount)
         // }
     }
 }
 
 pub struct AccessControl {
-    roles: Map<(u256, Address), bool>,
+    roles: StorageMap<(u256, Address), bool>,
 }
 
 impl AccessControl {
-    pub fn new() -> Self {
-        AccessControl {
-            roles: Map::new(),
-        }
-    }
-
     pub fn has_role(self, role: u256, account: Address) -> bool {
-        core::ops::Index<(u256, Address)>::index(self.roles, (role, account))
+        self.roles.get(key: (role, account))
     }
 
     pub fn require(self, role: u256) uses (ctx: Ctx) {
         let caller = ctx.caller()
-        assert(self.has_role(role, account: caller), "access denied: missing role")
+        assert!(self.has_role(role, account: caller), "access denied: missing role")
     }
 
     pub fn grant(mut self, role: u256, to: Address) {
-        self.roles[(role, to)] = true
+        self.roles.set(key: (role, to), value: true)
     }
 
     pub fn revoke(mut self, role: u256, from: Address) {
-        self.roles[(role, from)] = false
+        self.roles.set(key: (role, from), value: false)
     }
 }
 
 // ERC20 standard message types
 msg Erc20 {
     #[selector = sol("name()")]
-    Name -> String<32>,
+    Name -> String<31>,
 
     #[selector = sol("symbol()")]
     Symbol -> String<8>,
@@ -261,41 +255,6 @@ struct ApprovalEvent {
     spender: Address,
     value: u256,
 }
-
-//<hide>
-// stubs for missing std lib stuff
-
-extern {
-    fn assert(_: bool, _: String<64>)
-}
-
-pub struct Map<K, V> {}
-impl<K, V> Map<K, V> {
-    pub fn new() -> Self {
-        Map {}
-    }
-}
-impl<K, V> core::ops::Index<K> for Map<K, V> {
-    type Output = V
-    fn index(self, _ key: K) -> V {
-        todo()
-    }
-}
-
-pub struct Ctx {}
-impl Ctx {
-    pub fn caller(self) -> Address {
-        todo()
-    }
-}
-
-pub struct Log {}
-impl Log {
-    pub fn emit<T>(self, _ event: T) {
-        todo()
-    }
-}
-//</hide>
 ```
 
 ## Walkthrough
@@ -356,7 +315,7 @@ use std::abi::sol
 //</hide>
 msg Erc20 {
     #[selector = sol("name()")]
-    Name -> String<32>,
+    Name -> String<31>,
 
     #[selector = sol("transfer(address,uint256)")]
     Transfer { to: Address, amount: u256 } -> bool,
@@ -374,19 +333,10 @@ Each selector matches the standard Solidity function selector, ensuring ABI comp
 //<hide>
 use std::abi::sol
 
-struct Map<K, V> {}
-impl<K, V> Map<K, V> {
-    pub fn new() -> Self { Map {} }
-}
-impl<K, V> core::ops::Index<K> for Map<K, V> {
-    type Output = V
-    fn index(self, _ key: K) -> V { todo() }
-}
-
 struct TokenStore {
     total_supply: u256,
-    balances: Map<Address, u256>,
-    allowances: Map<(Address, Address), u256>,
+    balances: StorageMap<Address, u256>,
+    allowances: StorageMap<(Address, Address), u256>,
 }
 impl TokenStore {
     fn mint(mut self, to: Address, amount: u256) uses (log: mut Log) {
@@ -396,26 +346,12 @@ impl TokenStore {
 }
 
 pub struct AccessControl {
-    roles: Map<(u256, Address), bool>,
+    roles: StorageMap<(u256, Address), bool>,
 }
 impl AccessControl {
     pub fn grant(mut self, role: u256, to: Address) {
-        self.roles[(role, to)] = true
+        self.roles.set(key: (role, to), value: true)
     }
-}
-
-pub struct Ctx {}
-impl Ctx {
-    pub fn caller(self) -> Address { todo() }
-}
-
-pub struct Log {}
-impl Log {
-    pub fn emit<T>(self, _ event: T) { todo() }
-}
-
-extern {
-    fn assert(_: bool, _: String<64>)
 }
 
 msg Erc20Init {
@@ -459,15 +395,6 @@ Each handler declares its specific effect requirements:
 //<hide>
 use std::abi::sol
 
-struct Map<K, V> {}
-impl<K, V> Map<K, V> {
-    pub fn new() -> Self { Map {} }
-}
-impl<K, V> core::ops::Index<K> for Map<K, V> {
-    type Output = V
-    fn index(self, _ key: K) -> V { todo() }
-}
-
 #[event]
 struct TransferEvent {
     #[indexed]
@@ -479,8 +406,8 @@ struct TransferEvent {
 
 struct TokenStore {
     total_supply: u256,
-    balances: Map<Address, u256>,
-    allowances: Map<(Address, Address), u256>,
+    balances: StorageMap<Address, u256>,
+    allowances: StorageMap<(Address, Address), u256>,
 }
 impl TokenStore {
     fn transfer(mut self, from: Address, to: Address, amount: u256) uses (log: mut Log) {
@@ -490,21 +417,7 @@ impl TokenStore {
 }
 
 pub struct AccessControl {
-    roles: Map<(u256, Address), bool>,
-}
-
-pub struct Ctx {}
-impl Ctx {
-    pub fn caller(self) -> Address { todo() }
-}
-
-pub struct Log {}
-impl Log {
-    pub fn emit<T>(self, _ event: T) { todo() }
-}
-
-extern {
-    fn assert(_: bool, _: String<64>)
+    roles: StorageMap<(u256, Address), bool>,
 }
 
 msg Erc20 {
@@ -527,7 +440,7 @@ contract CoolCoinRecv uses (ctx: mut Ctx, log: mut Log) {
         }
 
         BalanceOf { account } -> u256 uses store {
-            store.balances[account]
+            store.balances.get(key: account)
         }
     }
 //<hide>
@@ -547,16 +460,16 @@ Core logic lives in `impl TokenStore`. Methods use `self`/`mut self` for storage
 ```fe ignore
 impl TokenStore {
     fn transfer(mut self, from: Address, to: Address, amount: u256) uses (log: mut Log) {
-        assert(from != Address::zero(), "transfer from zero address")
-        assert(to != Address::zero(), "transfer to zero address")
+        assert!(from != Address::zero(), "transfer from zero address")
+        assert!(to != Address::zero(), "transfer to zero address")
 
-        let from_balance = self.balances[from]
-        assert(from_balance >= amount, "transfer amount exceeds balance")
+        let from_balance = self.balances.get(key: from)
+        assert!(from_balance >= amount, "transfer amount exceeds balance")
 
-        self.balances[from] = from_balance - amount
-        self.balances[to] += amount
+        self.balances.set(key: from, value: from_balance - amount)
+        self.balances.set(key: to, value: self.balances.get(key: to) + amount)
 
-        log.emit(TransferEvent { from, to, value: amount })
+        log.emit(event: TransferEvent { from, to, value: amount })
     }
 }
 ```
@@ -606,14 +519,9 @@ struct TransferEvent {
     value: u256,
 }
 
-pub struct Log {}
-impl Log {
-    pub fn emit<T>(self, _ event: T) { todo() }
-}
-
-fn __example_emit(log: Log, from: Address, to: Address, amount: u256) {
+fn __example_emit(from: Address, to: Address, amount: u256) uses (log: mut Log) {
 //</hide>
-log.emit(TransferEvent { from, to, value: amount })
+log.emit(event: TransferEvent { from, to, value: amount })
 //<hide>
 }
 //</hide>
@@ -625,31 +533,13 @@ Role-based access control is implemented as a struct with methods:
 
 ```fe
 //<hide>
-struct Map<K, V> {}
-impl<K, V> Map<K, V> {
-    pub fn new() -> Self { Map {} }
-}
-impl<K, V> core::ops::Index<K> for Map<K, V> {
-    type Output = V
-    fn index(self, _ key: K) -> V { todo() }
-}
-
 pub struct AccessControl {
-    roles: Map<(u256, Address), bool>,
+    roles: StorageMap<(u256, Address), bool>,
 }
 impl AccessControl {
     pub fn has_role(self, role: u256, account: Address) -> bool {
-        core::ops::Index<(u256, Address)>::index(self.roles, (role, account))
+        self.roles.get(key: (role, account))
     }
-}
-
-pub struct Ctx {}
-impl Ctx {
-    pub fn caller(self) -> Address { todo() }
-}
-
-extern {
-    fn assert(_: bool, _: String<64>)
 }
 //</hide>
 const MINTER: u256 = 1
@@ -658,11 +548,11 @@ const BURNER: u256 = 2
 impl AccessControl {
     pub fn require(self, role: u256) uses (ctx: Ctx) {
         let caller = ctx.caller()
-        assert(self.has_role(role, account: caller), "access denied: missing role")
+        assert!(self.has_role(role, account: caller), "access denied: missing role")
     }
 
     pub fn grant(mut self, role: u256, to: Address) {
-        self.roles[(role, to)] = true
+        self.roles.set(key: (role, to), value: true)
     }
 }
 ```
@@ -672,15 +562,6 @@ Usage in handlers:
 ```fe
 //<hide>
 use std::abi::sol
-
-struct Map<K, V> {}
-impl<K, V> Map<K, V> {
-    pub fn new() -> Self { Map {} }
-}
-impl<K, V> core::ops::Index<K> for Map<K, V> {
-    type Output = V
-    fn index(self, _ key: K) -> V { todo() }
-}
 
 #[event]
 struct TransferEvent {
@@ -693,8 +574,8 @@ struct TransferEvent {
 
 struct TokenStore {
     total_supply: u256,
-    balances: Map<Address, u256>,
-    allowances: Map<(Address, Address), u256>,
+    balances: StorageMap<Address, u256>,
+    allowances: StorageMap<(Address, Address), u256>,
 }
 impl TokenStore {
     fn mint(mut self, to: Address, amount: u256) uses (log: mut Log) {
@@ -704,30 +585,16 @@ impl TokenStore {
 }
 
 pub struct AccessControl {
-    roles: Map<(u256, Address), bool>,
+    roles: StorageMap<(u256, Address), bool>,
 }
 impl AccessControl {
     pub fn has_role(self, role: u256, account: Address) -> bool {
-        core::ops::Index<(u256, Address)>::index(self.roles, (role, account))
+        self.roles.get(key: (role, account))
     }
     pub fn require(self, role: u256) uses (ctx: Ctx) {
         let caller = ctx.caller()
-        assert(self.has_role(role, account: caller), "access denied: missing role")
+        assert!(self.has_role(role, account: caller), "access denied: missing role")
     }
-}
-
-pub struct Ctx {}
-impl Ctx {
-    pub fn caller(self) -> Address { todo() }
-}
-
-pub struct Log {}
-impl Log {
-    pub fn emit<T>(self, _ event: T) { todo() }
-}
-
-extern {
-    fn assert(_: bool, _: String<64>)
 }
 
 const MINTER: u256 = 1
@@ -739,7 +606,7 @@ msg Erc20Ext {
 
 contract CoolCoinMint uses (ctx: mut Ctx, log: mut Log) {
     mut store: TokenStore,
-    auth: AccessControl,
+    mut auth: AccessControl,
 
     recv Erc20Ext {
 //</hide>
@@ -764,9 +631,9 @@ The `require` method checks if the caller has the specified role, reverting if n
 | Storage as fields | `mut store: TokenStore` |
 | Handler-specific effects | `uses (ctx, mut store, mut log)` |
 | Storage methods | `impl TokenStore { fn transfer(mut self, ...) uses (log: mut Log) }` |
-| Event emission | `log.emit(TransferEvent { ... })` |
+| Event emission | `log.emit(event: TransferEvent { ... })` |
 | Role-based access | `auth.require(role: MINTER)` |
-| Zero address checks | `assert(to != Address::zero(), "...")` |
+| Zero address checks | `assert!(to != Address::zero(), "transfer to zero address")` |
 
 ## Summary
 

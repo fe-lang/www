@@ -351,7 +351,7 @@ Access struct fields with dot notation:
 ```fe
 //<hide>
 struct Point { pub x: u256, pub y: u256 }
-struct Profile { pub name: String<32> }
+struct Profile { pub name: String<31> }
 struct User { pub profile: Profile }
 fn example() {
 let point = Point { x: 10, y: 20 }

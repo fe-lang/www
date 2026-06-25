@@ -333,7 +333,7 @@ msg TokenMsg {
 }
 //</hide>
 contract Token {
-    store: TokenStorage
+    mut store: TokenStorage
 
     init(supply: u256) uses (mut store) {
         //<hide>

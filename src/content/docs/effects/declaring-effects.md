@@ -127,7 +127,7 @@ pub struct TokenStorage { pub data: u256 }
 //</hide>
 
 contract Token uses (ctx: mut Context) {
-    store: TokenStorage,
+    mut store: TokenStorage,
 }
 ```
 

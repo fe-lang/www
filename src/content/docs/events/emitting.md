@@ -10,11 +10,6 @@ Events are emitted using a Log effect, which records data to the blockchain that
 Emit an event through a Log effect:
 
 ```fe
-//<hide>
-use _boilerplate::Log
-//</hide>
-
-
 #[event]
 struct Transfer {
     #[indexed]
@@ -36,10 +31,6 @@ The `emit` method takes an event struct instance and records it to the blockchai
 Events are typically emitted within message handlers:
 
 ```fe
-//<hide>
-use _boilerplate::Log
-//</hide>
-
 pub struct TokenStorage {
     pub balances: StorageMap<u256, u256>,
 }
@@ -123,7 +114,7 @@ In contracts, declare storage and log as contract fields, then access them via `
 ```fe
 //<hide>
 use std::abi::sol
-use _boilerplate::{Log, caller}
+use _boilerplate::caller
 //</hide>
 
 pub struct TokenStorage {
@@ -268,7 +259,6 @@ Emit for ownership and configuration changes:
 
 ```fe
 //<hide>
-use _boilerplate::Log
 pub struct AdminStorage { pub owner: u256 }
 //</hide>
 

@@ -289,7 +289,6 @@ let _ = (zero, addr)
 
 ```fe
 //<hide>
-use _boilerplate::Ctx
 fn example() uses (ctx: Ctx) {
 //</hide>
 let sender: Address = ctx.caller()

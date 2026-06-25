@@ -121,9 +121,9 @@ Fixed-size strings with a maximum length:
 //<hide>
 fn example() {
 //</hide>
-let name: String<32> = "CoolCoin"
+let name: String<31> = "CoolCoin"
 let symbol: String<8> = "COOL"
-let message: String<64> = "Transfer failed"
+let message: String<31> = "Transfer failed"
 //<hide>
 let _ = (name, symbol, message)
 }

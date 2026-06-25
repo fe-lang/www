@@ -48,7 +48,7 @@ msg Erc20 {
 
 msg Erc20Metadata {
     #[selector = sol("name()")]
-    Name {} -> String<32>,
+    Name {} -> String<31>,
 
     #[selector = sol("symbol()")]
     Symbol {} -> String<8>,
@@ -75,7 +75,7 @@ contract Token {
     }
 
     recv Erc20Metadata {
-        Name {} -> String<32> { "MyToken" }
+        Name {} -> String<31> { "MyToken" }
         Symbol {} -> String<8> { "MTK" }
         Decimals {} -> u8 { 18 }
     }

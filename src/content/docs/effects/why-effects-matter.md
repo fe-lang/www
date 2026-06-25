@@ -70,12 +70,6 @@ If a function has no `uses` clause, it's a pure computation.
 Effects make mocking straightforward:
 
 ```fe
-//<hide>
-extern {
-    fn assert(_: bool, _: String<64>)
-}
-//</hide>
-
 pub struct Config { pub fee_rate: u256 }
 pub struct Balances { pub credited: u256 }
 pub struct Logger { pub count: u256 }
@@ -111,8 +105,8 @@ fn test_payment() {
     }
 
     // Assert on mock state
-    assert(balances.credited == 990, "credited check")
-    assert(logger.count == 1, "log count check")
+    assert!(balances.credited == 990, "credited check")
+    assert!(logger.count == 1, "log count check")
 }
 ```
 
@@ -121,12 +115,6 @@ fn test_payment() {
 Test functions in isolation by providing only the effects they need:
 
 ```fe
-//<hide>
-extern {
-    fn assert(_: bool, _: String<64>)
-}
-//</hide>
-
 pub struct Balances { pub balance: u256 }
 
 impl Balances {
@@ -144,8 +132,8 @@ fn test_validate_transfer() {
     let balances = Balances { balance: 100 }
 
     with (Balances = balances) {
-        assert(validate_transfer(from: 1, amount: 50) == true, "should allow 50")
-        assert(validate_transfer(from: 1, amount: 150) == false, "should reject 150")
+        assert!(validate_transfer(from: 1, amount: 50) == true, "should allow 50")
+        assert!(validate_transfer(from: 1, amount: 150) == false, "should reject 150")
     }
 }
 ```
@@ -168,10 +156,6 @@ Tests can call pure functions directly without any setup:
 
 ```fe
 //<hide>
-extern {
-    fn assert(_: bool, _: String<64>)
-}
-
 fn calculate_shares(amount: u256, total: u256, supply: u256) -> u256 {
     if total == 0 { amount } else { amount * supply / total }
 }
@@ -179,8 +163,8 @@ fn calculate_shares(amount: u256, total: u256, supply: u256) -> u256 {
 
 fn test_calculate_shares() {
     // No setup needed, just call the function
-    assert(calculate_shares(amount: 100, total: 1000, supply: 500) == 50, "shares calc 1")
-    assert(calculate_shares(amount: 100, total: 0, supply: 0) == 100, "shares calc 2")
+    assert!(calculate_shares(amount: 100, total: 1000, supply: 500) == 50, "shares calc 1")
+    assert!(calculate_shares(amount: 100, total: 0, supply: 0) == 100, "shares calc 2")
 }
 ```
 

@@ -30,7 +30,7 @@ fn test_fee_calculation() {
     let fee = with (config) {
         calculate_fee(amount: 400)
     }
-    assert(fee == 10)  // 400 * 250 / 10000 = 10
+    assert!(fee == 10)  // 400 * 250 / 10000 = 10
 }
 
 #[test]
@@ -38,10 +38,10 @@ fn test_transfer_limit() {
     let config = Config { max_transfer: 1000, fee_rate: 250 }
 
     let ok = with (config) { is_within_limit(amount: 500) }
-    assert(ok == true)
+    assert!(ok == true)
 
     let too_much = with (config) { is_within_limit(amount: 2000) }
-    assert(too_much == false)
+    assert!(too_much == false)
 }
 ```
 
@@ -68,17 +68,17 @@ fn test_fee_rates() {
     // No fee
     let zero_fee = Config { max_transfer: 1000, fee_rate: 0 }
     let fee = with (zero_fee) { calculate_fee(amount: 1000) }
-    assert(fee == 0)
+    assert!(fee == 0)
 
     // 1% fee
     let low_fee = Config { max_transfer: 1000, fee_rate: 100 }
     let fee = with (low_fee) { calculate_fee(amount: 1000) }
-    assert(fee == 10)
+    assert!(fee == 10)
 
     // 5% fee
     let high_fee = Config { max_transfer: 1000, fee_rate: 500 }
     let fee = with (high_fee) { calculate_fee(amount: 1000) }
-    assert(fee == 50)
+    assert!(fee == 50)
 }
 ```
 
@@ -100,22 +100,26 @@ fn increment() -> bool uses (counter: mut Counter) {
     true
 }
 
+fn current() -> u256 uses (counter: Counter) {
+    counter.value
+}
+
 #[test]
 fn test_increment_with_limit() {
     let mut counter = Counter { value: 0, limit: 2 }
 
-    let ok = with (mut counter) { increment() }
-    assert(ok == true)
-    assert(counter.value == 1)
+    with (mut counter) {
+        // Below the limit — increments succeed
+        assert!(increment() == true)
+        assert!(current() == 1)
 
-    let ok = with (mut counter) { increment() }
-    assert(ok == true)
-    assert(counter.value == 2)
+        assert!(increment() == true)
+        assert!(current() == 2)
 
-    // At limit — should return false
-    let ok = with (mut counter) { increment() }
-    assert(ok == false)
-    assert(counter.value == 2)
+        // At limit — increment is rejected, value unchanged
+        assert!(increment() == false)
+        assert!(current() == 2)
+    }
 }
 ```
 

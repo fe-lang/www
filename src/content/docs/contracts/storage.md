@@ -16,7 +16,7 @@ pub struct TokenStorage {
 }
 
 contract Token {
-    store: TokenStorage,
+    mut store: TokenStorage,
 }
 ```
 

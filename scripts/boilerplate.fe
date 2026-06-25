@@ -18,41 +18,9 @@ mod _boilerplate {
         pub fn set(mut self, key: K, value: V) { todo() }
     }
 
-    // Log effect stub
-    pub struct Log {}
-    impl Log {
-        pub fn emit<T>(self, event: T) { todo() }
-    }
-
-    // Ctx effect stub - provides execution context
-    pub struct Ctx {}
-    impl Ctx {
-        pub fn caller(self) -> Address { todo() }
-        pub fn block_number(self) -> u256 { todo() }
-        pub fn block_timestamp(self) -> u256 { todo() }
-        pub fn block_coinbase(self) -> Address { todo() }
-        pub fn block_difficulty(self) -> u256 { todo() }
-        pub fn block_gaslimit(self) -> u256 { todo() }
-        pub fn chain_id(self) -> u256 { todo() }
-        pub fn origin(self) -> Address { todo() }
-        pub fn gas_price(self) -> u256 { todo() }
-        pub fn gas_remaining(self) -> u256 { todo() }
-        pub fn msg_value(self) -> u256 { todo() }
-        pub fn self_address(self) -> Address { todo() }
-        pub fn balance(self, addr: Address) -> u256 {
-            let _ = addr
-            todo()
-        }
-        pub fn self_balance(self) -> u256 { todo() }
-        pub fn code_size(self, addr: Address) -> u256 {
-            let _ = addr
-            todo()
-        }
-        pub fn code_hash(self, addr: Address) -> u256 {
-            let _ = addr
-            todo()
-        }
-    }
+    // Note: Ctx and Log are now real prelude effect traits in Fe 26.2.0 and no
+    // longer need stubs here. Use them directly via `uses (ctx: Ctx)` /
+    // `uses (log: mut Log)`.
 
     // High-level intrinsic stubs (not available in core)
     pub fn self_address() -> u256 { todo() }
@@ -68,9 +36,6 @@ mod _boilerplate {
     pub fn ecrecover(_ hash: u256, _ v: u8, _ r: u256, _ s: u256) -> Address { todo() }
     pub fn block_hash(_ number: u256) -> u256 { todo() }
 
-    // Assert function stub - uses fixed String<256> which can accept smaller string literals
-    pub fn assert(cond: bool, message: String<256>) { todo() }
-
     // Note: revert is re-exported from core above
 
     // Common trait stubs
@@ -79,15 +44,7 @@ mod _boilerplate {
     }
 
     pub trait Printable {
-        fn to_string(self) -> String<256>
-    }
-
-    pub trait Clone {
-        fn clone(self) -> Self
-    }
-
-    pub trait Default {
-        fn default() -> Self
+        fn to_string(self) -> String<31>
     }
 
     pub trait Readable {

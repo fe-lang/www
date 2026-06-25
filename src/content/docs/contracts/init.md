@@ -15,7 +15,7 @@ pub struct TokenStorage { pub data: u256 }
 //</hide>
 
 contract Token {
-    store: TokenStorage,
+    mut store: TokenStorage,
 
     init() {
         // Initialization logic
@@ -38,7 +38,7 @@ pub struct TokenStorage {
 //</hide>
 
 contract Token {
-    store: TokenStorage,
+    mut store: TokenStorage,
 
     init(initial_supply: u256, owner: u256) uses (mut store) {
         store.total_supply = initial_supply
@@ -65,7 +65,7 @@ pub struct TokenStorage {
 }
 
 contract Token {
-    store: TokenStorage,
+    mut store: TokenStorage,
 
     init(initial_supply: u256) uses (mut store) {
         // Set primitive fields directly
@@ -86,7 +86,7 @@ The init block accesses storage fields through the `uses` clause:
 //<hide>
 pub struct TokenStorage { pub total_supply: u256 }
 contract Token {
-    store: TokenStorage,
+    mut store: TokenStorage,
 //</hide>
     init(supply: u256) uses (mut store) {
         store.total_supply = supply  // Direct access via uses clause
@@ -108,7 +108,7 @@ pub struct CounterStorage { pub count: u256 }
 //</hide>
 
 contract Counter {
-    store: CounterStorage,
+    mut store: CounterStorage,
 
     init() uses (mut store) {
         store.count = 0
@@ -131,7 +131,7 @@ msg SimpleMsg {
 //</hide>
 
 contract Simple {
-    store: SimpleStorage,
+    mut store: SimpleStorage,
     // No init block - storage starts at default values
 
     recv SimpleMsg {
@@ -159,7 +159,7 @@ pub struct TokenStorage {
 }
 
 contract Token {
-    store: TokenStorage,
+    mut store: TokenStorage,
 
     init(name_hash: u256, initial_supply: u256) uses (mut store) {
         let deployer = caller()
@@ -203,7 +203,7 @@ msg TokenMsg {
 //</hide>
 
 contract Token {
-    store: TokenStorage,
+    mut store: TokenStorage,
 
     // In init: access via uses clause
     init(supply: u256) uses (mut store) {
