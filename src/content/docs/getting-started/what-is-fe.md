@@ -6,7 +6,7 @@ description: Philosophy, goals, and Rust-inspired safety for smart contracts
 Fe is a statically typed language for the Ethereum Virtual Machine (EVM) that blends Rust-like syntax with an innovative message-passing paradigm tailored to the platform. It offers a complete, batteries-included toolchain, featuring a built-in package manager, formatter, and robust language server to streamline development. Designed for safety and correctness, Fe empowers developers with features like generics, traits, pattern matching, and even higher-kinded types, while ensuring a smooth, modern developer experience. It serves as a secure foundation for building the next generation of decentralized applications.
 
 :::caution[Not Production-Ready]
-Fe 26.0 is an initial release of a new compiler. It has known bugs, a limited standard library, and generates sub-optimal bytecode in some cases. See the [release announcement](https://blog.fe-lang.org/posts/fe26-a-fresh-start/) for details.
+Fe 26.2 is a new compiler. It has known bugs, a limited standard library, and generates sub-optimal bytecode in some cases. See the [release announcement](https://blog.fe-lang.org/posts/fe26-a-fresh-start/) for details.
 :::
 
 ## Philosophy

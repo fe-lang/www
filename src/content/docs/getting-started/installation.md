@@ -4,7 +4,7 @@ description: Setting up the Fe compiler
 ---
 
 :::caution[Not Production-Ready]
-Fe 26.0 is an initial release of a new compiler. Not recommended for production use.
+Fe 26.2 is not yet recommended for production use.
 :::
 
 ## Quick Install (recommended)
@@ -29,7 +29,7 @@ source ~/.fe/env
 To install a specific version:
 
 ```bash
-curl -fsSL https://raw.githubusercontent.com/argotorg/fe/master/feup/feup.sh | bash -s -- --version v26.0.0
+curl -fsSL https://raw.githubusercontent.com/argotorg/fe/master/feup/feup.sh | bash -s -- --version v26.2.0
 ```
 
 ## Homebrew
