@@ -11,7 +11,7 @@ Storage is defined as a struct with storage-compatible fields:
 
 ```fe
 pub struct TokenStorage {
-    pub balances: StorageMap<u256, u256>,
+    pub balances: StorageMap<Address, u256>,
     pub total_supply: u256,
 }
 
@@ -43,10 +43,10 @@ For key-value mappings, use `StorageMap`:
 ```fe
 pub struct TokenStorage {
     // Maps account -> balance
-    pub balances: StorageMap<u256, u256>,
+    pub balances: StorageMap<Address, u256>,
 
     // Maps (owner, spender) -> allowance
-    pub allowances: StorageMap<(u256, u256), u256>,
+    pub allowances: StorageMap<(Address, Address), u256>,
 }
 ```
 
@@ -65,7 +65,7 @@ pub struct Metadata {
 }
 
 pub struct TokenStorage {
-    pub balances: StorageMap<u256, u256>,
+    pub balances: StorageMap<Address, u256>,
     pub metadata: Metadata,
 }
 ```
@@ -76,14 +76,14 @@ Storage is accessed through effects, not directly:
 
 ```fe
 //<hide>
-pub struct TokenStorage { pub balances: StorageMap<u256, u256> }
+pub struct TokenStorage { pub balances: StorageMap<Address, u256> }
 //</hide>
 
-fn get_balance(account: u256) -> u256 uses (store: TokenStorage) {
+fn get_balance(account: Address) -> u256 uses (store: TokenStorage) {
     store.balances.get(key: account)
 }
 
-fn set_balance(account: u256, amount: u256) uses (store: mut TokenStorage) {
+fn set_balance(account: Address, amount: u256) uses (store: mut TokenStorage) {
     store.balances.set(key: account, value: amount)
 }
 ```
@@ -93,10 +93,10 @@ In handlers, use the `uses` clause to access storage fields:
 ```fe
 //<hide>
 use std::abi::sol
-pub struct TokenStorage { pub balances: StorageMap<u256, u256> }
+pub struct TokenStorage { pub balances: StorageMap<Address, u256> }
 msg TokenMsg {
     #[selector = sol("balanceOf(address)")]
-    BalanceOf { account: u256 } -> u256,
+    BalanceOf { account: Address } -> u256,
 }
 //</hide>
 
@@ -119,8 +119,8 @@ Retrieve a value (returns zero/default if not set):
 
 ```fe
 //<hide>
-pub struct TokenStorage { pub balances: StorageMap<u256, u256> }
-fn example(account: u256) uses (store: TokenStorage) {
+pub struct TokenStorage { pub balances: StorageMap<Address, u256> }
+fn example(account: Address) uses (store: TokenStorage) {
 //</hide>
 let balance = store.balances.get(key: account)
 //<hide>
@@ -135,8 +135,8 @@ Store a value:
 
 ```fe
 //<hide>
-pub struct TokenStorage { pub balances: StorageMap<u256, u256> }
-fn example(account: u256, new_balance: u256) uses (store: mut TokenStorage) {
+pub struct TokenStorage { pub balances: StorageMap<Address, u256> }
+fn example(account: Address, new_balance: u256) uses (store: mut TokenStorage) {
 //</hide>
 store.balances.set(key: account, value: new_balance)
 //<hide>
@@ -151,14 +151,14 @@ For multi-dimensional mappings, use tuple keys:
 ```fe
 pub struct AllowanceStorage {
     // (owner, spender) -> amount
-    pub allowances: StorageMap<(u256, u256), u256>,
+    pub allowances: StorageMap<(Address, Address), u256>,
 }
 
-fn get_allowance(owner: u256, spender: u256) -> u256 uses (store: AllowanceStorage) {
+fn get_allowance(owner: Address, spender: Address) -> u256 uses (store: AllowanceStorage) {
     store.allowances.get(key: (owner, spender))
 }
 
-fn set_allowance(owner: u256, spender: u256, amount: u256) uses (store: mut AllowanceStorage) {
+fn set_allowance(owner: Address, spender: Address, amount: u256) uses (store: mut AllowanceStorage) {
     store.allowances.set(key: (owner, spender), value: amount)
 }
 ```
@@ -170,41 +170,40 @@ Contracts can have multiple storage fields for logical separation:
 ```fe
 //<hide>
 use std::abi::sol
-use _boilerplate::caller
-fn do_transfer(from: u256, to: u256, amount: u256) -> bool uses (tokens: mut BalanceStorage) {
+fn do_transfer(from: Address, to: Address, amount: u256) -> bool uses (tokens: mut BalanceStorage) {
     let _ = (from, to, amount, tokens)
     true
 }
-fn initiate_transfer(new_owner: u256) uses (ownership: mut OwnerStorage) {
+fn initiate_transfer(new_owner: Address) uses (ownership: mut OwnerStorage) {
     let _ = (new_owner, ownership)
 }
 msg TokenMsg {
     #[selector = sol("transfer(address,uint256)")]
-    Transfer { to: u256, amount: u256 } -> bool,
+    Transfer { to: Address, amount: u256 } -> bool,
 }
 msg OwnerMsg {
     #[selector = sol("transferOwnership(address)")]
-    TransferOwnership { new_owner: u256 },
+    TransferOwnership { new_owner: Address },
 }
 //</hide>
 
 pub struct BalanceStorage {
-    pub balances: StorageMap<u256, u256>,
+    pub balances: StorageMap<Address, u256>,
     pub total_supply: u256,
 }
 
 pub struct OwnerStorage {
-    pub owner: u256,
-    pub pending_owner: u256,
+    pub owner: Address,
+    pub pending_owner: Address,
 }
 
-contract OwnableToken {
+contract OwnableToken uses (ctx: Ctx) {
     mut tokens: BalanceStorage,
     mut ownership: OwnerStorage,
 
     recv TokenMsg {
-        Transfer { to, amount } -> bool uses (mut tokens) {
-            do_transfer(from: caller(), to, amount)
+        Transfer { to, amount } -> bool uses (ctx, mut tokens) {
+            do_transfer(from: ctx.caller(), to, amount)
         }
     }
 

@@ -53,26 +53,25 @@ Contracts hold storage structs as fields and provide them as effects:
 ```fe
 //<hide>
 use std::abi::sol
-use _boilerplate::caller
-pub struct TokenStorage { pub balances: StorageMap<u256, u256> }
+pub struct TokenStorage { pub balances: StorageMap<Address, u256> }
 impl TokenStorage {
-    fn get_balance(self, account: u256) -> u256 {
+    fn get_balance(self, account: Address) -> u256 {
         self.balances.get(key: account)
     }
-    fn transfer(mut self, from: u256, to: u256, amount: u256) -> bool {
+    fn transfer(mut self, from: Address, to: Address, amount: u256) -> bool {
         let _ = (from, to, amount)
         true
     }
 }
 msg TokenMsg {
     #[selector = sol("balanceOf(address)")]
-    BalanceOf { account: u256 } -> u256,
+    BalanceOf { account: Address } -> u256,
     #[selector = sol("transfer(address,uint256)")]
-    Transfer { to: u256, amount: u256 } -> bool,
+    Transfer { to: Address, amount: u256 } -> bool,
 }
 //</hide>
 
-contract Token {
+contract Token uses (ctx: Ctx) {
     mut store: TokenStorage,
 
     recv TokenMsg {
@@ -80,14 +79,14 @@ contract Token {
             store.get_balance(account)
         }
 
-        Transfer { to, amount } -> bool uses (mut store) {
-            store.transfer(from: caller(), to, amount)
+        Transfer { to, amount } -> bool uses (ctx, mut store) {
+            store.transfer(from: ctx.caller(), to, amount)
         }
     }
 }
 ```
 
-The handler's `uses (store)` clause binds the contract field to the effect. Methods on the storage struct are called through this binding.
+The handler's `uses (store)` clause binds the contract field to the effect. Methods on the storage struct are called through this binding. The `Transfer` handler also pulls in `ctx`, the context effect declared on the contract with `uses (ctx: Ctx)`, so it can read the message sender via `ctx.caller()` (which returns an `Address`).
 
 ## Designing Storage Structs
 
@@ -236,12 +235,11 @@ A full token with storage structs:
 ```fe
 //<hide>
 use std::abi::sol
-use _boilerplate::caller
 msg Erc20 {
     #[selector = sol("transfer(address,uint256)")]
-    Transfer { to: u256, amount: u256 } -> bool,
+    Transfer { to: Address, amount: u256 } -> bool,
     #[selector = sol("balanceOf(address)")]
-    BalanceOf { account: u256 } -> u256,
+    BalanceOf { account: Address } -> u256,
     #[selector = sol("decimals()")]
     Decimals -> u8,
 }
@@ -249,17 +247,17 @@ msg Erc20 {
 
 // Storage definitions
 pub struct TokenStorage {
-    pub balances: StorageMap<u256, u256>,
-    pub allowances: StorageMap<(u256, u256), u256>,
+    pub balances: StorageMap<Address, u256>,
+    pub allowances: StorageMap<(Address, Address), u256>,
     pub total_supply: u256,
 }
 
 impl TokenStorage {
-    fn get_balance(self, account: u256) -> u256 {
+    fn get_balance(self, account: Address) -> u256 {
         self.balances.get(key: account)
     }
 
-    fn transfer(mut self, from: u256, to: u256, amount: u256) -> bool {
+    fn transfer(mut self, from: Address, to: Address, amount: u256) -> bool {
         let from_bal = self.balances.get(key: from)
         if from_bal < amount {
             return false
@@ -285,13 +283,13 @@ impl MetadataStorage {
 }
 
 // Contract binding storage to effects
-contract Token {
+contract Token uses (ctx: Ctx) {
     mut tokens: TokenStorage,
     mut metadata: MetadataStorage,
 
     recv Erc20 {
-        Transfer { to, amount } -> bool uses (mut tokens) {
-            tokens.transfer(from: caller(), to, amount)
+        Transfer { to, amount } -> bool uses (ctx, mut tokens) {
+            tokens.transfer(from: ctx.caller(), to, amount)
         }
 
         BalanceOf { account } -> u256 uses (tokens) {

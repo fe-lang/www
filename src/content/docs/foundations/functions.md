@@ -330,21 +330,18 @@ For comprehensive coverage of generics and trait bounds, see the [Traits & Gener
 Fe uses an effect system to track side effects. Functions declare their effects with the `uses` clause:
 
 ```fe
-//<hide>
-use _boilerplate::Storage
-//</hide>
-fn read_storage() uses (storage: Storage) {
-    // can read from storage
-    //<hide>
-    let _ = storage
-    //</hide>
+struct AppState {
+    count: u256,
 }
 
-fn write_storage() uses (storage: mut Storage) {
-    // can read and write to storage
-    //<hide>
-    let _ = storage
-    //</hide>
+fn read_storage() uses (state: AppState) {
+    // can read from the effect
+    let _ = state.count
+}
+
+fn write_storage() uses (state: mut AppState) {
+    // can read and write through the mutable effect
+    state.count += 1
 }
 ```
 

@@ -12,27 +12,26 @@ In a contract, recv blocks access storage via `uses` clauses:
 ```fe
 //<hide>
 use std::abi::sol
-use _boilerplate::caller
-fn do_transfer(from: u256, to: u256, amount: u256) -> bool uses (store: mut TokenStorage) {
+fn do_transfer(from: Address, to: Address, amount: u256) -> bool uses (store: mut TokenStorage) {
     let _ = (from, to, amount, store)
     true
 }
 //</hide>
 
 pub struct TokenStorage {
-    pub balances: StorageMap<u256, u256>,
+    pub balances: StorageMap<Address, u256>,
     pub total_supply: u256,
 }
 
 msg TokenMsg {
     #[selector = sol("balanceOf(address)")]
-    BalanceOf { account: u256 } -> u256,
+    BalanceOf { account: Address } -> u256,
 
     #[selector = sol("transfer(address,uint256)")]
-    Transfer { to: u256, amount: u256 } -> bool,
+    Transfer { to: Address, amount: u256 } -> bool,
 }
 
-contract Token {
+contract Token uses (ctx: Ctx) {
     mut store: TokenStorage,
 
     recv TokenMsg {
@@ -40,8 +39,8 @@ contract Token {
             store.balances.get(key: account)
         }
 
-        Transfer { to, amount } -> bool uses (mut store) {
-            do_transfer(from: caller(), to, amount)
+        Transfer { to, amount } -> bool uses (ctx, mut store) {
+            do_transfer(from: ctx.caller(), to, amount)
         }
     }
 }
@@ -54,10 +53,10 @@ The `uses` clause on a handler declares which contract fields it needs:
 ```fe
 //<hide>
 use std::abi::sol
-pub struct TokenStorage { pub balances: StorageMap<u256, u256> }
+pub struct TokenStorage { pub balances: StorageMap<Address, u256> }
 msg TokenMsg {
     #[selector = sol("balanceOf(address)")]
-    BalanceOf { account: u256 } -> u256,
+    BalanceOf { account: Address } -> u256,
 }
 contract Token {
     mut store: TokenStorage,
@@ -85,21 +84,20 @@ Handlers typically delegate to helper functions:
 ```fe
 //<hide>
 use std::abi::sol
-use _boilerplate::caller
-pub struct TokenStorage { pub balances: StorageMap<u256, u256> }
+pub struct TokenStorage { pub balances: StorageMap<Address, u256> }
 msg TokenMsg {
     #[selector = sol("balanceOf(address)")]
-    BalanceOf { account: u256 } -> u256,
+    BalanceOf { account: Address } -> u256,
     #[selector = sol("transfer(address,uint256)")]
-    Transfer { to: u256, amount: u256 } -> bool,
+    Transfer { to: Address, amount: u256 } -> bool,
 }
 //</hide>
 
-fn get_balance(account: u256) -> u256 uses (store: TokenStorage) {
+fn get_balance(account: Address) -> u256 uses (store: TokenStorage) {
     store.balances.get(key: account)
 }
 
-fn do_transfer(from: u256, to: u256, amount: u256) -> bool uses (store: mut TokenStorage) {
+fn do_transfer(from: Address, to: Address, amount: u256) -> bool uses (store: mut TokenStorage) {
     let from_bal = store.balances.get(key: from)
     if from_bal < amount {
         return false
@@ -112,7 +110,7 @@ fn do_transfer(from: u256, to: u256, amount: u256) -> bool uses (store: mut Toke
     true
 }
 
-contract Token {
+contract Token uses (ctx: Ctx) {
     mut store: TokenStorage,
 
     recv TokenMsg {
@@ -120,8 +118,8 @@ contract Token {
             get_balance(account)
         }
 
-        Transfer { to, amount } -> bool uses (mut store) {
-            do_transfer(from: caller(), to, amount)
+        Transfer { to, amount } -> bool uses (ctx, mut store) {
+            do_transfer(from: ctx.caller(), to, amount)
         }
     }
 }
@@ -134,8 +132,7 @@ When handlers need multiple storage types:
 ```fe
 //<hide>
 use std::abi::sol
-use _boilerplate::caller
-fn do_transfer_from(c: u256, from: u256, to: u256, amount: u256) -> bool
+fn do_transfer_from(c: Address, from: Address, to: Address, amount: u256) -> bool
     uses (balances: mut BalanceStorage, allowances: mut AllowanceStorage)
 {
     let _ = (c, from, to, amount, balances, allowances)
@@ -143,25 +140,25 @@ fn do_transfer_from(c: u256, from: u256, to: u256, amount: u256) -> bool
 }
 msg TokenMsg {
     #[selector = sol("transferFrom(address,address,uint256)")]
-    TransferFrom { from: u256, to: u256, amount: u256 } -> bool,
+    TransferFrom { from: Address, to: Address, amount: u256 } -> bool,
 }
 //</hide>
 
 pub struct BalanceStorage {
-    pub balances: StorageMap<u256, u256>,
+    pub balances: StorageMap<Address, u256>,
 }
 
 pub struct AllowanceStorage {
-    pub allowances: StorageMap<u256, StorageMap<u256, u256>>,
+    pub allowances: StorageMap<Address, StorageMap<Address, u256>>,
 }
 
-contract Token {
+contract Token uses (ctx: Ctx) {
     mut balances: BalanceStorage,
     mut allowances: AllowanceStorage,
 
     recv TokenMsg {
-        TransferFrom { from, to, amount } -> bool uses (mut balances, mut allowances) {
-            do_transfer_from(c: caller(), from, to, amount)
+        TransferFrom { from, to, amount } -> bool uses (ctx, mut balances, mut allowances) {
+            do_transfer_from(c: ctx.caller(), from, to, amount)
         }
     }
 }
@@ -182,15 +179,15 @@ pub struct TokenStorage { pub total: u256 }
 
 msg Erc20 {
     #[selector = sol("transfer(address,uint256)")]
-    Transfer { to: u256, amount: u256 } -> bool,
+    Transfer { to: Address, amount: u256 } -> bool,
     #[selector = sol("approve(address,uint256)")]
-    Approve { spender: u256, amount: u256 } -> bool,
+    Approve { spender: Address, amount: u256 } -> bool,
     #[selector = sol("transferFrom(address,address,uint256)")]
-    TransferFrom { from: u256, to: u256, amount: u256 } -> bool,
+    TransferFrom { from: Address, to: Address, amount: u256 } -> bool,
     #[selector = sol("balanceOf(address)")]
-    BalanceOf { account: u256 } -> u256,
+    BalanceOf { account: Address } -> u256,
     #[selector = sol("allowance(address,address)")]
-    Allowance { owner: u256, spender: u256 } -> u256,
+    Allowance { owner: Address, spender: Address } -> u256,
     #[selector = sol("totalSupply()")]
     TotalSupply {} -> u256,
 }

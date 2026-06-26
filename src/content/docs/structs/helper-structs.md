@@ -96,12 +96,9 @@ Create structs for validated data:
 
 ```fe
 //<hide>
-use _boilerplate::revert
-use _boilerplate::caller
+pub struct TokenStorage { pub balances: StorageMap<Address, u256> }
 
-pub struct TokenStorage { pub balances: StorageMap<u256, u256> }
-
-fn transfer(from: u256, to: u256, amount: u256) -> bool uses (store: mut TokenStorage) {
+fn transfer(from: Address, to: Address, amount: u256) -> bool uses (store: mut TokenStorage) {
     let _ = (from, to, amount, store)
     true
 }
@@ -112,9 +109,7 @@ struct ValidatedAmount {
 
 impl ValidatedAmount {
     pub fn new(value: u256, max: u256) -> ValidatedAmount {
-        if value > max {
-            revert(0, 0)
-        }
+        assert!(value <= max, "amount exceeds maximum")
         ValidatedAmount { value }
     }
 
@@ -123,9 +118,9 @@ impl ValidatedAmount {
     }
 }
 
-fn safe_transfer(to: u256, amount: ValidatedAmount) -> bool uses (store: mut TokenStorage) {
+fn safe_transfer(to: Address, amount: ValidatedAmount) -> bool uses (ctx: Ctx, store: mut TokenStorage) {
     // amount is guaranteed to be valid
-    transfer(from: caller(), to, amount: amount.get())
+    transfer(from: ctx.caller(), to, amount: amount.get())
 }
 ```
 
@@ -341,24 +336,23 @@ Helper structs can work alongside effects:
 
 ```fe
 //<hide>
-use _boilerplate::caller
-pub struct TokenStorage { pub balances: StorageMap<u256, u256> }
-fn transfer(from: u256, to: u256, amount: u256) -> bool uses (store: mut TokenStorage) {
+pub struct TokenStorage { pub balances: StorageMap<Address, u256> }
+fn transfer(from: Address, to: Address, amount: u256) -> bool uses (store: mut TokenStorage) {
     let _ = (from, to, amount, store)
     true
 }
 //</hide>
 
 struct TransferRequest {
-    from: u256,
-    to: u256,
+    from: Address,
+    to: Address,
     amount: u256,
 }
 
 impl TransferRequest {
-    fn new(to: u256, amount: u256) -> TransferRequest {
+    fn new(to: Address, amount: u256) -> TransferRequest uses (ctx: Ctx) {
         TransferRequest {
-            from: caller(),
+            from: ctx.caller(),
             to,
             amount,
         }
@@ -370,7 +364,7 @@ impl TransferRequest {
 
     fn validate(self) -> bool uses (store: TokenStorage) {
         let balance = store.balances.get(key: self.from)
-        balance >= self.amount && self.to != 0
+        balance >= self.amount && self.to.inner != 0
     }
 }
 ```
