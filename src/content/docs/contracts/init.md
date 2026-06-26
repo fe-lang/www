@@ -54,26 +54,22 @@ These parameters are encoded in the deployment transaction's calldata.
 The primary purpose of init is setting up storage:
 
 ```fe
-//<hide>
-use _boilerplate::caller
-//</hide>
-
 pub struct TokenStorage {
-    pub balances: StorageMap<u256, u256>,
+    pub balances: StorageMap<Address, u256>,
     pub total_supply: u256,
-    pub owner: u256,
+    pub owner: Address,
 }
 
-contract Token {
+contract Token uses (ctx: Ctx) {
     mut store: TokenStorage,
 
-    init(initial_supply: u256) uses (mut store) {
+    init(initial_supply: u256) uses (ctx, mut store) {
         // Set primitive fields directly
         store.total_supply = initial_supply
-        store.owner = caller()
+        store.owner = ctx.caller()
 
         // Set map entries
-        store.balances.set(key: caller(), value: initial_supply)
+        store.balances.set(key: ctx.caller(), value: initial_supply)
     }
 }
 ```
@@ -147,22 +143,18 @@ contract Simple {
 Init can perform multiple setup operations:
 
 ```fe
-//<hide>
-use _boilerplate::caller
-//</hide>
-
 pub struct TokenStorage {
-    pub balances: StorageMap<u256, u256>,
+    pub balances: StorageMap<Address, u256>,
     pub total_supply: u256,
-    pub owner: u256,
+    pub owner: Address,
     pub paused: bool,
 }
 
-contract Token {
+contract Token uses (ctx: Ctx) {
     mut store: TokenStorage,
 
-    init(name_hash: u256, initial_supply: u256) uses (mut store) {
-        let deployer = caller()
+    init(name_hash: u256, initial_supply: u256) uses (ctx, mut store) {
+        let deployer = ctx.caller()
 
         // Set owner
         store.owner = deployer

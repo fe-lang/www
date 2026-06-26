@@ -267,20 +267,32 @@ fn duplicate<T: Clone>(value: own T) -> (T, T) {
 Bounds and effects work together:
 
 ```fe
-//<hide>
-use _boilerplate::{Storable, Storage}
-//</hide>
 trait Storable {
     fn key(self) -> u256
 }
 
-fn save<T: Storable>(item: T) uses (storage: mut Storage) {
-    let key = item.key()
-    storage.set(key, item)
+struct Registry {
+    count: u256,
+}
+impl Registry {
+    fn record(mut self, key: u256) {
+        self.count += 1
+        let _ = key
+    }
+    fn total(self) -> u256 {
+        self.count
+    }
 }
 
-fn load<T: Storable + Default>(key: u256) -> T uses (storage: Storage) {
-    storage.get(key)
+// A single bound (Storable) combined with a mutable effect.
+fn save<T: Storable>(item: T) uses (reg: mut Registry) {
+    reg.record(key: item.key())
+}
+
+// Multiple bounds (Storable + Default) with a read-only effect.
+fn count_for<T: Storable + Default>() -> u256 uses (reg: Registry) {
+    let _ = T::default()
+    reg.total()
 }
 ```
 

@@ -405,8 +405,7 @@ Handlers can access transaction context using built-in functions:
 ```fe
 //<hide>
 use std::abi::sol
-use _boilerplate::caller
-fn do_transfer(from: u256, to: u256, amount: u256) -> bool {
+fn do_transfer(from: Address, to: u256, amount: u256) -> bool {
     let _ = (from, to, amount)
     true
 }
@@ -414,11 +413,11 @@ msg TokenMsg {
     #[selector = sol("transfer(address,uint256)")]
     Transfer { to: u256, amount: u256 } -> bool,
 }
-contract Token {
+contract Token uses (ctx: Ctx) {
 //</hide>
     recv TokenMsg {
-        Transfer { to, amount } -> bool {
-            let sender = caller()  // Get the message sender
+        Transfer { to, amount } -> bool uses (ctx) {
+            let sender = ctx.caller()  // Get the message sender
             do_transfer(from: sender, to, amount)
         }
     }
@@ -427,11 +426,11 @@ contract Token {
 //</hide>
 ```
 
-Common context functions:
-- `caller()` - The address that called this contract
-- `self_address()` - The contract's own address
-- `block_number()` - Current block number
-- `block_timestamp()` - Current block timestamp
+Common context methods (on the `Ctx` effect):
+- `ctx.caller()` - The address that called this contract
+- `ctx.address()` - The contract's own address
+- `ctx.block_number()` - Current block number
+- `ctx.timestamp()` - Current block timestamp
 
 ## Summary
 

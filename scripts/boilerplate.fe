@@ -1,44 +1,15 @@
-// Common stubs for documentation snippets
-// This file is automatically prepended to all Fe code blocks during type checking
-// Snippets can import what they need with: use _boilerplate::Map
+// Common stubs for documentation snippets.
+// This file is automatically prepended to all Fe code blocks during type checking.
+//
+// These are *pedagogical* trait stubs used by trait/bounds examples. They are NOT
+// part of std — they exist only so illustrative snippets compile. Everything that
+// std/the prelude provides in Fe 26.2.0 (Ctx, Log, assert!, revert, StorageMap,
+// Default, Clone, the EVM intrinsics, ...) is used directly in the docs and has no
+// stub here.
+//
+// Snippets opt in with e.g. `use _boilerplate::{Hashable, Printable}`.
 
 mod _boilerplate {
-    // Intrinsic compatibility shims for docs snippets.
-    pub fn caller() -> u256 { todo() }
-    pub fn revert(_ offset: u256, _ size: u256) { todo() }
-    pub fn keccak<T>(_ data: T) -> u256 { todo() }
-    pub fn sload(_ slot: u256) -> u256 { todo() }
-    pub fn sstore(_ slot: u256, _ value: u256) { todo() }
-
-    // Map type stub (for non-storage contexts)
-    pub struct Map<K, V> {}
-    impl<K, V> Map<K, V> {
-        pub fn new() -> Self { Map {} }
-        pub fn get(self, key: K) -> V { todo() }
-        pub fn set(mut self, key: K, value: V) { todo() }
-    }
-
-    // Note: Ctx and Log are now real prelude effect traits in Fe 26.2.0 and no
-    // longer need stubs here. Use them directly via `uses (ctx: Ctx)` /
-    // `uses (log: mut Log)`.
-
-    // High-level intrinsic stubs (not available in core)
-    pub fn self_address() -> u256 { todo() }
-    pub fn block_number() -> u256 { todo() }
-    pub fn block_timestamp() -> u256 { todo() }
-    pub fn self_balance() -> u256 { todo() }
-    pub fn balance(_ addr: Address) -> u256 { todo() }
-    pub fn code_size(_ addr: Address) -> u256 { todo() }
-    pub fn code_hash(_ addr: Address) -> u256 { todo() }
-    pub fn keccak256<T>(_ data: T) -> u256 { todo() }
-    pub fn sha256<T>(_ data: T) -> u256 { todo() }
-    pub fn ripemd160<T>(_ data: T) -> u256 { todo() }
-    pub fn ecrecover(_ hash: u256, _ v: u8, _ r: u256, _ s: u256) -> Address { todo() }
-    pub fn block_hash(_ number: u256) -> u256 { todo() }
-
-    // Note: revert is re-exported from core above
-
-    // Common trait stubs
     pub trait Hashable {
         fn hash(self) -> u256
     }
@@ -53,21 +24,5 @@ mod _boilerplate {
 
     pub trait Writable {
         fn write(mut self, value: u256)
-    }
-
-    pub trait Storable {
-        fn key(self) -> u256
-    }
-
-    // Storage effect stub for documentation examples
-    pub struct Storage {}
-    impl Storage {
-        pub fn set<T>(mut self, key: u256, item: T) {
-            let _ = (key, item)
-        }
-        pub fn get<T: Default>(self, key: u256) -> T {
-            let _ = key
-            T::default()
-        }
     }
 }

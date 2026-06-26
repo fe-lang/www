@@ -73,10 +73,8 @@ balances[msg.sender] = 100;
 **Fe**: Access through effect-bound storage.
 
 ```fe ignore
-// In recv block
-with (TokenStorage = store) {
-    TokenStorage.balances[caller()] = 100
-}
+// In a recv handler with `uses (ctx, mut store)`
+store.balances.set(key: ctx.caller(), value: 100)
 ```
 
 ## Syntax Comparison

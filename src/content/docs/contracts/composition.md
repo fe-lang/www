@@ -81,18 +81,17 @@ Split storage into logical units:
 ```fe
 //<hide>
 use std::abi::sol
-use _boilerplate::revert
 pub struct Ctx {}
 impl Ctx {
     pub fn caller(self) -> u256 { todo() }
 }
 
 fn require_not_paused() uses (pause_state: PauseStorage) {
-    if pause_state.paused { revert(0, 0) }
+    assert!(!pause_state.paused, "paused")
 }
 
 fn require_owner(expected: u256) uses (ctx: Ctx) {
-    if ctx.caller() != expected { revert(0, 0) }
+    assert!(ctx.caller() == expected, "not owner")
 }
 
 fn transfer(from: u256, to: u256, amount: u256) -> bool uses (balances: mut BalanceStorage) {
@@ -165,7 +164,6 @@ Implement access control as a reusable module:
 ```fe
 //<hide>
 use std::abi::sol
-use _boilerplate::revert
 pub struct TokenStorage {
     pub balances: StorageMap<u256, u256>,
 }
@@ -189,9 +187,7 @@ fn get_owner() -> u256 uses (ownership: OwnerStorage) {
 }
 
 fn require_owner() uses (ctx: Ctx, ownership: OwnerStorage) {
-    if ctx.caller() != ownership.owner {
-        revert(0, 0)
-    }
+    assert!(ctx.caller() == ownership.owner, "not owner")
 }
 
 fn transfer_ownership(new_owner: u256) uses (ctx: Ctx, ownership: mut OwnerStorage) {
@@ -237,7 +233,6 @@ contract OwnableToken {
 ```fe
 //<hide>
 use std::abi::sol
-use _boilerplate::revert
 pub struct TokenStorage {
     pub balances: StorageMap<u256, u256>,
 }
@@ -252,7 +247,7 @@ impl Ctx {
 }
 
 fn require_owner() uses (ctx: Ctx, ownership: OwnerStorage) {
-    if ctx.caller() != ownership.owner { revert(0, 0) }
+    assert!(ctx.caller() == ownership.owner, "not owner")
 }
 
 fn transfer(from: u256, to: u256, amount: u256) -> bool uses (store: mut TokenStorage) {
@@ -285,9 +280,7 @@ fn is_paused() -> bool uses (pause_state: PauseStorage) {
 }
 
 fn require_not_paused() uses (pause_state: PauseStorage) {
-    if pause_state.paused {
-        revert(0, 0)
-    }
+    assert!(!pause_state.paused, "paused")
 }
 
 fn set_paused(paused: bool) uses (pause_state: mut PauseStorage) {
@@ -329,7 +322,6 @@ Functions can require multiple effects:
 ```fe
 //<hide>
 use std::abi::sol
-use _boilerplate::revert
 pub struct TokenStorage {
     pub balances: StorageMap<u256, u256>,
 }
@@ -348,7 +340,7 @@ impl Ctx {
 }
 
 fn require_not_paused() uses (pause_state: PauseStorage) {
-    if pause_state.paused { revert(0, 0) }
+    assert!(!pause_state.paused, "paused")
 }
 
 fn transfer(from: u256, to: u256, amount: u256) -> bool uses (store: mut TokenStorage) {
