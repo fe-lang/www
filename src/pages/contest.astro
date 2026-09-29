@@ -1,0 +1,177 @@
+---
+const base = import.meta.env.BASE_URL;
+const registration = 'https://docs.google.com/forms/d/e/1FAIpQLSehDUUbqfQt67Ecy21zIsOFN7pp4orx9Ko9DKCWcDkjhEUVBg/viewform';
+const submission = 'https://docs.google.com/forms/d/e/1FAIpQLSd2pqUkJzFpZMu5FVQP-NtetrIoB6nI-pHG1MLTOQhCpsLKqg/viewform';
+const description = 'Explore Fe, build something worth sharing, and compete for $5,000. Three weeks to build with Fe. November 3–24, 2026.';
+const directions = [
+  { number: '01', title: 'Rethink a protocol', text: 'Reimagine an auction, exchange, or governance mechanism. Show how Fe makes the design clearer, more expressive, or more efficient.', tags: 'Protocols · DeFi · Governance' },
+  { number: '02', title: 'Make the math work', text: 'Explore advanced arithmetic, proof verification, or cryptographic building blocks. Bring test vectors, explicit assumptions, and reusable abstractions.', tags: 'Math · Cryptography · Verification' },
+  { number: '03', title: 'Build for the next builder', text: 'Create a library, a standard-library addition, or developer tooling with a meaningful Fe component. Build for the EVM or compile native tools that others can pick up and use.', tags: 'Libraries · Tooling · Developer experience' },
+  { number: '04', title: 'Take us by surprise', text: 'Games, art, agents, social applications, or an experiment we haven’t imagined. Follow an interesting idea and show what Fe makes possible.', tags: 'Games · Art · Unexpected ideas' },
+];
+const judges = [
+  { name: 'Austin Griffith', label: 'BuidlGuidl · Builder & educator', url: 'https://x.com/austingriffith', bio: 'Austin is the founder of BuidlGuidl and an Ethereum builder and educator. Through projects such as Scaffold-ETH and SpeedRunEthereum, he helps developers turn ideas into working applications.' },
+  { name: 'Ahmed Castro', label: 'Filosofía Código · Developer & educator', url: 'https://x.com/FilosofiaCodigo', bio: 'Ahmed is a smart contract developer and educator behind Filosofía Código. His work spans Ethereum scaling, developer tooling, and technical education that helps developers build on Ethereum and its L2s.' },
+  { name: 'Marius van der Wijden', label: 'Ethereum Foundation · Core developer', url: 'https://x.com/vdWijden', bio: 'Marius is an Ethereum core developer at the Ethereum Foundation, working on Geth. He focuses on testing, fuzzing, and making Ethereum’s execution layer more robust.' },
+  { name: 'Philogy', label: '@real_philogy · Security researcher', url: 'https://x.com/real_philogy', bio: 'Philogy is the creator of Plank, a new smart contract language for the EVM, and a security researcher specializing in EVM internals and DeFi. His security review experience includes Solady and Uniswap’s The Compact.' },
+  { name: 'Rahul Kothari', label: 'Ethereum Foundation', url: 'https://www.linkedin.com/in/iamrahulkothari/', bio: 'Rahul works at the Ethereum Foundation. Previously at Aztec, he built smart contracts for its privacy-focused L2 and later led product for the Aztec Sandbox and Devnet.' },
+  { name: 'jistro', label: 'EVVM · Smart contract developer', url: 'https://x.com/jistro', bio: 'Jistro is a blockchain and smart contract developer contributing to EVVM. Their work includes Solidity contracts and TypeScript tooling for developers building on the EVM.' },
+  { name: 'Grant Wuerker', label: 'Argot Collective · Fe core developer', url: 'https://github.com/g-r-a-n-t', bio: 'Grant has worked on Fe since 2020, starting with the first compiler’s support for contracts, storage, and ABI encoding. Today he focuses on Fe’s ingot and dependency system, ABI performance, and hardening the compiler through fuzzing.' },
+  { name: 'Micah Scopes', label: 'Argot Collective · Fe core developer', url: 'https://github.com/micahscopes', bio: 'Micah has worked on Fe since 2023. He leads work on the language server, editor support, and documentation tooling, and also contributes to type checking and Sonatina code generation.' },
+];
+const criteria = [
+  ['30%', 'Technical quality', 'Correctness, architecture, tests, and completeness.'],
+  ['25%', 'Fe-specific value', 'Meaningful use of Fe’s features and abstractions.'],
+  ['20%', 'Originality', 'A fresh idea, implementation, or combination.'],
+  ['15%', 'Usefulness or insight', 'Value for users, researchers, or future builders.'],
+  ['10%', 'Documentation & demo', 'A clear explanation and reproducible results.'],
+];
+---
+<!doctype html>
+<html lang="en">
+  <head>
+    <meta charset="UTF-8" />
+    <meta name="viewport" content="width=device-width, initial-scale=1" />
+    <title>Fe Builders Challenge — $5,000 in prizes</title>
+    <meta name="description" content={description} />
+    <link rel="canonical" href={new URL(`${base}contest/`, Astro.site)} />
+    <meta property="og:type" content="website" />
+    <meta property="og:title" content="Fe Builders Challenge — $5,000 in prizes" />
+    <meta property="og:description" content={description} />
+    <meta property="og:url" content={new URL(`${base}contest/`, Astro.site)} />
+    <meta name="twitter:card" content="summary" />
+    <link rel="icon" href={`${base}favicon.svg`} type="image/svg+xml" />
+    <link rel="preconnect" href="https://fonts.googleapis.com" />
+    <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin />
+    <link href="https://fonts.googleapis.com/css2?family=Ubuntu+Sans:wght@400;500;600;700;800&display=swap" rel="stylesheet" />
+  </head>
+  <body>
+    <a class="skip" href="#main">Skip to content</a>
+    <div class="dark">
+      <header class="wrap header">
+        <a class="brand" href={base} aria-label="Fe programming language home"><img src={`${base}fe-logo.svg`} alt="" width="42" height="42" /><span>The Fe Programming Language</span></a>
+        <nav aria-label="Main navigation">
+          <a href="#how-to-enter">How to enter</a>
+          <a href={`${base}getting-started/what-is-fe/`}>Explore Fe <span aria-hidden="true">↗</span></a>
+        </nav>
+      </header>
+      <main id="main">
+        <section class="wrap hero" aria-labelledby="contest-title">
+          <div class="hero-copy">
+            <p class="eyebrow"><span class="dot" aria-hidden="true"></span> Online contest · November 3–24, 2026</p>
+            <h1 id="contest-title">Fe Builders<br /><span>Challenge.</span></h1>
+            <p class="lead">A new language.<br />A different way to build.</p>
+            <p class="intro">A useful library, a clever protocol, a strange experiment. Whatever your idea, build it with Fe.</p>
+            <div class="actions">
+              <a class="button primary" href={registration}>Register your project <span aria-hidden="true">↗</span></a>
+              <a class="button secondary" href={submission}>Submit a project <span aria-hidden="true">↗</span></a>
+            </div>
+            <p class="micro">Solo or team. Fully online. AI assistance welcome.</p>
+          </div>
+          <aside class="prize" aria-label="Prize pool">
+            <div class="prize-top"><span>BUILD SOMETHING THAT MATTERS</span><img src={`${base}fe-logo.svg`} width="42" height="42" alt="" /></div>
+            <p class="prize-total">$5,000</p>
+            <p class="prize-caption">in prizes. Funded by the Argot Collective.</p>
+            <div class="prize-row"><span><b>01</b> First place</span><strong>$2,500</strong></div>
+            <div class="prize-row"><span><b>02</b> Second place</span><strong>$1,500</strong></div>
+            <div class="prize-row"><span><b>03</b> Third place</span><strong>$1,000</strong></div>
+            <p class="prize-note">One competition. Every project competes in the same pool.</p>
+          </aside>
+        </section>
+        <div class="timeline-wrap">
+          <ol class="wrap timeline" aria-label="Contest timeline">
+            <li><span class="step">01 / BUILD</span><strong>Nov 3</strong><span>Build window opens</span></li>
+            <li><span class="step">02 / REGISTER</span><strong>Nov 17</strong><span>Register by 23:59 UTC</span></li>
+            <li><span class="step">03 / SUBMIT</span><strong>Nov 24</strong><span>Submit by 23:59 UTC</span></li>
+            <li><span class="step">04 / RESULTS</span><strong>Dec 1</strong><span>Results · target date</span></li>
+          </ol>
+        </div>
+        <div class="paper">
+          <section class="wrap section" aria-labelledby="ideas-title">
+            <div class="section-heading"><p class="eyebrow ink">THE POSSIBILITIES</p><h2 id="ideas-title">What will you build?</h2><p>A focused library can be as compelling as a whole application. These are starting points, not separate tracks. Make the idea your own.</p></div>
+            <div class="ideas">{directions.map((item) => <article class="idea"><span class="number">{item.number}</span><h3>{item.title}</h3><p>{item.text}</p><p class="tags">{item.tags}</p></article>)}</div>
+          </section>
+          <section class="entry-section" id="how-to-enter" aria-labelledby="entry-title">
+            <div class="wrap section entry-grid">
+              <div><p class="eyebrow ink">FROM IDEA TO ENTRY</p><h2 id="entry-title">Three weeks.<br />Make them count.</h2><p>New to Fe? You’re welcome here. Start with a small idea, get it working, and show us what you learned.</p><a class="text-link" href={`${base}getting-started/first-contract/`}>Write your first Fe contract <span aria-hidden="true">→</span></a></div>
+              <ol class="entry-steps">
+                <li><span class="number">01</span><div><h3>Explore now. Build from November 3.</h3><p>Read the <a href={`${base}getting-started/installation/`}>installation guide</a> and experiment with Fe. The build window opens on November 3 at 00:00 UTC. Only substantial work completed during the contest window will be judged. The supported contest toolchain will be listed here before launch.</p></div></li>
+                <li><span class="number">02</span><div><h3>Register by November 17.</h3><p>Tell us your project idea, team, and contact email. Your idea can evolve; you don’t need a finished project. We’ll email your project ID and private submission link.</p><a class="text-link" href={registration}>Open registration <span aria-hidden="true">↗</span></a></div></li>
+                <li><span class="number">03</span><div><h3>Submit by November 24.</h3><p>Use your personal submission link to send your public repository and exact commit. You can submit again before the deadline; the latest valid submission counts.</p><a class="text-link" href={submission}>Open submission form <span aria-hidden="true">↗</span></a></div></li>
+              </ol>
+            </div>
+          </section>
+          <section class="wrap section review-grid" aria-labelledby="review-title">
+            <div><p class="eyebrow ink">THE REVIEW</p><h2 id="review-title">Good ideas.<br />Solid execution.</h2><p>Judges review submissions independently, then consider a shortlist to select the winners. We plan one week for judging and aim to announce the winners on December 1. The jury’s decisions are final.</p>
+            </div>
+            <div class="rubric" aria-label="Judging criteria">{criteria.map(([weight, title, text]) => <div class="criterion"><strong>{weight}</strong><div><h3>{title}</h3><p>{text}</p></div></div>)}<p class="rubric-note">Your evidence should fit your project: tests, benchmarks, test vectors, or a working demo. Social reach does not affect your score.</p></div>
+          </section>
+          <section class="jury-section" aria-labelledby="jury-title">
+            <div class="wrap section">
+              <div class="section-heading"><p class="eyebrow ink">THE JURY</p><h2 id="jury-title">Meet your judges.</h2></div>
+              <ul class="judge-list">
+                {judges.map((judge) => <li class="judge"><h3><a href={judge.url}>{judge.name}<span aria-hidden="true">↗</span></a></h3><p class="judge-label">{judge.label}</p><p class="judge-bio">{judge.bio}</p></li>)}
+              </ul>
+            </div>
+          </section>
+          <section class="wrap section essentials" aria-labelledby="essentials-title">
+            <div><p class="eyebrow ink">READY TO SUBMIT?</p><h2 id="essentials-title">Give your work<br />a good handoff.</h2><p>Your core technical contribution must be in Fe. Frontends, scripts, and supporting tools can use other languages.</p></div>
+            <ul class="checklist">
+              <li>A public GitHub repository with an OSI-approved license.</li>
+              <li>The full commit SHA, project manifest, and exact Fe version.</li>
+              <li>Reproducible build instructions and appropriate automated tests.</li>
+              <li>A README covering the approach, architecture, and limitations.</li>
+              <li>A short pitch, a Fe-specific highlight, and a demo or reproducible example.</li>
+              <li>A declaration of pre-existing work, reused code, and AI assistance.</li>
+            </ul>
+          </section>
+          <section class="wrap section faq" aria-labelledby="faq-title">
+            <p class="eyebrow ink">A FEW MORE DETAILS</p><h2 id="faq-title">Before you begin.</h2>
+            <div class="faq-group">
+              <h3>Taking part</h3>
+              <details><summary>Who can participate?</summary><p>The contest is open worldwide, to beginners and experienced developers alike. Members of the Argot Collective and contest judges are not eligible to participate.</p></details>
+              <details><summary>Can I enter solo or with a team?</summary><p>Both are welcome. There is no team-size limit, and your team can change after registration. Each project needs one contact person reachable by email. Team membership, responsibilities, and any prize split are for the team to agree on internally.</p></details>
+              <details><summary>Can I enter more than one project or join multiple teams?</summary><p>Yes. You can submit multiple distinct projects and participate in multiple teams. Register each project separately. Do not submit multiple variants of the same work as separate entries.</p></details>
+              <details><summary>Do I need a finished idea to register?</summary><p>No. Your initial idea is not binding and can change as you explore Fe. Register by November 17 at 23:59 UTC with a contact email we can reach. You can start building before registering, but registration is required to submit.</p></details>
+              <details><summary>What are the deadlines?</summary><p>All times are UTC. The build window opens on November 3, 2026 at 00:00. Registration closes on November 17 at 23:59, and final submissions close on November 24 at 23:59. Registration and preparatory experiments are welcome before the build window opens. The registration deadline is firm; exceptions apply only if a problem on our side prevents registration.</p></details>
+            </div>
+            <div class="faq-group">
+              <h3>Building with Fe</h3>
+              <details><summary>Does my project need to use the EVM or a blockchain?</summary><p>No. Fe supports both the EVM and native code, and purely native projects are welcome. Developer tools are one exciting direction; your project does not need a smart contract or any blockchain connection. The core technical contribution must be in Fe.</p></details>
+              <details><summary>Do library and tooling projects qualify?</summary><p>Yes, with a meaningful Fe contribution central to the project. Standard-library submissions do not need to be merged upstream before the deadline. Pure compiler contributions are outside this contest’s scope.</p></details>
+              <details><summary>Can I use AI tools?</summary><p>Yes. AI assistance is welcome and is not scored negatively. Disclose how you used it, test the result, and be prepared to explain your code. Every project needs one responsible human contact.</p></details>
+              <details><summary>Can I enter an existing project?</summary><p>Yes, but only substantial work completed during November 3–24 is judged. Identify the starting point and explain what changed. New feature work after the final deadline is not eligible.</p></details>
+              <details><summary>What if I run into a Fe compiler bug?</summary><p>Report the bug in the <a href="https://github.com/argotorg/fe/issues">Fe issue tracker</a>, ideally with a minimal example, and let us know on <a href="https://fe-lang.zulipchat.com">Zulip</a> if it blocks your entry. We’ll work with you to find a solution.</p></details>
+              <details><summary>Where can I ask questions?</summary><p>Join <a href="https://fe-lang.zulipchat.com">Fe on Zulip</a> for help, ideas, and progress updates. Office-hours dates will be announced before the build window opens.</p></details>
+            </div>
+            <div class="faq-group">
+              <h3>Submissions &amp; review</h3>
+              <details><summary>Can I submit a prototype or unfinished project?</summary><p>Yes. A working prototype is enough if you can demonstrate the core contribution and clearly document what works, what is unfinished, and any limitations. Completeness is part of technical quality, but your project does not need to be production-ready.</p></details>
+              <details><summary>Is a video or live presentation required?</summary><p>No. Provide reproducible instructions so judges can build and try your project. An optional video or demo can help communicate your work and support your score in the Documentation &amp; demo category.</p></details>
+              <details><summary>Do I need to deploy to mainnet?</summary><p>No. Mainnet deployment provides no scoring advantage. A testnet deployment is sufficient where deployment helps demonstrate the project. Native projects do not need a blockchain deployment at all.</p></details>
+              <details><summary>Can I update my submission?</summary><p>Yes. Use your personal submission link to submit again before November 24 at 23:59 UTC. The latest valid submission counts. Include the exact commit SHA you want judged.</p></details>
+              <details><summary>How do I know my registration or submission is valid?</summary><p>A successful registration is confirmed by email with your project ID and private submission link. For submissions, an email confirms whether the automated checks passed or explains what needs correcting. The form’s receipt alone is not confirmation of acceptance. Technical eligibility is reviewed separately. If you don’t receive confirmation, check your spam folder or ask us on <a href="https://fe-lang.zulipchat.com">Zulip</a>.</p></details>
+              <details><summary>What happens after the submission deadline?</summary><p>Judges review the submitted commit. We may contact you to clarify missing information or build instructions; please reply within 48 hours. Clarifications after the deadline are allowed only at our request and must not introduce new code changes. Without a reply, we assess the project using the information available.</p></details>
+              <details><summary>What if the judges cannot run my project?</summary><p>A minor setup issue does not automatically disqualify your project; we may ask for clarification. Reproducibility and completeness affect technical quality, and the core contribution must be verifiable for the project to be eligible.</p></details>
+            </div>
+            <div class="faq-group">
+              <h3>Results &amp; prizes</h3>
+              <details><summary>When and where will the winners be announced?</summary><p>We aim to announce the winners on December 1, 2026 via the Fe blog and X, then notify the winners by email. If judging takes longer, we’ll announce the delay publicly. The jury’s decisions are final.</p></details>
+              <details><summary>Is the prize pool guaranteed?</summary><p>Yes. All three prizes will be awarded: $2,500 for first place, $1,500 for second, and $1,000 for third. The full $5,000 prize pool is funded by the Argot Collective.</p></details>
+              <details><summary>How and when are prizes paid?</summary><p>Prizes are paid in USDC on Ethereum Mainnet. After the winners are announced, we’ll contact each winning project through its registered email to request and confirm one payout address. We aim to pay within one week once that address is confirmed. Teams are responsible for distributing the prize among their members.</p></details>
+              <details><summary>Will I receive feedback? Will my project be featured?</summary><p>Individual feedback is not guaranteed. We reserve the right to publicly showcase any submitted project, including entries that do not win a prize.</p></details>
+            </div>
+          </section>
+          <section class="wrap final-cta"><div><p class="eyebrow">YOUR NEXT IDEA, IN FE</p><h2>Let’s see what<br />you can build.</h2></div><div><a class="button white" href={registration}>Register your project <span aria-hidden="true">↗</span></a><a class="submission-link" href={submission}>Already registered? Submit your project →</a></div></section>
+        </div>
+      </main>
+      <footer class="wrap footer"><a class="brand" href={base}><img src={`${base}fe-logo.svg`} width="32" height="32" alt="Fe" /><span>Fe Builders Challenge · 2026</span></a><div><a href={`${base}getting-started/what-is-fe/`}>Documentation</a><a href="https://fe-lang.zulipchat.com">Zulip</a><a href="https://github.com/argotorg/fe">GitHub</a></div></footer>
+    </div>
+  </body>
+</html>
+<style>
+  :global(*){box-sizing:border-box} :global(html){scroll-behavior:smooth;scroll-padding-top:24px;background:#11111b} :global(body){margin:0;font-family:'Ubuntu Sans',system-ui,sans-serif;color:#171728;line-height:1.65} :global(a){color:inherit} :global(a:focus-visible),:global(summary:focus-visible){outline:3px solid #8b80ff;outline-offset:5px} :global(h1),:global(h2),:global(h3),:global(p){margin:0} :global(h2){font-size:clamp(2rem,4vw,3rem);line-height:1.1;letter-spacing:-.04em;font-weight:800} :global(h3){font-size:1.22rem;line-height:1.3;letter-spacing:-.02em} :global(p){text-wrap:pretty} .wrap{max-width:1160px;margin:auto;padding-inline:32px}.dark{background:#11111b;color:#f4f3ff}.paper{background:#fafafc;color:#171728;padding-bottom:72px}.skip{position:absolute;left:16px;top:-100px;background:white;color:#111;padding:12px;z-index:10}.skip:focus{top:12px}.header{display:flex;align-items:center;justify-content:space-between;gap:24px;padding-block:25px;border-bottom:1px solid #313244}.brand{display:flex;align-items:center;gap:12px;text-decoration:none;font-size:.88rem;font-weight:600}.header nav{display:flex;gap:28px;font-size:.88rem}.header nav a{text-decoration:none;color:#cdd6f4}.header nav a:hover{color:white}.hero{display:grid;grid-template-columns:1.25fr 1fr;align-items:center;gap:64px;padding-block:80px 86px}.eyebrow{font-size:.72rem;font-weight:700;letter-spacing:.13em;text-transform:uppercase;color:#c4c0ff;display:flex;align-items:center;gap:9px}.dot{width:7px;height:7px;background:#b0a7ff;border-radius:50%}h1{font-size:clamp(3.4rem,6.9vw,5.5rem);font-weight:800;line-height:.99;letter-spacing:-.065em;margin:25px 0}h1 span{color:#a5a0ff}.lead{font-size:1.6rem;line-height:1.25;letter-spacing:-.025em;font-weight:500}.intro{color:#b8b8cf;max-width:460px;margin-top:19px}.actions{display:flex;flex-wrap:wrap;gap:12px;margin-top:30px}.button{display:inline-flex;align-items:center;justify-content:center;gap:20px;text-decoration:none;font-weight:700;font-size:.9rem;padding:13px 19px;border:1px solid transparent;border-radius:5px;transition:background .15s}.primary{background:#6366f1;color:white}.primary:hover{background:#4f46e5}.secondary{border-color:#64647c;color:#f4f3ff}.secondary:hover{background:#252537}.micro{font-size:.78rem;color:#aaaac4;margin-top:16px}.prize{background:#4f46e5;border:1px solid #8a81ff;border-radius:8px;padding:30px;box-shadow:14px 14px 0 #242239;position:relative;overflow:hidden}.prize-top{display:flex;align-items:center;justify-content:space-between;gap:10px;font-size:.62rem;font-weight:700;letter-spacing:.12em;color:#e0e7ff}.prize-total{font-size:clamp(3.5rem,6.8vw,5.5rem);font-weight:800;line-height:1.15;letter-spacing:-.065em;margin-top:32px}.prize-caption{color:#e0e7ff;margin-bottom:28px}.prize-row{border-top:1px solid #ffffff40;display:flex;justify-content:space-between;align-items:center;padding:15px 0;gap:12px}.prize-row b{font-size:.73rem;font-weight:400;margin-right:12px;color:#e0e7ff}.prize-row strong{font-size:1.35rem}.prize-note{border-top:1px solid #ffffff40;padding-top:17px;font-size:.75rem;color:#e0e7ff}.timeline-wrap{background:#1e1e2e;border-top:1px solid #313244}.timeline{list-style:none;display:grid;grid-template-columns:repeat(4,1fr);padding-block:30px;gap:24px}.timeline li{display:flex;flex-direction:column;border-left:1px solid #49495f;padding-left:20px}.step{font-size:.65rem;letter-spacing:.1em;color:#b6b0ff}.timeline strong{font-size:1.5rem;margin-block:4px}.timeline li>span:last-child{font-size:.78rem;color:#bbbbd0}.section{padding-block:76px}.ink{color:#5147b8;margin-bottom:16px}.section-heading{max-width:640px;margin-bottom:38px}.section-heading>p:last-child,.entry-grid>div>p:not(.eyebrow),.review-grid>div>p:not(.eyebrow),.essentials>div>p:not(.eyebrow){color:#555568;margin-top:20px}.ideas{display:grid;grid-template-columns:repeat(2,1fr);gap:0;border-top:1px solid #dcdce8}.idea{padding:30px 30px 30px 0;border-bottom:1px solid #dcdce8}.idea:nth-child(even){padding-left:30px;border-left:1px solid #dcdce8}.number{font-size:.8rem;color:#6258bd;font-weight:700}.idea h3{margin-top:12px}.idea>p:not(.tags){color:#555568;margin-top:12px}.tags{color:#6258bd;font-size:.73rem;margin-top:20px;font-weight:600}.entry-section{background:#f0eff8;border-block:1px solid #e0deef}.entry-grid,.review-grid,.essentials{display:grid;grid-template-columns:1fr 1.3fr;gap:90px}.text-link{color:#493ac1;text-decoration:none;font-weight:700;display:inline-block;margin-top:20px;font-size:.9rem}.text-link:hover{text-decoration:underline}.entry-steps{margin:0;padding:0;list-style:none;display:grid;gap:30px}.entry-steps li{display:grid;grid-template-columns:28px 1fr;gap:17px}.entry-steps p{font-size:.93rem;color:#555568;margin-top:8px}.entry-steps .text-link{margin-top:10px}.entry-steps p a{color:#493ac1;text-underline-offset:3px}.jury-section{background:#f0eff8;border-block:1px solid #e0deef}.jury-section .section-heading{margin-bottom:32px}.judge-list{list-style:none;margin:0;padding:0;display:grid;grid-template-columns:repeat(4,minmax(0,1fr));gap:20px}.judge{padding:26px;background:#fafafc;border:1px solid #dcdce8;border-top:3px solid #8278df;border-radius:5px}.judge h3{font-size:1.12rem}.judge a{display:flex;justify-content:space-between;align-items:baseline;gap:12px;text-decoration:none}.judge a span{color:#6258bd;font-size:1rem}.judge a:hover{color:#493ac1}.judge-label{font-size:.72rem;color:#6258bd;font-weight:600;margin-top:9px}.judge-bio{font-size:.88rem;color:#555568;margin-top:18px}.criterion{display:flex;gap:25px;border-bottom:1px solid #dcdce8;padding:19px 0}.criterion:first-child{padding-top:0}.criterion>strong{font-size:1.65rem;line-height:1.2;color:#5147b8;min-width:65px;letter-spacing:-.05em}.criterion h3{font-size:1rem}.criterion p{font-size:.87rem;color:#555568;margin-top:4px}.rubric-note{font-size:.8rem;color:#555568;margin-top:20px}.essentials{border-bottom:1px solid #dcdce8}.checklist{list-style:none;margin:0;padding:0}.checklist li{position:relative;padding:0 0 17px 28px;font-size:.93rem;color:#454557}.checklist li:before{content:'✓';position:absolute;left:0;color:#5147b8;font-weight:700}.faq{max-width:860px}.faq h2{margin-bottom:28px}.faq-group+.faq-group{margin-top:36px}.faq-group>h3{font-size:.78rem;letter-spacing:.08em;text-transform:uppercase;color:#5147b8;margin-bottom:8px}details{border-bottom:1px solid #dcdce8;padding:18px 0}summary{font-weight:600;cursor:pointer;padding-right:12px}details p{color:#555568;margin-top:14px;font-size:.94rem}details a{color:#493ac1}.final-cta{background:#4f46e5;color:white;display:flex;justify-content:space-between;align-items:center;gap:30px;padding:42px;border-radius:8px;max-width:1096px}.final-cta h2{margin-top:16px}.final-cta .eyebrow{color:#e0e7ff}.white{background:white;color:#3730a3}.white:hover{background:#eef2ff}.submission-link{display:block;font-size:.8rem;margin-top:16px;color:#e0e7ff;text-underline-offset:4px}.footer{display:flex;justify-content:space-between;gap:24px;align-items:center;padding-block:34px}.footer>div{display:flex;gap:24px;font-size:.8rem;color:#b8b8cf}.footer>div a{text-decoration:none}.footer a:hover{text-decoration:underline}
+  @media(max-width:900px){.judge-list{grid-template-columns:repeat(2,minmax(0,1fr))}.hero{gap:32px}.entry-grid,.review-grid,.essentials{gap:40px}.hero .actions{flex-direction:column;align-items:flex-start}.prize{padding:24px}.final-cta{margin-inline:24px}}
+  @media(max-width:640px){.wrap{padding-inline:22px}.header{padding-block:18px;gap:12px}.header .brand span{display:none}.header nav{gap:18px;font-size:.8rem}.hero{grid-template-columns:1fr;padding-block:44px 50px;gap:38px}.hero .actions{align-items:stretch}.eyebrow{font-size:.65rem}h1{font-size:clamp(3rem,12vw,4.7rem)}.lead{font-size:1.4rem}.prize{box-shadow:7px 7px 0 #242239}.prize-total{font-size:4.5rem}.timeline{grid-template-columns:1fr 1fr;gap:26px 12px}.timeline li{padding-left:12px}.section{padding-block:48px}.judge-list{grid-template-columns:1fr}.ideas,.entry-grid,.review-grid,.essentials{grid-template-columns:1fr;gap:28px}.ideas{gap:0}.idea,.idea:nth-child(even){padding:25px 0;border-left:0}.final-cta{margin-inline:16px;padding:30px 24px;flex-direction:column;align-items:flex-start}.final-cta .button{width:100%}.submission-link{overflow-wrap:anywhere}.footer{flex-direction:column;align-items:flex-start}.paper{padding-bottom:40px}}
+  @media(prefers-reduced-motion:reduce){:global(html){scroll-behavior:auto}.button{transition:none}}
+</style>
