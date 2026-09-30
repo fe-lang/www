@@ -238,10 +238,6 @@ fn find<T: Comparable>(items: [T; 8], target: T) -> bool {
 ### Default Values
 
 ```fe
-trait Default {
-    fn default() -> Self
-}
-
 fn or_default<T: Default>(value: own Option<T>) -> T {
     match value {
         Option::Some(v) => v,
@@ -253,10 +249,6 @@ fn or_default<T: Default>(value: own Option<T>) -> T {
 ### Cloneable Types
 
 ```fe
-trait Clone {
-    fn clone(self) -> Self
-}
-
 fn duplicate<T: Clone>(value: own T) -> (T, T) {
     (value.clone(), value)
 }

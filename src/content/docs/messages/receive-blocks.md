@@ -14,10 +14,10 @@ use std::abi::sol
 
 msg TokenMsg {
     #[selector = sol("transfer(address,uint256)")]
-    Transfer { to: u256, amount: u256 } -> bool,
+    Transfer { to: Address, amount: u256 } -> bool,
 
     #[selector = sol("balanceOf(address)")]
-    BalanceOf { account: u256 } -> u256,
+    BalanceOf { account: Address } -> u256,
 }
 
 contract Token {
@@ -61,7 +61,7 @@ A bare recv block handles messages without specifying a message type:
 use std::abi::sol
 msg TokenMsg {
     #[selector = sol("transfer(address,uint256)")]
-    Transfer { to: u256, amount: u256 } -> bool,
+    Transfer { to: Address, amount: u256 } -> bool,
 }
 
 msg OtherMsg {
@@ -87,6 +87,7 @@ In bare blocks:
 - Use fully qualified paths (`MsgType::Variant`)
 - No exhaustiveness checking
 - Can mix variants from different message types
+- Can include one `_` wildcard arm as a fallback for unmatched selectors and calldata shorter than four bytes; without it, unmatched calls revert (see [Payable Handlers and Fallbacks](/contracts/receive-blocks/#payable-handlers-and-fallbacks))
 
 ## Recv Blocks in Contracts
 
@@ -97,7 +98,7 @@ Recv blocks appear inside contract definitions after fields and the init block:
 use std::abi::sol
 msg TokenMsg {
     #[selector = sol("transfer(address,uint256)")]
-    Transfer { to: u256, amount: u256 } -> bool,
+    Transfer { to: Address, amount: u256 } -> bool,
 }
 //</hide>
 
@@ -161,14 +162,14 @@ use std::abi::sol
 
 msg TokenMsg {
     #[selector = sol("transfer(address,uint256)")]
-    Transfer { to: u256, amount: u256 } -> bool,
+    Transfer { to: Address, amount: u256 } -> bool,
 }
 //</hide>
 pub struct TokenStorage {
-    pub balances: StorageMap<u256, u256>,
+    pub balances: StorageMap<Address, u256>,
 }
 
-fn do_transfer(from: Address, to: u256, amount: u256) -> bool uses (store: mut TokenStorage) {
+fn do_transfer(from: Address, to: Address, amount: u256) -> bool uses (store: mut TokenStorage) {
     //<hide>
     let _ = from
     //</hide>
@@ -201,16 +202,16 @@ A contract can have multiple recv blocks for different message types:
 use std::abi::sol
 msg Erc20 {
     #[selector = sol("transfer(address,uint256)")]
-    Transfer { to: u256, amount: u256 } -> bool,
+    Transfer { to: Address, amount: u256 } -> bool,
     #[selector = sol("balanceOf(address)")]
-    BalanceOf { account: u256 } -> u256,
+    BalanceOf { account: Address } -> u256,
 }
 
 msg Erc721 {
     #[selector = sol("ownerOf(uint256)")]
-    OwnerOf { token_id: u256 } -> u256,
+    OwnerOf { token_id: u256 } -> Address,
     #[selector = sol("safeTransferFrom(address,address,uint256)")]
-    SafeTransferFrom { from: u256, to: u256, token_id: u256 },
+    SafeTransferFrom { from: Address, to: Address, token_id: u256 },
 }
 //</hide>
 
@@ -221,7 +222,7 @@ contract MultiInterface {
     }
 
     recv Erc721 {
-        OwnerOf { token_id } -> u256 { 0 }
+        OwnerOf { token_id } -> Address { Address::zero() }
         SafeTransferFrom { from, to, token_id } { }
     }
 }
@@ -243,5 +244,6 @@ See [Multiple Message Types](/messages/multiple-types/) for details.
 |--------|-------------|
 | `recv MsgType { }` | Named block, must handle all variants |
 | `recv { }` | Bare block, no exhaustiveness check |
+| `_ { }` | Fallback arm in a bare block |
 | `Variant { } -> T { }` | Handler with return type |
 | `Variant { } { }` | Handler returning `()` |

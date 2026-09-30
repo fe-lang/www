@@ -212,9 +212,9 @@ fn set_balance(account: u256, amount: u256) uses (balances: mut Balances) {
 // Mutable: combines read and write
 fn transfer(from: u256, to: u256, amount: u256) uses (balances: mut Balances) {
     let from_balance = get_balance(account: from)  // Calls read-only function
-    let to_balance = get_balance(account: to)
 
     set_balance(account: from, amount: from_balance - amount)
+    let to_balance = get_balance(account: to)
     set_balance(account: to, amount: to_balance + amount)
 }
 ```

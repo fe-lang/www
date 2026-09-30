@@ -13,13 +13,13 @@ Emit an event through a Log effect:
 #[event]
 struct Transfer {
     #[indexed]
-    from: u256,
+    from: Address,
     #[indexed]
-    to: u256,
+    to: Address,
     amount: u256,
 }
 
-fn emit_transfer(from: u256, to: u256, amount: u256) uses (log: mut Log) {
+fn emit_transfer(from: Address, to: Address, amount: u256) uses (log: mut Log) {
     log.emit(event: Transfer { from, to, amount })
 }
 ```
@@ -32,20 +32,20 @@ Events are typically emitted within message handlers:
 
 ```fe
 pub struct TokenStorage {
-    pub balances: StorageMap<u256, u256>,
+    pub balances: StorageMap<Address, u256>,
 }
 
 #[event]
 struct Transfer {
     #[indexed]
-    from: u256,
+    from: Address,
     #[indexed]
-    to: u256,
+    to: Address,
     amount: u256,
 }
 
 impl TokenStorage {
-    fn do_transfer(mut self, from: u256, to: u256, amount: u256)
+    fn do_transfer(mut self, from: Address, to: Address, amount: u256)
         -> bool uses (log: mut Log)
     {
         let from_bal = self.balances.get(key: from)
@@ -67,24 +67,24 @@ impl TokenStorage {
 
 ## Emit After State Changes
 
-A critical pattern: emit events after state changes succeed, not before:
+Emit an event on the path where the state change actually happens:
 
 ```fe
 pub struct TokenStorage {
-    pub balances: StorageMap<u256, u256>,
+    pub balances: StorageMap<Address, u256>,
 }
 
 #[event]
 struct Transfer {
     #[indexed]
-    from: u256,
+    from: Address,
     #[indexed]
-    to: u256,
+    to: Address,
     amount: u256,
 }
 
 impl TokenStorage {
-    fn transfer(mut self, from: u256, to: u256, amount: u256)
+    fn transfer(mut self, from: Address, to: Address, amount: u256)
         -> bool uses (log: mut Log)
     {
         // 1. Validate
@@ -105,11 +105,11 @@ impl TokenStorage {
 }
 ```
 
-This ensures events reflect actual state changes.
+If a call reverts, the EVM discards its logs along with its state changes, so a reverted transfer never leaves a `Transfer` event behind. This function signals failure by returning `false` instead of reverting, so an event emitted before the balance check would be recorded for a transfer that never happened. Within a successful call, emitting before or after the storage writes records the same log.
 
 ## Contract Integration
 
-In contracts, declare storage and log as contract fields, then access them via `uses`:
+In contracts, storage is a contract field, while `Log` is an effect: the contract declares it in its own `uses` clause (`contract Token uses (ctx: Ctx, log: mut Log)`), and each handler that emits lists it again in the handler's `uses` (`uses (ctx, mut store, mut log)`):
 
 ```fe
 //<hide>
@@ -117,11 +117,11 @@ use std::abi::sol
 //</hide>
 
 pub struct TokenStorage {
-    pub balances: StorageMap<u256, u256>,
+    pub balances: StorageMap<Address, u256>,
 }
 
 impl TokenStorage {
-    fn do_transfer(mut self, from: Address, to: u256, amount: u256) -> bool uses (log: mut Log) {
+    fn do_transfer(mut self, from: Address, to: Address, amount: u256) -> bool uses (log: mut Log) {
         //<hide>
         let _ = (from, to, amount, log)
         //</hide>
@@ -132,15 +132,15 @@ impl TokenStorage {
 #[event]
 struct TransferEvent {
     #[indexed]
-    from: u256,
+    from: Address,
     #[indexed]
-    to: u256,
+    to: Address,
     amount: u256,
 }
 
 msg TokenMsg {
     #[selector = sol("transfer(address,uint256)")]
-    Transfer { to: u256, amount: u256 } -> bool,
+    Transfer { to: Address, amount: u256 } -> bool,
 }
 
 contract Token uses (ctx: Ctx, log: mut Log) {
@@ -161,31 +161,31 @@ Emit different event types from the same handler:
 ```fe
 //<hide>
 pub struct TokenStorage {
-    pub balances: StorageMap<u256, u256>,
-    pub allowances: StorageMap<(u256, u256), u256>,
+    pub balances: StorageMap<Address, u256>,
+    pub allowances: StorageMap<(Address, Address), u256>,
 }
 //</hide>
 
 #[event]
 struct Transfer {
     #[indexed]
-    from: u256,
+    from: Address,
     #[indexed]
-    to: u256,
+    to: Address,
     amount: u256,
 }
 
 #[event]
 struct Approval {
     #[indexed]
-    owner: u256,
+    owner: Address,
     #[indexed]
-    spender: u256,
+    spender: Address,
     amount: u256,
 }
 
 impl TokenStorage {
-    fn transfer_from(mut self, spender: u256, from: u256, to: u256, amount: u256)
+    fn transfer_from(mut self, spender: Address, from: Address, to: Address, amount: u256)
         -> bool uses (log: mut Log)
     {
         // Check and update allowance
@@ -222,32 +222,32 @@ Emit when persistent state changes:
 ```fe
 //<hide>
 pub struct TokenStorage {
-    pub balances: StorageMap<u256, u256>,
+    pub balances: StorageMap<Address, u256>,
     pub total_supply: u256,
 }
 #[event]
 struct Transfer {
     #[indexed]
-    from: u256,
+    from: Address,
     #[indexed]
-    to: u256,
+    to: Address,
     amount: u256,
 }
 //</hide>
 
 impl TokenStorage {
-    fn mint(mut self, to: u256, amount: u256) uses (log: mut Log) {
+    fn mint(mut self, to: Address, amount: u256) uses (log: mut Log) {
         self.balances.set(key: to, value: self.balances.get(key: to) + amount)
         self.total_supply = self.total_supply + amount
 
-        log.emit(event: Transfer { from: 0, to, amount })
+        log.emit(event: Transfer { from: Address { inner: 0 }, to, amount })
     }
 
-    fn burn(mut self, from: u256, amount: u256) uses (log: mut Log) {
+    fn burn(mut self, from: Address, amount: u256) uses (log: mut Log) {
         self.balances.set(key: from, value: self.balances.get(key: from) - amount)
         self.total_supply = self.total_supply - amount
 
-        log.emit(event: Transfer { from, to: 0, amount })
+        log.emit(event: Transfer { from, to: Address { inner: 0 }, amount })
     }
 }
 ```
@@ -258,19 +258,19 @@ Emit for ownership and configuration changes:
 
 ```fe
 //<hide>
-pub struct AdminStorage { pub owner: u256 }
+pub struct AdminStorage { pub owner: Address }
 //</hide>
 
 #[event]
 struct OwnershipTransferred {
     #[indexed]
-    previous_owner: u256,
+    previous_owner: Address,
     #[indexed]
-    new_owner: u256,
+    new_owner: Address,
 }
 
 impl AdminStorage {
-    fn transfer_ownership(mut self, new_owner: u256) uses (log: mut Log) {
+    fn transfer_ownership(mut self, new_owner: Address) uses (log: mut Log) {
         let previous = self.owner
         self.owner = new_owner
 
@@ -282,20 +282,9 @@ impl AdminStorage {
 }
 ```
 
-### Significant Read Operations
+### Not for Read-Only Queries
 
-Occasionally emit for important queries (use sparingly):
-
-```fe
-#[event]
-struct BalanceChecked {
-    #[indexed]
-    account: u256,
-    balance: u256,
-}
-
-// Usually not needed - avoid unless there's a specific reason
-```
+Don't emit events from queries. Contracts often call getters with `STATICCALL` (for example through a Solidity `view` interface), and a log inside a static call makes the call revert. Off-chain `eth_call` results are never recorded, and in a transaction a log for a read costs gas without recording a state change.
 
 ## Event Helpers
 
@@ -303,35 +292,35 @@ Create helper functions for common events:
 
 ```fe
 //<hide>
-pub struct TokenStorage { pub balances: StorageMap<u256, u256> }
+pub struct TokenStorage { pub balances: StorageMap<Address, u256> }
 #[event]
 struct Transfer {
     #[indexed]
-    from: u256,
+    from: Address,
     #[indexed]
-    to: u256,
+    to: Address,
     amount: u256,
 }
 #[event]
 struct Approval {
     #[indexed]
-    owner: u256,
+    owner: Address,
     #[indexed]
-    spender: u256,
+    spender: Address,
     amount: u256,
 }
 //</hide>
 
-fn emit_transfer(from: u256, to: u256, amount: u256) uses (log: mut Log) {
+fn emit_transfer(from: Address, to: Address, amount: u256) uses (log: mut Log) {
     log.emit(event: Transfer { from, to, amount })
 }
 
-fn emit_approval(owner: u256, spender: u256, amount: u256) uses (log: mut Log) {
+fn emit_approval(owner: Address, spender: Address, amount: u256) uses (log: mut Log) {
     log.emit(event: Approval { owner, spender, amount })
 }
 
 impl TokenStorage {
-    fn transfer(mut self, from: u256, to: u256, amount: u256)
+    fn transfer(mut self, from: Address, to: Address, amount: u256)
         -> bool uses (log: mut Log)
     {
         // ... transfer logic ...
@@ -351,19 +340,19 @@ Only emit when something meaningful happens:
 
 ```fe
 //<hide>
-pub struct TokenStorage { pub allowances: StorageMap<(u256, u256), u256> }
+pub struct TokenStorage { pub allowances: StorageMap<(Address, Address), u256> }
 #[event]
 struct Approval {
     #[indexed]
-    owner: u256,
+    owner: Address,
     #[indexed]
-    spender: u256,
+    spender: Address,
     amount: u256,
 }
 //</hide>
 
 impl TokenStorage {
-    fn set_approval(mut self, owner: u256, spender: u256, new_amount: u256)
+    fn set_approval(mut self, owner: Address, spender: Address, new_amount: u256)
         uses (log: mut Log)
     {
         let current = self.allowances.get(key: (owner, spender))
@@ -381,8 +370,8 @@ impl TokenStorage {
 
 | Pattern | Description |
 |---------|-------------|
-| `log.emit(Event { ... })` | Emit an event |
-| Emit after state change | Ensures event reflects actual changes |
+| `log.emit(event: Event { ... })` | Emit an event |
+| Emit on the success path | No event for changes that did not happen |
 | Multiple events | Same handler can emit different types |
 | Helper functions | Centralize event emission |
 | Conditional emit | Only emit on meaningful changes |

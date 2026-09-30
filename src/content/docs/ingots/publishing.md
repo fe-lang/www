@@ -51,7 +51,7 @@ pub contract Token {
 /// Transfer tokens from the caller to a recipient.
 ///
 /// Emits a Transfer event on success.
-pub fn transfer(to: address, amount: u256) {
+pub fn transfer(to: Address, amount: u256) {
     // ...
 }
 ```
@@ -85,10 +85,10 @@ Tell users how to add your ingot:
 
 ```toml
 [dependencies]
-my_awesome_lib = { source = "https://github.com/you/my-ingot.git", rev = "a1b2c3d4" }
+my_awesome_lib = { source = "https://github.com/you/my-ingot.git", rev = "0123456789abcdef0123456789abcdef01234567" }
 ```
 
-**Note:** Fe requires commit hashes for `rev` (not tags or branches) to ensure reproducible builds without lock files.
+**Note:** `rev` must be the full 40-character commit hash printed by `git rev-parse HEAD`. Abbreviated hashes, tags, and branch names are rejected; the exact commit is what makes builds reproducible without lock files.
 
 ## Repository Structure
 
@@ -124,7 +124,6 @@ my-ingot/
 ### What's Not Breaking
 
 - Adding new public items
-- Adding optional parameters with defaults
 - Internal implementation changes
 - Performance improvements
 
@@ -144,16 +143,16 @@ name = "utils"
 name = "helpers"
 ```
 
-### Pin Your Dependencies
+### Reference Dependencies by Commit
 
-When publishing, pin dependencies to specific versions:
+Every git dependency, including those of a published ingot, must name a full commit hash:
 
 ```toml
 [dependencies]
-# Good - pinned to specific commit
-base_lib = { source = "https://github.com/org/base.git", rev = "abc1234" }
+# Valid - full 40-character commit hash
+base_lib = { source = "https://github.com/org/base.git", rev = "0123456789abcdef0123456789abcdef01234567" }
 
-# Risky - branch can change
+# Invalid - branch names, tags, and abbreviated hashes are rejected
 base_lib = { source = "https://github.com/org/base.git", rev = "main" }
 ```
 
@@ -168,7 +167,7 @@ Add to your `fe.toml`:
 
 \`\`\`toml
 [dependencies]
-my_lib = { source = "https://github.com/you/my-lib.git", rev = "a1b2c3d4" }
+my_lib = { source = "https://github.com/you/my-lib.git", rev = "0123456789abcdef0123456789abcdef01234567" }
 \`\`\`
 
 Then import and use:

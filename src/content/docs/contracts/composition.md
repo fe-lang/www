@@ -15,10 +15,10 @@ Unlike Solidity's inheritance, Fe uses composition through:
 ```fe
 // Modular storage
 pub struct BalanceStorage { pub total: u256 }
-pub struct OwnerStorage { pub owner: u256 }
+pub struct OwnerStorage { pub owner: Address }
 
 // Reusable functions
-fn transfer(from: u256, to: u256, amount: u256) -> bool uses (balances: mut BalanceStorage) {
+fn transfer(from: Address, to: Address, amount: u256) -> bool uses (balances: mut BalanceStorage) {
     let _ = (from, to, amount)
     true
 }
@@ -40,22 +40,22 @@ Extract business logic into functions that declare their effect dependencies:
 
 ```fe
 pub struct TokenStorage {
-    pub balances: StorageMap<u256, u256>,
+    pub balances: StorageMap<Address, u256>,
     pub total_supply: u256,
 }
 
 // Read-only helper
-fn get_balance(account: u256) -> u256 uses (store: TokenStorage) {
+fn get_balance(account: Address) -> u256 uses (store: TokenStorage) {
     store.balances.get(key: account)
 }
 
 // Mutating helper
-fn add_balance(account: u256, amount: u256) uses (store: mut TokenStorage) {
+fn add_balance(account: Address, amount: u256) uses (store: mut TokenStorage) {
     let current = store.balances.get(key: account)
     store.balances.set(key: account, value: current + amount)
 }
 
-fn sub_balance(account: u256, amount: u256) -> bool uses (store: mut TokenStorage) {
+fn sub_balance(account: Address, amount: u256) -> bool uses (store: mut TokenStorage) {
     let current = store.balances.get(key: account)
     if current < amount {
         return false
@@ -65,7 +65,7 @@ fn sub_balance(account: u256, amount: u256) -> bool uses (store: mut TokenStorag
 }
 
 // Higher-level helper composing lower-level ones
-fn transfer(from: u256, to: u256, amount: u256) -> bool uses (store: mut TokenStorage) {
+fn transfer(from: Address, to: Address, amount: u256) -> bool uses (store: mut TokenStorage) {
     if !sub_balance(account: from, amount) {
         return false
     }
@@ -81,20 +81,16 @@ Split storage into logical units:
 ```fe
 //<hide>
 use std::abi::sol
-pub struct Ctx {}
-impl Ctx {
-    pub fn caller(self) -> u256 { todo() }
-}
 
 fn require_not_paused() uses (pause_state: PauseStorage) {
     assert!(!pause_state.paused, "paused")
 }
 
-fn require_owner(expected: u256) uses (ctx: Ctx) {
+fn require_owner(expected: Address) uses (ctx: Ctx) {
     assert!(ctx.caller() == expected, "not owner")
 }
 
-fn transfer(from: u256, to: u256, amount: u256) -> bool uses (balances: mut BalanceStorage) {
+fn transfer(from: Address, to: Address, amount: u256) -> bool uses (balances: mut BalanceStorage) {
     let current = balances.balances.get(key: from)
     if current < amount { return false }
     balances.balances.set(key: from, value: current - amount)
@@ -109,13 +105,13 @@ fn set_paused(value: bool) uses (pause_state: mut PauseStorage) {
 
 // Core token state
 pub struct BalanceStorage {
-    pub balances: StorageMap<u256, u256>,
+    pub balances: StorageMap<Address, u256>,
     pub total_supply: u256,
 }
 
 // Ownership state
 pub struct OwnerStorage {
-    pub owner: u256,
+    pub owner: Address,
 }
 
 // Pausability state
@@ -126,7 +122,7 @@ pub struct PauseStorage {
 // Message definitions
 msg TokenMsg {
     #[selector = sol("transfer(address,uint256)")]
-    Transfer { to: u256, amount: u256 } -> bool,
+    Transfer { to: Address, amount: u256 } -> bool,
 }
 
 msg AdminMsg {
@@ -165,24 +161,20 @@ Implement access control as a reusable module:
 //<hide>
 use std::abi::sol
 pub struct TokenStorage {
-    pub balances: StorageMap<u256, u256>,
+    pub balances: StorageMap<Address, u256>,
 }
 
-pub struct Ctx {}
-impl Ctx {
-    pub fn caller(self) -> u256 { todo() }
-}
 
-fn mint_tokens(to: u256, amount: u256) uses (store: mut TokenStorage) {
+fn mint_tokens(to: Address, amount: u256) uses (store: mut TokenStorage) {
     store.balances.set(key: to, value: store.balances.get(key: to) + amount)
 }
 //</hide>
 
 pub struct OwnerStorage {
-    pub owner: u256,
+    pub owner: Address,
 }
 
-fn get_owner() -> u256 uses (ownership: OwnerStorage) {
+fn get_owner() -> Address uses (ownership: OwnerStorage) {
     ownership.owner
 }
 
@@ -190,7 +182,7 @@ fn require_owner() uses (ctx: Ctx, ownership: OwnerStorage) {
     assert!(ctx.caller() == ownership.owner, "not owner")
 }
 
-fn transfer_ownership(new_owner: u256) uses (ctx: Ctx, ownership: mut OwnerStorage) {
+fn transfer_ownership(new_owner: Address) uses (ctx: Ctx, ownership: mut OwnerStorage) {
     require_owner()
     ownership.owner = new_owner
 }
@@ -198,10 +190,10 @@ fn transfer_ownership(new_owner: u256) uses (ctx: Ctx, ownership: mut OwnerStora
 // Message definitions
 msg AdminMsg {
     #[selector = sol("transferOwnership(address)")]
-    TransferOwnership { new_owner: u256 } -> bool,
+    TransferOwnership { new_owner: Address } -> bool,
 
     #[selector = sol("mint(address,uint256)")]
-    Mint { to: u256, amount: u256 } -> bool,
+    Mint { to: Address, amount: u256 } -> bool,
 }
 
 // Use in any contract
@@ -234,23 +226,19 @@ contract OwnableToken {
 //<hide>
 use std::abi::sol
 pub struct TokenStorage {
-    pub balances: StorageMap<u256, u256>,
+    pub balances: StorageMap<Address, u256>,
 }
 
 pub struct OwnerStorage {
-    pub owner: u256,
+    pub owner: Address,
 }
 
-pub struct Ctx {}
-impl Ctx {
-    pub fn caller(self) -> u256 { todo() }
-}
 
 fn require_owner() uses (ctx: Ctx, ownership: OwnerStorage) {
     assert!(ctx.caller() == ownership.owner, "not owner")
 }
 
-fn transfer(from: u256, to: u256, amount: u256) -> bool uses (store: mut TokenStorage) {
+fn transfer(from: Address, to: Address, amount: u256) -> bool uses (store: mut TokenStorage) {
     let current = store.balances.get(key: from)
     if current < amount { return false }
     store.balances.set(key: from, value: current - amount)
@@ -260,7 +248,7 @@ fn transfer(from: u256, to: u256, amount: u256) -> bool uses (store: mut TokenSt
 
 msg TokenMsg {
     #[selector = sol("transfer(address,uint256)")]
-    Transfer { to: u256, amount: u256 } -> bool,
+    Transfer { to: Address, amount: u256 } -> bool,
 }
 
 msg AdminMsg {
@@ -323,27 +311,23 @@ Functions can require multiple effects:
 //<hide>
 use std::abi::sol
 pub struct TokenStorage {
-    pub balances: StorageMap<u256, u256>,
+    pub balances: StorageMap<Address, u256>,
 }
 
 pub struct OwnerStorage {
-    pub owner: u256,
+    pub owner: Address,
 }
 
 pub struct PauseStorage {
     pub paused: bool,
 }
 
-pub struct Ctx {}
-impl Ctx {
-    pub fn caller(self) -> u256 { todo() }
-}
 
 fn require_not_paused() uses (pause_state: PauseStorage) {
     assert!(!pause_state.paused, "paused")
 }
 
-fn transfer(from: u256, to: u256, amount: u256) -> bool uses (store: mut TokenStorage) {
+fn transfer(from: Address, to: Address, amount: u256) -> bool uses (store: mut TokenStorage) {
     let current = store.balances.get(key: from)
     if current < amount { return false }
     store.balances.set(key: from, value: current - amount)
@@ -353,13 +337,13 @@ fn transfer(from: u256, to: u256, amount: u256) -> bool uses (store: mut TokenSt
 
 msg TokenMsg {
     #[selector = sol("transfer(address,uint256)")]
-    Transfer { to: u256, amount: u256 } -> bool,
+    Transfer { to: Address, amount: u256 } -> bool,
 }
 //</hide>
 
 fn guarded_transfer(
-    from: u256,
-    to: u256,
+    from: Address,
+    to: Address,
     amount: u256
 ) -> bool uses (store: mut TokenStorage, pause_state: PauseStorage) {
     require_not_paused()
@@ -385,14 +369,14 @@ For larger projects, organize code across files:
 
 ```
 src/
-├── main.fe           # Contract definitions
+├── lib.fe            # Ingot root module: contract definitions
 ├── storage.fe        # Storage struct definitions
 ├── token.fe          # Token-related functions
 ├── access.fe         # Access control functions
 └── pausable.fe       # Pausability functions
 ```
 
-Each file exports its functions and types for use in the main contract.
+Each file is a module of the ingot. Mark items `pub` and import them where they are needed, for example `use ingot::storage::TokenStorage` in `lib.fe`.
 
 ## Benefits of Composition
 

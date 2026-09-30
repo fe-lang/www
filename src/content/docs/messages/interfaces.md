@@ -14,19 +14,19 @@ use std::abi::sol
 
 msg Erc20 {
     #[selector = sol("transfer(address,uint256)")]
-    Transfer { to: u256, amount: u256 } -> bool,
+    Transfer { to: Address, amount: u256 } -> bool,
 
     #[selector = sol("approve(address,uint256)")]
-    Approve { spender: u256, amount: u256 } -> bool,
+    Approve { spender: Address, amount: u256 } -> bool,
 
     #[selector = sol("transferFrom(address,address,uint256)")]
-    TransferFrom { from: u256, to: u256, amount: u256 } -> bool,
+    TransferFrom { from: Address, to: Address, amount: u256 } -> bool,
 
     #[selector = sol("balanceOf(address)")]
-    BalanceOf { account: u256 } -> u256,
+    BalanceOf { account: Address } -> u256,
 
     #[selector = sol("allowance(address,address)")]
-    Allowance { owner: u256, spender: u256 } -> u256,
+    Allowance { owner: Address, spender: Address } -> u256,
 
     #[selector = sol("totalSupply()")]
     TotalSupply {} -> u256,
@@ -37,69 +37,67 @@ Any contract with `recv Erc20 { ... }` implements this interface.
 
 ## The MsgVariant Trait
 
-Under the hood, each message variant becomes a struct that implements the `MsgVariant` trait. When you write a `msg` definition, the compiler generates `AbiSize`, `Encode<Sol>`, `Decode<Sol>`, and `MsgVariant<Sol>` implementations for each variant. Here is what that looks like — this is equivalent to what the compiler generates, but written by hand:
+Under the hood, each message variant becomes a struct. For every variant, the compiler generates `AbiSize`, `Encode<Sol>`, and `Decode<Sol>` implementations, plus an implementation of the `MsgVariant` trait from `core::message`:
+
+```fe ignore
+pub trait MsgVariant<A: Abi>: Encode<A> + Decode<A> {
+    const SELECTOR: A::Selector
+    type Return: Decode<A>
+}
+```
+
+`SELECTOR` associates the variant with its 4-byte function selector, and `Return` is the type the handler must return. For the `Transfer` variant of the `Erc20` group above, a hand-written equivalent looks roughly like this:
 
 ```fe
 use std::abi::Sol
-use core::abi::{Abi, Encode, Decode, AbiSize, AbiEncoder, AbiDecoder}
+use core::abi::{AbiSize, Encode, Decode, AbiDecoder, store_word}
 use core::message::MsgVariant
 
 // The variant struct
 struct Transfer {
-    to: u256,
+    to: Address,
     amount: u256,
 }
 
-// ABI size: two u256 fields = 64 bytes
+// ABI size: two static words = 64 bytes
 impl AbiSize for Transfer {
     const HEAD_SIZE: u256 = 64
     const IS_DYNAMIC: bool = false
 }
 
-// ABI encoding: write each field as a word
+// Encoding: write each field as a 32-byte word
 impl Encode<Sol> for Transfer {
-    const DIRECT_ENCODE: bool = false
-
-    fn encode<E: AbiEncoder<Sol>>(own self, _ e: mut E) {
-        self.to.encode(mut e)
-        self.amount.encode(mut e)
-    }
-
-    fn encode_to_ptr(own self, _ ptr: u256) {
-        let _ = ptr
-        core::panic()
+    fn encode(own self, _ ptr: *u8) {
+        store_word(ptr: ptr, value: self.to.inner)
+        store_word(ptr: core::ptr::offset_bytes(ptr, 32), value: self.amount)
     }
 }
 
-// ABI decoding: read each field as a word
+// Decoding: read each field back
 impl Decode<Sol> for Transfer {
     fn decode_payload<D: AbiDecoder<Sol>>(_ d: mut D) -> Self {
         Transfer {
-            to: u256::decode_payload(mut d),
+            to: Address::decode_payload(mut d),
             amount: u256::decode_payload(mut d),
         }
     }
 }
 
-// The MsgVariant trait: selector and return type
+// Selector and return type
 impl MsgVariant<Sol> for Transfer {
     const SELECTOR: u32 = 0xa9059cbb
     type Return = bool
 }
-
-fn check_selector() -> u32 {
-    Transfer::SELECTOR
-}
 ```
 
-With a `msg` declaration, the compiler generates all of this automatically. You can always access the generated `SELECTOR` constant:
+You never need to write this yourself. Let the compiler derive the ABI implementation from the message declaration rather than maintaining a handwritten encoder. With a `msg` declaration, the compiler generates all of this automatically, and you can access the generated `SELECTOR` constant:
 
 ```fe
 use std::abi::sol
 
 msg TokenMsg {
     #[selector = sol("transfer(address,uint256)")]
-    Transfer { to: u256, amount: u256 } -> bool,
+    Transfer { to: Address, amount: u256 } -> bool,
 }
 
 fn get_selector() -> u32 {
@@ -117,12 +115,12 @@ This desugaring enables:
 Define standard interfaces as separate message groups:
 
 ```fe
-use std::abi::sol
+use std::abi::{sol, Bytes32}
 
 // Core ERC20 operations
 msg Erc20 {
     #[selector = sol("transfer(address,uint256)")]
-    Transfer { to: u256, amount: u256 } -> bool,
+    Transfer { to: Address, amount: u256 } -> bool,
 }
 
 // Metadata extension
@@ -137,16 +135,22 @@ msg Erc20Metadata {
     Decimals {} -> u8,
 }
 
-// Permit extension (ERC2612)
+// Permit extension (ERC-2612)
 msg Erc20Permit {
-    #[selector = sol("permit(address,address,uint256,uint256,uint8,uint256,uint256)")]
-    Permit { owner: u256, spender: u256, value: u256, deadline: u256, v: u8, r: u256, s: u256 } -> bool,
+    #[selector = sol("permit(address,address,uint256,uint256,uint8,bytes32,bytes32)")]
+    Permit { owner: Address, spender: Address, value: u256, deadline: u256, v: u8, r: Bytes32, s: Bytes32 },
 
     #[selector = sol("nonces(address)")]
-    Nonces { owner: u256 } -> u256,
+    Nonces { owner: Address } -> u256,
 
-    #[selector = sol("domainSeparator()")]
-    DomainSeparator {} -> u256,
+    #[selector = sol("DOMAIN_SEPARATOR()")]
+    DomainSeparator {} -> Bytes32,
+}
+
+// Application-specific extension
+msg TokenAdmin {
+    #[selector = sol("mint(address,uint256)")]
+    Mint { to: Address, amount: u256 },
 }
 ```
 
@@ -154,10 +158,10 @@ Contracts can implement any combination:
 
 ```fe
 //<hide>
-use std::abi::sol
+use std::abi::{sol, Bytes32}
 msg Erc20 {
     #[selector = sol("transfer(address,uint256)")]
-    Transfer { to: u256, amount: u256 } -> bool,
+    Transfer { to: Address, amount: u256 } -> bool,
 }
 
 msg Erc20Metadata {
@@ -170,12 +174,12 @@ msg Erc20Metadata {
 }
 
 msg Erc20Permit {
-    #[selector = sol("permit(address,address,uint256,uint256,uint8,uint256,uint256)")]
-    Permit { owner: u256, spender: u256, value: u256, deadline: u256, v: u8, r: u256, s: u256 } -> bool,
+    #[selector = sol("permit(address,address,uint256,uint256,uint8,bytes32,bytes32)")]
+    Permit { owner: Address, spender: Address, value: u256, deadline: u256, v: u8, r: Bytes32, s: Bytes32 },
     #[selector = sol("nonces(address)")]
-    Nonces { owner: u256 } -> u256,
-    #[selector = sol("domainSeparator()")]
-    DomainSeparator {} -> u256,
+    Nonces { owner: Address } -> u256,
+    #[selector = sol("DOMAIN_SEPARATOR()")]
+    DomainSeparator {} -> Bytes32,
 }
 //</hide>
 
@@ -218,18 +222,19 @@ contract FullToken {
         Decimals {} -> u8 { 18 }
     }
     recv Erc20Permit {
-        Permit { owner, spender, value, deadline, v, r, s } -> bool {
+        Permit { owner, spender, value, deadline, v, r, s } {
             let _ = (owner, spender, value, deadline, v, r, s)
-            true
         }
         Nonces { owner } -> u256 {
             let _ = owner
             0
         }
-        DomainSeparator {} -> u256 { 0 }
+        DomainSeparator {} -> Bytes32 { Bytes32 { val: 0 } }
     }
 }
 ```
+
+Each `recv` block must handle every variant in its group. See [Multiple Message Types](/messages/multiple-types/) for the syntax and [CoolCoin](/examples/erc20/) for handlers with real balance and permission checks.
 
 ## Defining Custom Interfaces
 
@@ -240,16 +245,16 @@ Create your own interfaces for custom protocols:
 use std::abi::sol
 msg Erc20 {
     #[selector = sol("transfer(address,uint256)")]
-    Transfer { to: u256, amount: u256 } -> bool,
+    Transfer { to: Address, amount: u256 } -> bool,
 }
 //</hide>
 
 msg Ownable {
     #[selector = sol("owner()")]
-    Owner {} -> u256,
+    Owner {} -> Address,
 
     #[selector = sol("transferOwnership(address)")]
-    TransferOwnership { new_owner: u256 } -> bool,
+    TransferOwnership { new_owner: Address } -> bool,
 
     #[selector = sol("renounceOwnership()")]
     RenounceOwnership {} -> bool,
@@ -274,7 +279,7 @@ contract ManagedToken {
         }
     }
     recv Ownable {
-        Owner {} -> u256 { 0 }
+        Owner {} -> Address { Address::zero() }
         TransferOwnership { new_owner } -> bool {
             let _ = new_owner
             true
@@ -306,11 +311,11 @@ msg Erc20 {
     /// Transfer tokens to another account
     /// Returns true on success
     #[selector = sol("transfer(address,uint256)")]
-    Transfer { to: u256, amount: u256 } -> bool,
+    Transfer { to: Address, amount: u256 } -> bool,
 
     /// Approve a spender to transfer tokens on your behalf
     #[selector = sol("approve(address,uint256)")]
-    Approve { spender: u256, amount: u256 } -> bool,
+    Approve { spender: Address, amount: u256 } -> bool,
 }
 ```
 

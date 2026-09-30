@@ -86,3 +86,5 @@ The Fe language server currently provides:
 - **Go-to-definition** -- jump to where a symbol is defined
 - **Find references** -- find all usages of a symbol
 - **Completions** -- context-aware code completion
+
+The language server also shows contract layout in hovers: hover a contract for its storage, transient storage, and immutable fields, or hover a field for its own layout. This is useful when reviewing inferred map parameters.

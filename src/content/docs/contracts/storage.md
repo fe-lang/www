@@ -22,6 +22,34 @@ contract Token {
 
 The contract field `store` holds an instance of `TokenStorage`, which persists between transactions.
 
+## Mutable and Immutable Fields
+
+Contract fields are immutable by default. A field without `mut` is initialized in `init` and embedded in deployed code. Every successful constructor exit must initialize it; later handlers can read it but cannot request mutable access. A `mut` field uses mutable state and begins zero-initialized.
+
+```fe
+use std::abi::sol
+
+msg ConfigMsg {
+    #[selector = sol("owner()")]
+    Owner -> Address,
+}
+
+pub contract Configured {
+    owner: Address,
+    mut count: u256,
+
+    init(admin: Address) uses (mut owner) {
+        owner = admin
+    }
+
+    recv ConfigMsg {
+        Owner -> Address uses owner { owner }
+    }
+}
+```
+
+The `mut` on a contract field determines whether it can be mutated after deployment. `uses (mut field)` separately grants a particular handler permission to write it.
+
 ## Storage-Compatible Types
 
 ### Primitive Types
@@ -50,9 +78,7 @@ pub struct TokenStorage {
 }
 ```
 
-:::note[StorageMap Implementation]
-The current `StorageMap` is a temporary implementation that will be replaced with a more advanced Map type in the future.
-:::
+Each structural occurrence of a map with an inferred salt receives its own layout parameter, including maps nested in structs and arrays. Fe 26.3 fixed collisions in these inferred layouts. Explicitly shared salts still share entries.
 
 ### Nested Structs
 
@@ -69,6 +95,25 @@ pub struct TokenStorage {
     pub metadata: Metadata,
 }
 ```
+
+## Dynamic Bytes in Storage
+
+`StorageBytes<K>` stores byte sequences under keys. Fe provides `to_memory(key)` to copy a stored payload into a `MemBuffer` without ending the call, and `word_at(key, index)` to read a payload word by word index.
+
+```fe
+use std::evm::{StorageBytes, crypto}
+
+struct Documents {
+    contents: StorageBytes<u256>,
+}
+
+fn document_hash(id: u256) -> u256 uses (documents: Documents) {
+    let data = documents.contents.to_memory(key: id)
+    crypto::keccak256(data.span())
+}
+```
+
+The returned buffer contains payload bytes rather than an ABI length prefix. You can hash or otherwise process it before returning from the handler.
 
 ## Accessing Storage
 
@@ -224,6 +269,42 @@ Fe computes storage slots automatically. Each field gets a deterministic locatio
 
 You don't need to manually specify storage slots.
 
+## Explicit Solidity Layouts
+
+`SolSlot` accesses a runtime storage slot using Solidity's packed layout. Offsets count bytes from the low end of the word, and writing a field preserves its neighbours. `SolPacked` covers booleans, addresses, integer widths (including `sol::` wrappers), and fixed bytes. This is explicit layout access; it does not change Fe's ordinary field layout.
+
+```fe
+use std::evm::{RawStorage, SolSlot}
+
+#[test]
+fn packed_fields_preserve_neighbours() uses (storage: mut RawStorage) {
+    let slot = SolSlot::at(0)
+    slot.write(offset: 0, value: Address { inner: 123 })
+    slot.write(offset: 20, value: true)
+    let owner: Address = slot.read(offset: 0)
+    let paused: bool = slot.read(offset: 20)
+    assert!(owner.inner == 123 && paused)
+    slot.write(offset: 20, value: false)
+    let unchanged: Address = slot.read(offset: 0)
+    assert!(unchanged == owner)
+}
+```
+
+`read_bytes`/`write_bytes` and `read_string`/`write_string` use Solidity's short/long byte layouts. Replacing a longer value clears its abandoned storage words.
+
+`SolMapping` derives Solidity mapping slots from a runtime root. For `mapping(address => mapping(address => uint256)) allowances` at slot 5:
+
+```fe
+use std::evm::{SolMapping, SolSlot, RawStorage}
+
+fn allowance(owner: Address, spender: Address) -> u256 uses (storage: RawStorage) {
+    let slot = SolMapping::at(5).nested(owner).slot_of(spender)
+    SolSlot::at(slot).read(offset: 0)
+}
+```
+
+Use the actual deployed layout when choosing slot roots and offsets. These helpers do not discover layouts or prevent collisions with compiler-managed fields.
+
 ## Summary
 
 | Concept | Description |
@@ -234,3 +315,4 @@ You don't need to manually specify storage slots.
 | `.get(key)` | Read from map |
 | `.set(key, value)` | Write to map |
 | Effect access | Use `with` to provide storage to functions |
+| `SolSlot` / `SolMapping` | Explicit access to Solidity storage layouts |

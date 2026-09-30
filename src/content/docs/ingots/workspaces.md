@@ -119,7 +119,7 @@ members = ["ingots/*"]
 
 [dependencies]
 utils = { path = "/home/alice/projects/my-ws/vendor/utils", name = "utils", version = "0.1.0" }
-remote_math = { source = "https://example.com/fe.git", rev = "abcd1234", path = "ingots/math" }
+remote_math = { source = "https://example.com/fe.git", rev = "0123456789abcdef0123456789abcdef01234567", path = "ingots/math" }
 ```
 
 Members can “import” a workspace dependency by referencing its alias with `= true` (or with an optional version):

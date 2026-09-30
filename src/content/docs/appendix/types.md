@@ -36,7 +36,7 @@ let _ = (small, balance, max_supply)
 ### Notes
 
 - `u256` is the native EVM word size and most efficient for storage
-- Use smaller types when packing multiple values into storage slots
+- Choose integer widths for their range and ABI requirements; do not assume automatic storage packing
 - Arithmetic overflow causes a revert by default
 
 ## Signed Integers
@@ -205,6 +205,39 @@ let _ = first
 //</hide>
 ```
 
+Fixed-size arrays also support `==` and `!=` when their elements implement `Eq`:
+
+```fe
+#[test]
+fn array_equality() {
+    let left: [u256; 3] = [1, 2, 3]
+    let right: [u256; 3] = [1, 2, 3]
+    assert!(left == right)
+}
+```
+
+## Dynamic ABI Arrays
+
+`std::abi::DynArray<T>` represents an ABI array with a runtime length. Fe provides typed `get(index)` access and `MemVec<T>` for building mutable arrays in memory. `MemVec` has a fixed length chosen at construction; it does not provide `push`.
+
+```fe
+use std::abi::{DynArray, MemVec}
+
+#[test]
+fn dynamic_array_copy() {
+    let mut values = MemVec<u256>::zeroed(2)
+    values.set(index: 0, value: 10)
+    values.set(index: 1, value: 20)
+    let encoded: DynArray<u256> = values.to_dyn_array()
+    values.set(index: 0, value: 99)
+    assert!(encoded.len() == 2)
+    assert!(encoded.get(0) == 10)
+    assert!(values.get(0) == 99)
+}
+```
+
+`to_dyn_array` creates an independent copy suitable for ABI arguments, return values, or event fields. `from_dyn_array` copies in the other direction. In Fe 26.4, typed `DynArray::get` and `MemVec` support sealed single-word static ABI element types: integers, booleans, addresses, and fixed bytes. They do not support structs, tuple elements, or dynamic elements such as `Bytes`. Out-of-bounds access reverts with `Panic(0x32)`.
+
 ## Unit Type
 
 The empty tuple, representing no value:
@@ -254,13 +287,13 @@ match maybe_value {
 //</hide>
 ```
 
-## Map
+## StorageMap
 
 Key-value storage mapping:
 
 | Type | Description |
 |------|-------------|
-| `Map<K, V>` | Maps keys of type K to values of type V |
+| `StorageMap<K, V>` | Maps keys of type K to values of type V |
 
 ### Usage
 
@@ -330,14 +363,14 @@ let _ = (big, unsigned)
 | Array | `[T; N]` |
 | Unit | `()` |
 | Optional | `Option<T>` |
-| Map | `Map<K, V>` |
+| Map | `StorageMap<K, V>` |
 
 ## EVM Considerations
 
-| Type | EVM Storage | Notes |
-|------|-------------|-------|
-| `u256` | 1 slot | Native word size |
-| `u128` | 1/2 slot | Can pack 2 per slot |
-| `u64` | 1/4 slot | Can pack 4 per slot |
-| `bool` | 1 slot | Unless packed |
-| `Map` | Dynamic | Uses keccak256 hashing |
+An EVM storage slot is 32 bytes. Do not infer Fe field layout by dividing a type's bit width by 256: smaller integer types do not imply Solidity-style automatic packing. Inspect the compiler's contract layout information when layout matters. `StorageMap` derives entry locations with Keccak-256 and a map salt.
+
+Pointer-bearing memory values cannot be persisted in contract storage.
+
+## ABI Array Limits
+
+To construct arrays of supported static elements, use `MemVec::zeroed`, `set`, and `to_dyn_array` as shown above. Do not assume a `DynArray<Bytes>` can be indexed with `get`; dynamic and composite elements require APIs beyond this release's typed array helpers.

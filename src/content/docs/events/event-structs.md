@@ -12,15 +12,15 @@ Define an event as a struct:
 ```fe
 #[event]
 struct Transfer {
-    from: u256,
-    to: u256,
+    from: Address,
+    to: Address,
     amount: u256,
 }
 
 #[event]
 struct Approval {
-    owner: u256,
-    spender: u256,
+    owner: Address,
+    spender: Address,
     amount: u256,
 }
 ```
@@ -35,9 +35,9 @@ The `#[indexed]` attribute marks fields that should become EVM log topics, makin
 #[event]
 struct Transfer {
     #[indexed]
-    from: u256,
+    from: Address,
     #[indexed]
-    to: u256,
+    to: Address,
     amount: u256,
 }
 ```
@@ -55,9 +55,9 @@ Indexed fields enable efficient queries:
 #[event]
 struct Transfer {
     #[indexed]
-    from: u256,      // Filter: "all transfers FROM this address"
+    from: Address,      // Filter: "all transfers FROM this address"
     #[indexed]
-    to: u256,        // Filter: "all transfers TO this address"
+    to: Address,        // Filter: "all transfers TO this address"
     amount: u256,    // Just data, not filterable
 }
 ```
@@ -115,9 +115,9 @@ Standard token events follow ERC20/ERC721 conventions:
 #[event]
 struct Transfer {
     #[indexed]
-    from: u256,
+    from: Address,
     #[indexed]
-    to: u256,
+    to: Address,
     amount: u256,
 }
 
@@ -125,19 +125,24 @@ struct Transfer {
 #[event]
 struct Approval {
     #[indexed]
-    owner: u256,
+    owner: Address,
     #[indexed]
-    spender: u256,
+    spender: Address,
     amount: u256,
 }
 
+```
+
+An ERC721 transfer has the same event name but indexes the token ID. Define it separately from the ERC20 event:
+
+```fe
 // ERC721 Transfer
 #[event]
-struct NftTransfer {
+struct Transfer {
     #[indexed]
-    from: u256,
+    from: Address,
     #[indexed]
-    to: u256,
+    to: Address,
     #[indexed]
     token_id: u256,
 }
@@ -151,19 +156,19 @@ Events for contract administration:
 #[event]
 struct OwnershipTransferred {
     #[indexed]
-    previous_owner: u256,
+    previous_owner: Address,
     #[indexed]
-    new_owner: u256,
+    new_owner: Address,
 }
 
 #[event]
 struct Paused {
-    account: u256,
+    account: Address,
 }
 
 #[event]
 struct Unpaused {
-    account: u256,
+    account: Address,
 }
 ```
 
@@ -175,14 +180,14 @@ Events recording state changes:
 #[event]
 struct Deposit {
     #[indexed]
-    account: u256,
+    account: Address,
     amount: u256,
 }
 
 #[event]
 struct Withdrawal {
     #[indexed]
-    account: u256,
+    account: Address,
     amount: u256,
 }
 
@@ -205,14 +210,14 @@ Each event should represent one logical occurrence:
 #[event]
 struct Minted {
     #[indexed]
-    to: u256,
+    to: Address,
     amount: u256,
 }
 
 #[event]
 struct Burned {
     #[indexed]
-    from: u256,
+    from: Address,
     amount: u256,
 }
 
@@ -220,7 +225,7 @@ struct Burned {
 #[event]
 struct SupplyChanged {
     operation: u256,  // 0 = mint, 1 = burn
-    account: u256,
+    account: Address,
     amount: u256,
 }
 ```
@@ -233,11 +238,11 @@ Index fields you'll filter by:
 #[event]
 struct Trade {
     #[indexed]
-    trader: u256,      // Often filtered by trader
+    trader: Address,   // Often filtered by trader
     #[indexed]
-    token_in: u256,    // Often filtered by token
+    token_in: Address,  // Often filtered by token
     #[indexed]
-    token_out: u256,   // Often filtered by token
+    token_out: Address, // Often filtered by token
     amount_in: u256,   // Just data
     amount_out: u256,  // Just data
 }
@@ -251,9 +256,9 @@ Events should be self-contained for off-chain processing:
 #[event]
 struct Swap {
     #[indexed]
-    sender: u256,
+    sender: Address,
     #[indexed]
-    recipient: u256,
+    recipient: Address,
     amount0_in: u256,
     amount1_in: u256,
     amount0_out: u256,
@@ -271,3 +276,5 @@ struct Swap {
 | Non-indexed | Fields stored in log data section |
 
 Events provide the foundation for off-chain indexing and dApp reactivity. Design them with your consumers in mind.
+
+In Fe, an event supports at most 16 non-indexed data fields. Indexed dynamic fields are not supported; use non-indexed dynamic data or explicitly store a fixed-size hash as an indexed field.

@@ -219,6 +219,20 @@ let _ = location
 //</hide>
 ```
 
+## Equality
+
+Tuples of up to six elements support `==` and `!=` when every element implements `Eq`. The empty tuple is included:
+
+```fe
+#[test]
+fn tuple_equality() {
+    let first: (u256, bool) = (7, true)
+    let second: (u256, bool) = (7, true)
+    assert!(first == second)
+    assert!(() == ())
+}
+```
+
 ## Summary
 
 | Syntax | Description |

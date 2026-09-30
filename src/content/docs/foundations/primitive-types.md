@@ -103,7 +103,7 @@ The Ethereum Virtual Machine (EVM) natively operates on 256-bit words. This mean
 
 - **`u256` and `i256`** are the most gas-efficient types for most operations, as they match the EVM's native word size
 - Smaller types like `u8` or `u32` may require additional masking operations, potentially using more gas
-- Use smaller types when storage packing is important or when interfacing with external systems that expect specific sizes
+- Use smaller types to constrain numeric ranges or interface with external systems that expect specific sizes
 
 For most smart contract development, prefer `u256` for unsigned values and `i256` for signed values unless you have a specific reason to use smaller types.
 
@@ -115,7 +115,7 @@ fn example() {
 let amount: u256 = 1000
 let price: u256 = 500
 
-// Use smaller types when needed for storage packing or external interfaces
+// Use smaller types for constrained ranges or external interfaces
 let percentage: u8 = 100
 //<hide>
 let _ = (amount, price, percentage)
@@ -262,7 +262,7 @@ However, explicit type annotations are recommended when the intended type isn't 
 fn example() {
 //</hide>
 let amount: u256 = 100  // explicitly u256, not inferred default
-let small: u8 = 50      // explicitly u8 for storage efficiency
+let small: u8 = 50      // explicitly u8 for a bounded range
 //<hide>
 let _ = (amount, small)
 }
@@ -271,7 +271,7 @@ let _ = (amount, small)
 
 ## Address
 
-The `Address` type represents a 20-byte EVM address. It is a built-in type, always available without imports:
+The `Address` type represents a 20-byte EVM address. It is provided by the standard library and available through the prelude without an import:
 
 ```fe
 //<hide>
@@ -296,4 +296,43 @@ let sender: Address = ctx.caller()
 let _ = sender
 }
 //</hide>
+```
+
+## Dynamic Text
+
+Use `DynString` for runtime-length text. `core::text` (also re-exported as `std::text`) provides `concat`, `decimal`, `hex`, `hex_upper`, and `base64`. `DynString` supports byte indexing, slicing, and equality. These functions preserve bytes; they do not validate UTF-8 or normalize text.
+
+For incremental construction, `TextBuilder` grows its backing buffer as needed. `push` consumes and returns the builder, so assign it back; `finish` copies the accumulated bytes into a `DynString`.
+
+```fe
+use std::abi::DynString
+use std::text::{decimal, TextBuilder}
+
+fn token_label(id: u256) -> DynString {
+    let mut builder = TextBuilder::with_capacity(32)
+    builder = builder.push("Token #")
+    builder = builder.push(decimal(id))
+    builder.finish()
+}
+
+#[test]
+fn formats_token_label() {
+    assert!(token_label(id: 42) == "Token #42")
+}
+```
+
+Use `concat_slice` when the number of fragments is known only at runtime. Initialize each element of a memory array before passing its slice to the helper:
+
+```fe
+use core::ptr::MemArray
+use std::abi::DynString
+use std::text::concat_slice
+
+#[test]
+fn joins_runtime_fragments() {
+    let mut parts = MemArray<DynString>::new_uninit(2)
+    *parts.ptr_at(0) = "hello "
+    *parts.ptr_at(1) = "world"
+    assert!(concat_slice(parts.as_slice()) == "hello world")
+}
 ```

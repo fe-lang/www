@@ -258,29 +258,26 @@ See [Ownership & Mutability](/foundations/ownership/) for details on `own`, `ref
 
 ### Iterators
 
-Currently, Fe has basic loop constructs but not yet the full iterator pattern:
+Fe's `for` loop works over ranges, arrays, and any type implementing the `core::seq::Seq` trait (a length plus indexed `get`). There is no Rust-style `Iterator` trait with adapters such as `map`, `filter`, or `collect`:
 
 ```fe
 //<hide>
 fn __iter_example() {
 let items: [u256; 3] = [1, 2, 3]
-let len: u256 = 3
 //</hide>
-// Rust: items.iter().map(|x| x + 1).collect()
-// Fe: Currently uses manual while loops
-let mut i: u256 = 0
-while i < len {
-    // process items[i]
-    i = i + 1
+// Rust: items.iter().map(|x| x + 1).sum()
+// Fe: loop and accumulate explicitly
+let mut sum: u256 = 0
+for item in items {
+    sum = sum + item + 1
 }
 //<hide>
+let _ = sum
 }
 //</hide>
 ```
 
-:::note[Planned Feature]
-A trait-based Iterator system similar to Rust's is planned for Fe. This will enable familiar patterns like `map`, `filter`, and `fold`.
-:::
+Arrays are iterable only when their element type is `Copy`; see [For Loops](/foundations/control-flow/#for-loops).
 
 ### No Closures
 
@@ -293,12 +290,6 @@ fn add(a: u256, b: u256) -> u256 {
     a + b
 }
 ```
-
-### Modules and Ingots
-
-Fe has modules, but uses different terminology:
-
-| Rust | Fe |
 
 ### Modules and Ingots
 
@@ -417,7 +408,7 @@ fn transfer(from: Address, to: Address, amount: u256)
 | Bounds | `T: Trait` | `T: Trait` |
 | Match | `match x {}` | `match x {}` |
 | If | `if x {}` | `if x {}` |
-| Loop | `loop {}` | `loop {}` |
+| Loop | `loop {}` | `while true {}` |
 | For | `for x in iter {}` | `for x in iter {}` |
 | Let | `let x = 1;` | `let x = 1` |
 | Mut | `let mut x = 1;` | `let mut x = 1` |
@@ -429,12 +420,12 @@ fn transfer(from: Address, to: Address, amount: u256)
 
 | Feature | Status in Fe |
 |---------|-------------|
-| Ownership/Borrowing | Not applicable (effects instead) |
+| Ownership/Borrowing | Simplified: `own`, `ref`, and `mut` modes; no lifetimes (see [Simplified Ownership Model](#simplified-ownership-model)) |
 | Lifetimes | Not needed |
 | Closures | Not available |
-| Iterators | Planned (trait-based) |
+| Iterators | `for` over ranges, arrays, and `Seq` types; no iterator adapters |
 | `async`/`await` | Not applicable |
-| Macros | Not available |
+| Macros | No user-defined macros; `assert!` is built in |
 
 ## What's New in Fe
 
@@ -448,5 +439,5 @@ fn transfer(from: Address, to: Address, amount: u256)
 | `with` | Effect binding |
 | `#[selector]` | ABI selector attributes |
 | `#[indexed]` | Event indexing |
-| `Map<K, V>` | Storage mappings |
+| `StorageMap<K, V>` | Storage mappings |
 

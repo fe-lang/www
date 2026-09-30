@@ -62,13 +62,13 @@ fn is_contract(addr: Address) -> bool uses (ctx: Ctx) {
 ## Cryptographic Intrinsics
 
 Hash functions and signature recovery live in `std::evm::crypto`. The hash functions operate on a
-**memory region** (offset and length), and the precompile-backed ones return a `Result`:
+**memory view** (`MemSpan`), and the precompile-backed ones return a `Result`:
 
 | Function | Returns | Description |
 |----------|---------|-------------|
-| `crypto::keccak256(offset, len)` | `u256` | Keccak-256 of a memory region |
-| `crypto::sha256(offset, len)` | `Result<PrecompileError, u256>` | SHA-256 (precompile `0x02`) |
-| `crypto::ripemd160(offset, len)` | `Result<PrecompileError, u256>` | RIPEMD-160 (precompile `0x03`) |
+| `crypto::keccak256(data)` | `u256` | Keccak-256 of a memory region |
+| `crypto::sha256(data)` | `Result<PrecompileError, u256>` | SHA-256 (precompile `0x02`) |
+| `crypto::ripemd160(data)` | `Result<PrecompileError, u256>` | RIPEMD-160 (precompile `0x03`) |
 | `crypto::ecrecover(hash, v, r, s)` | `Result<PrecompileError, Option<u256>>` | Recover signer from signature (precompile `0x01`) |
 
 Signature recovery takes plain `u256` scalars and returns a `Result`; the inner `Option` is `None`
@@ -96,15 +96,39 @@ fn verify_signature(
 }
 ```
 
-The hash functions take a memory region rather than a value, so you first write bytes to memory
-(through the `RawMem` effect) and then hash them:
+Hash a bounded view of bytes that you already own:
 
-```fe ignore
+```fe
 use std::evm::crypto
+use std::abi::Bytes
 
-// `offset`/`len` describe bytes already written to EVM memory.
-fn hash_region(offset: u256, len: u256) -> u256 {
-    crypto::keccak256(offset, len)
+fn hash_bytes(data: Bytes) -> u256 {
+    crypto::keccak256(data.payload_span())
+}
+
+#[test]
+fn hashes_empty_bytes() {
+    assert!(hash_bytes(data: Bytes::empty()) ==
+        0xc5d2460186f7233c927e7db2dcc703c0e500b653ca82273b7bfad8045d85a470)
+}
+```
+
+`payload_span()` excludes the ABI length word. `encoded_span()` includes the ABI representation and hashes different bytes.
+
+For tightly packed encoding, Fe also provides `std::evm::packed::{encode_packed, keccak_packed, Packed}`. For EIP-712, use `crypto::eip712_digest(domain_separator, struct_hash)` (it requires a `uses (mem: mut RawMem)` effect) after constructing the domain separator and struct hash according to your schema. Packed encoding is distinct from ordinary ABI encoding; concatenating multiple variable-length values can be ambiguous.
+
+## Integer Square Root
+
+`core::num::isqrt` returns the square root of a `u256`, rounded down:
+
+```fe
+use core::num::isqrt
+
+#[test]
+fn integer_square_root() {
+    assert!(isqrt(0) == 0)
+    assert!(isqrt(15) == 3)
+    assert!(isqrt(16) == 4)
 }
 ```
 
@@ -115,7 +139,8 @@ Control flow for error handling:
 | Intrinsic | Description |
 |-----------|-------------|
 | `assert!(condition[, message])` | Revert if condition is false |
-| `revert` | Unconditionally revert execution |
+| `revert(value)` | Revert with an ABI-encoded value (without an error selector) |
+| `revert_error(error)` | Revert with a Solidity-compatible custom error |
 | `todo()` | Placeholder that always reverts |
 
 ### Usage
@@ -135,51 +160,57 @@ fn not_implemented() {
 }
 ```
 
-## Call Intrinsics
+## Calling Contracts
 
-For calling other contracts:
+Use typed messages with the `Call` effect. `Address::call` forwards available gas, sends zero value, decodes the declared return type, and propagates reverts. Fe provides `Address::static` for a typed static call:
 
-| Intrinsic | Description |
-|-----------|-------------|
-| `call(addr, value, data)` | Call another contract |
-| `staticcall(addr, data)` | Read-only call (no state changes) |
-| `delegatecall(addr, data)` | Call using this contract's storage |
+```fe
+use std::abi::sol
 
-### Usage
+msg TokenQuery {
+    #[selector = sol("balanceOf(address)")]
+    BalanceOf { account: Address } -> u256,
+}
 
-```fe ignore
-fn send_eth(to: Address, amount: u256) -> bool {
-    let (success, _) = call(to, amount, [])
-    success
+fn balance_at(token: Address, account: Address) -> u256 uses (call: Call) {
+    token.static(TokenQuery::BalanceOf { account })
 }
 ```
 
-## Memory Intrinsics
+Use `call.call(addr, gas, value, message)` when gas and value need explicit control. `try_call` and `try_static` return a `CallOutcome` whose success flag and returndata can be inspected. `call_with_default` supplies a default only for a successful call with empty returndata; it still propagates reverts and strictly decodes nonempty data. For ERC20 interactions, prefer the dedicated [safe token helpers](/patterns/tokens/).
 
-Low-level memory operations:
+`std::evm::encode_msg_calldata(message)` produces a `MemBuffer` containing the selector and ABI arguments for a low-level call.
 
-| Intrinsic | Description |
-|-----------|-------------|
-| `mload(offset)` | Load 32 bytes from memory |
-| `mstore(offset, value)` | Store 32 bytes to memory |
-| `msize()` | Current memory size |
+## Typed Memory
 
-### Notes
+Fe uses `*T` for typed memory pointers and `core::ptr` for allocation. Initialize an allocation before reading it:
 
-These are rarely needed in Fe as the compiler manages memory automatically.
+```fe
+use core::ptr
 
-## Storage Intrinsics
+#[test]
+fn pointer_read_and_write() {
+    let mut value: *u256 = ptr::alloc<u256>()
+    *value = 41
+    *value += 1
+    assert!(*value == 42)
+}
+```
 
-Direct storage access:
+| Type | Purpose |
+|------|---------|
+| `MemSlice<T>` | Bounded read-only view of typed memory |
+| `MemSpan` | Byte view, an alias for `MemSlice<u8>` |
+| `MemBuffer` | Owned byte allocation with length and writable capacity |
+| `FixedMemBuffer<N>` | Owned allocation with a compile-time byte size |
 
-| Intrinsic | Description |
-|-----------|-------------|
-| `sload(slot)` | Load from storage slot |
-| `sstore(slot, value)` | Store to storage slot |
+The old `MemPtr`, `MemoryInput`, `MemoryBytes`, and integer-address allocation APIs are removed. Pointer-bearing values cannot be stored in persistent or transient storage. A `ref T` borrow and a `*T` memory pointer serve different purposes; see [Ownership & Mutability](/foundations/ownership/).
 
-### Notes
+A leading `*` starts a dereference statement. For multiline multiplication, leave the multiplication operator at the end of the preceding line.
 
-Fe's storage system abstracts over these. Use storage structs and effects instead.
+## Storage Access
+
+Use contract fields and `StorageMap` for ordinary storage. Low-level capabilities such as `RawStorage` and `RawMem` live under `std::evm`. Most opcode wrappers in `std::evm::ops` are internal to `std`; the exceptions are the pure `ops::byte(pos, value)` and `ops::signextend(byte, value)`, which are public and re-exported as `std::evm::byte` and `std::evm::signextend`.
 
 ## Log Intrinsics
 
@@ -210,7 +241,7 @@ fn emit_transfer(from: own Address, to: own Address, value: u256) uses (log: mut
 
 | Intrinsic | Description |
 |-----------|-------------|
-| `msg_value()` | ETH sent with the current call |
+| `ctx.value()` | ETH (in wei) sent with the current call |
 
 ### Usage
 
@@ -238,6 +269,144 @@ fn get_recent_block_hash(block_num: u256) -> u256 uses (ctx: Ctx) {
 }
 ```
 
+## Sending ETH and Bounding Return Data
+
+`Call::send_value` sends ETH with empty calldata and copies no returndata. It returns a `RawCallOutcome`; check `success()` explicitly. A failed transfer does not automatically revert the caller.
+
+```fe
+fn pay(recipient: Address, amount: u256) uses (ctx: Ctx, call: mut Call) {
+    let outcome = call.send_value(addr: recipient, gas: ctx.gas(), value: amount)
+    assert!(outcome.success(), "payment failed")
+}
+```
+
+Update balances before transferring control to the recipient. Passing `ctx.gas()` requests the available gas, subject to the EVM's forwarding rules; the receiver can execute code and reenter.
+
+`try_call_raw` forwards raw calldata and copies all return data. Use `try_call_into` or `try_static_into` to cap the copied data at a supplied buffer's capacity. Their `RawCallOutcome` still reports the full return-data length, so a truncated buffer must not be treated as a complete ABI response.
+
+```fe
+use core::ptr::MemBuffer
+use std::abi::sol
+
+msg Query {
+    #[selector = sol("balanceOf(address)")]
+    BalanceOf { account: Address } -> u256,
+}
+
+fn bounded_balance(token: Address, account: Address) -> u256 uses (call: Call) {
+    let mut ret = MemBuffer::with_capacity(32)
+    let outcome = call.try_static_into(
+        addr: token, gas: 100000,
+        message: Query::BalanceOf { account }, ret: mut ret,
+    )
+    assert!(outcome.success() && outcome.returndata_len() == 32)
+    ret.span().word_at(0)
+}
+```
+
+Static calls require only `uses (call: Call)`. Ordinary calls and value transfers require `uses (call: mut Call)`.
+
+### Minimum Gas and Caller Reserve
+
+`call_with_min_gas(addr, minimum, reserved, value, args)` prepays input-memory expansion and checks an overflow-safe EIP-150 budget immediately before calling. It returns `Result<InsufficientGas, RawCallOutcome>`: `Err` means the call was not attempted; `Ok` still needs a success check. It copies no returndata. The reserve is additional to EIP-150's retained fraction. Its conservative overhead assumption must be revisited if gas pricing changes.
+
+```fe
+use std::evm::calls::has_min_gas
+
+#[test]
+fn checks_gas_budget() {
+    assert!(has_min_gas(available: 200000, minimum: 63000, reserved: 10000))
+    assert!(!has_min_gas(available: 50000, minimum: 63000, reserved: 10000))
+}
+```
+
+A rejected budget can be handled without attempting the external call:
+
+```fe
+use core::ptr::MemSpan
+
+#[test]
+fn refuses_unavailable_gas() uses (call: mut Call) {
+    let outcome = call.call_with_min_gas(
+        addr: Address::zero(), minimum: (1 << 255), reserved: 10000,
+        value: 0, args: MemSpan::empty(),
+    )
+    match outcome {
+        Result::Err(_) => {},
+        Result::Ok(_) => assert!(false),
+    }
+}
+```
+
+## Hashing Words and Predicting Addresses
+
+`keccak_words([..])` hashes complete ABI words. `create2_address` calculates an address from the deployer, salt, and initcode hash without deploying code. Packed encoding also supports custom-width Solidity integers such as `sol::Int24`.
+
+```fe
+use std::evm::{create2_address, keccak_words, checksum_address}
+
+#[test]
+fn address_helpers() {
+    let predicted = create2_address(
+        deployer: Address::zero(), salt: 0,
+        init_code_hash: 0xbc36789e7a1e281436464229828f817d6612f7b477d66591ff96a9e064bcc98a,
+    )
+    assert!(predicted.inner == 0x4d1a2e2bb4f88f0250f26ffff098b0b30b26bf38)
+    assert!(keccak_words([1, 2]) != keccak_words([2, 1]))
+    let address = Address::from_word_truncate((1 << 200) | 0xabc)
+    assert!(address.inner == 0xabc)
+    assert!(checksum_address(Address::zero()) == "0x0000000000000000000000000000000000000000")
+}
+```
+
+`Address::from_word_truncate` explicitly keeps the low 160 bits. `checksum_address` instead requires a canonical address and returns ERC-55 checksum-cased text; it does not implement chain-dependent ERC-1191 checksums.
+
+## Full-Precision Arithmetic
+
+`core::num::mul_div(a, b, d)` computes floor division with a 512-bit intermediate product. `mul_div_ceil` rounds up. Division by zero or an unrepresentable quotient fails like checked arithmetic; `checked_mul_div` and `checked_mul_div_ceil` return `Option::None` instead. `full_mul` exposes the wide product, and `addmod`/`mulmod` are also available in `core::num`.
+
+```fe
+use core::num::{mul_div, mul_div_ceil, leading_zeros, trailing_zeros}
+
+#[test]
+fn arithmetic_helpers() {
+    assert!(mul_div(1 << 200, 1 << 100, 1 << 100) == 1 << 200)
+    assert!(mul_div_ceil(10, 10, 6) == 17)
+    assert!(leading_zeros(0) == 256)
+    assert!(trailing_zeros(8) == 3)
+}
+```
+
+The bit-counting helpers accept `u256` and return 256 for zero. On the EVM, `leading_zeros` uses the CLZ instruction; deploying code that uses it requires an Osaka-compatible chain. Fe 26.4’s EVM tests use Osaka rules.
+
+## Merkle Proofs
+
+`std::evm::merkle` supports sorted-pair proofs (`verify` / `process_proof`) and positional proofs (`verify_indexed` / `process_indexed_proof`). Proof nodes are ordered from the leaf's sibling towards the root. The helpers read a `MemSlice<u256>`, `DynArray<u256>`, or `DynArray<Bytes32>` in place.
+
+```fe
+use std::abi::MemVec
+use std::evm::{keccak_words, merkle}
+
+#[test]
+fn verifies_merkle_paths() {
+    let leaf = keccak_words([7])
+    let sibling = keccak_words([8])
+    let mut nodes = MemVec<u256>::zeroed(1)
+    nodes.set(index: 0, value: sibling)
+    let proof = nodes.to_dyn_array()
+
+    let sorted_root = merkle::hash_pair_sorted(leaf, sibling)
+    assert!(merkle::verify(proof, root: sorted_root, leaf))
+    assert!(!merkle::verify(proof, root: sorted_root, leaf: keccak_words([9])))
+
+    let positional_root = keccak_words([leaf, sibling])
+    assert!(merkle::verify_indexed(proof, root: positional_root, leaf, index: 0))
+    assert!(!merkle::verify_indexed(proof, root: positional_root, leaf, index: 1))
+}
+```
+
+Sorted pairs match OpenZeppelin's commutative Merkle proofs. Positional proofs instead use bit `i` of `index` to choose the side at level `i`; bits above the proof depth are ignored. Use the same tree shape and leaf encoding as the producer. These helpers accept an already hashed leaf and do not hash it for you. OpenZeppelin's standard tree double-hashes its ABI-encoded leaves; a raw 64-byte leaf preimage can be confused with a pair of internal nodes unless the leaf construction separates the two.
+
 ## Summary
 
 | Category | Intrinsics |
@@ -246,7 +415,7 @@ fn get_recent_block_hash(block_num: u256) -> u256 uses (ctx: Ctx) {
 | Contract | `ctx.address`, `ctx.balance`, `ctx.extcodesize`, `ctx.extcodehash` |
 | Crypto | `crypto::keccak256`, `crypto::sha256`, `crypto::ecrecover` |
 | Control | `assert!`, `revert`, `todo` |
-| Calls | `call`, `staticcall`, `delegatecall` |
+| Calls | `Address::call`, `Address::static`, `call.call`, `call.try_call`, `call.try_static`, `call.send_value` |
 | Events | `log.emit` |
 
 ## Best Practices
@@ -255,7 +424,7 @@ fn get_recent_block_hash(block_num: u256) -> u256 uses (ctx: Ctx) {
 
 2. **Avoid low-level storage/memory** - Let Fe manage these automatically
 
-3. **Check ecrecover results** - Always verify the recovered address is not zero
+3. **Check ecrecover results** - Handle both `Err` (precompile failure) and `Ok(None)` (invalid or non-canonical signature) before comparing the recovered signer
 
 4. **Be careful with block_hash** - Only works for the last 256 blocks
 

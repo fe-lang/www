@@ -13,16 +13,12 @@ A contract can have multiple recv blocks, each handling a different message type
 //<hide>
 use std::abi::sol
 pub struct TokenStorage {
-    pub balances: StorageMap<u256, u256>,
+    pub balances: StorageMap<Address, u256>,
     pub total_supply: u256,
 }
 
-pub struct Ctx {}
-impl Ctx {
-    pub fn caller(self) -> u256 { todo() }
-}
 
-fn do_transfer(from: u256, to: u256, amount: u256) -> bool uses (store: mut TokenStorage) {
+fn do_transfer(from: Address, to: Address, amount: u256) -> bool uses (store: mut TokenStorage) {
     let bal = store.balances.get(from)
     if bal < amount { return false }
     store.balances.set(key: from, value: bal - amount)
@@ -30,17 +26,17 @@ fn do_transfer(from: u256, to: u256, amount: u256) -> bool uses (store: mut Toke
     true
 }
 
-fn get_balance(account: u256) -> u256 uses (store: TokenStorage) {
+fn get_balance(account: Address) -> u256 uses (store: TokenStorage) {
     store.balances.get(account)
 }
 //</hide>
 
 msg Erc20 {
     #[selector = sol("transfer(address,uint256)")]
-    Transfer { to: u256, amount: u256 } -> bool,
+    Transfer { to: Address, amount: u256 } -> bool,
 
     #[selector = sol("balanceOf(address)")]
-    BalanceOf { account: u256 } -> u256,
+    BalanceOf { account: Address } -> u256,
 
     #[selector = sol("totalSupply()")]
     TotalSupply {} -> u256,
@@ -117,13 +113,9 @@ Multiple recv blocks can share the same contract state:
 
 ```fe
 //<hide>
-use std::abi::sol
-pub struct Ctx {}
-impl Ctx {
-    pub fn caller(self) -> u256 { todo() }
-}
+use std::abi::{sol, Bytes32}
 
-fn do_transfer(from: u256, to: u256, amount: u256) -> bool uses (store: mut TokenStorage) {
+fn do_transfer(from: Address, to: Address, amount: u256) -> bool uses (store: mut TokenStorage) {
     let bal = store.balances.get(from)
     if bal < amount { return false }
     store.balances.set(key: from, value: bal - amount)
@@ -133,19 +125,19 @@ fn do_transfer(from: u256, to: u256, amount: u256) -> bool uses (store: mut Toke
 
 msg Erc20 {
     #[selector = sol("transfer(address,uint256)")]
-    Transfer { to: u256, amount: u256 } -> bool,
+    Transfer { to: Address, amount: u256 } -> bool,
     #[selector = sol("balanceOf(address)")]
-    BalanceOf { account: u256 } -> u256,
+    BalanceOf { account: Address } -> u256,
 }
 
 msg Erc2612 {
-    #[selector = sol("permit(address,address,uint256,uint256,uint8,uint256,uint256)")]
-    Permit { owner: u256, spender: u256, value: u256, deadline: u256, v: u8, r: u256, s: u256 } -> bool,
+    #[selector = sol("permit(address,address,uint256,uint256,uint8,bytes32,bytes32)")]
+    Permit { owner: Address, spender: Address, value: u256, deadline: u256, v: u8, r: Bytes32, s: Bytes32 },
 }
 //</hide>
 
 pub struct TokenStorage {
-    pub balances: StorageMap<u256, u256>,
+    pub balances: StorageMap<Address, u256>,
     pub total_supply: u256,
 }
 
@@ -165,10 +157,9 @@ contract Token {
 
     // Permit extension (ERC2612) - shares same store
     recv Erc2612 {
-        Permit { owner, spender, value, deadline, v, r, s } -> bool uses (mut store) {
+        Permit { owner, spender, value, deadline, v, r, s } uses (mut store) {
             // Both recv blocks access the same store field
             let _ = (owner, spender, value, deadline, v, r, s)
-            true
         }
     }
 }
@@ -209,20 +200,20 @@ contract Hybrid {
 ```fe ignore
 contract NFT {
     recv Erc721 {
-        OwnerOf { token_id } -> u256 { /* ... */ }
+        OwnerOf { token_id } -> Address { /* ... */ }
         SafeTransferFrom { from, to, token_id } { /* ... */ }
         TransferFrom { from, to, token_id } { /* ... */ }
         Approve { to, token_id } { /* ... */ }
         SetApprovalForAll { operator, approved } { /* ... */ }
-        GetApproved { token_id } -> u256 { /* ... */ }
+        GetApproved { token_id } -> Address { /* ... */ }
         IsApprovedForAll { owner, operator } -> bool { /* ... */ }
         BalanceOf { owner } -> u256 { /* ... */ }
     }
 
     recv Erc721Metadata {
-        Name -> String { /* ... */ }
-        Symbol -> String { /* ... */ }
-        TokenURI { token_id } -> String { /* ... */ }
+        Name -> String<31> { /* ... */ }
+        Symbol -> String<8> { /* ... */ }
+        TokenURI { token_id } -> String<31> { /* ... */ }
     }
 
     recv Erc721Enumerable {
@@ -259,17 +250,17 @@ For contracts with many message types, consider organizing handlers logically:
 
 ```fe ignore
 // Group related helper functions
-fn transfer_tokens(from: u256, to: u256, amount: u256) -> bool uses (store: mut TokenStorage) {
+fn transfer_tokens(from: Address, to: Address, amount: u256) -> bool uses (store: mut TokenStorage) {
     // ...
 }
 
-fn update_allowance(owner: u256, spender: u256, amount: u256) uses (store: mut TokenStorage) {
+fn update_allowance(owner: Address, spender: Address, amount: u256) uses (store: mut TokenStorage) {
     // ...
 }
 
 // Group related message handlers
 contract Token {
-    store: TokenStorage,
+    mut store: TokenStorage,
 
     // Core transfers
     recv Erc20Core {

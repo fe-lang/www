@@ -383,3 +383,27 @@ Without any keyword, Fe parameters use **view** mode: the function can read the 
 - Use **`ref`** when you need to store a reference in a struct or forward it through multiple functions
 - Use **`mut`** when the function needs to modify a value in place
 - Use **`own`** when the function needs to take full ownership of a value
+
+## Borrows Through Aggregates
+
+The borrow checker tracks references through structs, tuples, arrays, pointer aliases, and helper calls. Moving a reference into an aggregate does not end its borrow, and destructuring the aggregate does not make overlapping mutable access legal. Finish using a borrowed view before modifying its source.
+
+Array iteration in these examples uses copyable elements. For a struct containing only copyable fields, implement `Copy` explicitly when the example needs to copy values out of the array:
+
+```fe
+struct Reading { value: u256 }
+impl Copy for Reading {}
+
+#[test]
+fn sums_readings() {
+    let readings = [Reading { value: 2 }, Reading { value: 3 }]
+    let mut sum = 0
+    for reading in readings {
+        sum += reading.value
+    }
+    assert!(sum == 5)
+    assert!(readings[0].value == 2)
+}
+```
+
+Do not add `Copy` to a resource-owning type merely to bypass a move diagnostic. Use a borrowed view or explicit ownership transfer appropriate to that type.

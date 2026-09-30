@@ -7,7 +7,7 @@ Because effects are explicit in Fe, testing functions that use effects is straig
 
 ## Mocking with `with`
 
-Any function that declares `uses (effect: Type)` can be tested by providing a value of that type:
+For a function that declares an application-owned effect type, provide a value of that type:
 
 ```fe
 struct Config {
@@ -126,3 +126,5 @@ fn test_increment_with_limit() {
 ## Why This Works
 
 In languages without explicit effects, mocking requires frameworks, dependency injection containers, or monkey-patching. In Fe, effects are already explicit in the function signature — so "mocking" is just providing a value. There is no hidden state to intercept.
+
+Standard EVM capability traits such as `Ctx`, `Call`, and `Log` are sealed and cannot be implemented by arbitrary application mocks. Use `Evm` for integration tests, or put business logic behind your own effect type or trait for unit testing.

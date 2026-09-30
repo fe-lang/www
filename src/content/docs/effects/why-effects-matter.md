@@ -174,7 +174,6 @@ fn test_calculate_shares() {
 
 ```fe
 //<hide>
-pub struct Ctx {}
 pub struct TokenStore {}
 pub struct Balances {}
 pub struct EventLog {}

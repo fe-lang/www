@@ -69,7 +69,7 @@ Extract fields by their names:
 use std::abi::sol
 msg TokenMsg {
     #[selector = sol("transfer(address,uint256)")]
-    Transfer { to: u256, amount: u256 } -> bool,
+    Transfer { to: Address, amount: u256 } -> bool,
 }
 
 contract Token {
@@ -94,7 +94,7 @@ Give fields different local names:
 use std::abi::sol
 msg TokenMsg {
     #[selector = sol("transfer(address,uint256)")]
-    Transfer { to: u256, amount: u256 } -> bool,
+    Transfer { to: Address, amount: u256 } -> bool,
 }
 
 contract Token {
@@ -119,7 +119,7 @@ Use `_` to ignore specific fields:
 use std::abi::sol
 msg TokenMsg {
     #[selector = sol("transfer(address,uint256)")]
-    Transfer { to: u256, amount: u256 } -> bool,
+    Transfer { to: Address, amount: u256 } -> bool,
 }
 
 contract Token {
@@ -142,7 +142,7 @@ Use `..` to ignore all remaining fields:
 use std::abi::sol
 msg TokenMsg {
     #[selector = sol("transferFrom(address,address,uint256)")]
-    TransferFrom { from: u256, to: u256, amount: u256 } -> bool,
+    TransferFrom { from: Address, to: Address, amount: u256 } -> bool,
 }
 
 contract Token {
@@ -191,12 +191,13 @@ The return type must match the message variant's declaration:
 ```fe
 //<hide>
 use std::abi::sol
-fn get_balance(account: u256) -> u256 { account }
+fn get_balance(account: Address) -> u256 { let _ = account
+ 0 }
 //</hide>
 
 msg Query {
     #[selector = sol("balanceOf(address)")]
-    BalanceOf { account: u256 } -> u256,
+    BalanceOf { account: Address } -> u256,
 }
 
 //<hide>
@@ -222,7 +223,7 @@ use std::abi::sol
 
 msg Commands {
     #[selector = sol("safeTransferFrom(address,address,uint256)")]
-    SafeTransfer { from: u256, to: u256, token_id: u256 },
+    SafeTransfer { from: Address, to: Address, token_id: u256 },
 }
 
 //<hide>
@@ -251,7 +252,7 @@ msg TokenMsg {
     #[selector = sol("totalSupply()")]
     TotalSupply -> u256,
     #[selector = sol("balanceOf(address)")]
-    BalanceOf { account: u256 } -> u256,
+    BalanceOf { account: Address } -> u256,
 }
 
 contract Token {
@@ -262,7 +263,7 @@ contract Token {
         }
 
         BalanceOf { account } -> u256 {
-            if account == 0 {
+            if account == Address::zero() {
                 0
             } else {
                 100
@@ -283,7 +284,7 @@ Use `return` for early exits:
 use std::abi::sol
 msg TokenMsg {
     #[selector = sol("transfer(address,uint256)")]
-    Transfer { to: u256, amount: u256 } -> bool,
+    Transfer { to: Address, amount: u256 } -> bool,
 }
 
 contract Token {
@@ -293,7 +294,7 @@ contract Token {
             if amount == 0 {
                 return false
             }
-            if to == 0 {
+            if to == Address::zero() {
                 return false
             }
             true
@@ -313,19 +314,19 @@ Handlers typically delegate to helper functions:
 use std::abi::sol
 msg TokenMsg {
     #[selector = sol("transfer(address,uint256)")]
-    Transfer { to: u256, amount: u256 } -> bool,
+    Transfer { to: Address, amount: u256 } -> bool,
 }
 //</hide>
 
 pub struct TokenStorage {}
 
 // Pure validation — no storage needed, stays standalone
-fn validate_transfer(to: u256, amount: u256) -> bool {
-    to != 0 && amount > 0
+fn validate_transfer(to: Address, amount: u256) -> bool {
+    to != Address::zero() && amount > 0
 }
 
 impl TokenStorage {
-    fn execute_transfer(mut self, to: u256, amount: u256) -> bool {
+    fn execute_transfer(mut self, to: Address, amount: u256) -> bool {
         //<hide>
         let _ = to
         let _ = amount
@@ -360,23 +361,23 @@ Handlers access contract state through effects:
 use std::abi::sol
 msg TokenMsg {
     #[selector = sol("balanceOf(address)")]
-    BalanceOf { account: u256 } -> u256,
+    BalanceOf { account: Address } -> u256,
     #[selector = sol("transfer(address,uint256)")]
-    Transfer { to: u256, amount: u256 } -> bool,
+    Transfer { to: Address, amount: u256 } -> bool,
 }
 //</hide>
 
 pub struct TokenStorage {
-    pub balances: StorageMap<u256, u256>,
+    pub balances: StorageMap<Address, u256>,
     pub total_supply: u256,
 }
 
 impl TokenStorage {
-    fn get_balance(self, account: u256) -> u256 {
+    fn get_balance(self, account: Address) -> u256 {
         self.balances.get(account)
     }
 
-    fn add_balance(mut self, account: u256, amount: u256) {
+    fn add_balance(mut self, account: Address, amount: u256) {
         let current = self.balances.get(account)
         self.balances.set(key: account, value: current + amount)
     }
@@ -405,13 +406,13 @@ Handlers can access transaction context using built-in functions:
 ```fe
 //<hide>
 use std::abi::sol
-fn do_transfer(from: Address, to: u256, amount: u256) -> bool {
+fn do_transfer(from: Address, to: Address, amount: u256) -> bool {
     let _ = (from, to, amount)
     true
 }
 msg TokenMsg {
     #[selector = sol("transfer(address,uint256)")]
-    Transfer { to: u256, amount: u256 } -> bool,
+    Transfer { to: Address, amount: u256 } -> bool,
 }
 contract Token uses (ctx: Ctx) {
 //</hide>

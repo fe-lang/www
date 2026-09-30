@@ -104,9 +104,9 @@ pub contract DepositContract uses (ctx: Ctx, mem: mut RawMem, log: mut Log) {
         Deposit { pubkey, withdrawal_credentials, signature, deposit_data_root }
         uses (mut store, ctx, mut mem, mut log)
         {
-            assert!(pubkey.len == 48, "DepositContract: invalid pubkey length")
-            assert!(withdrawal_credentials.len == 32, "DepositContract: invalid withdrawal_credentials length")
-            assert!(signature.len == 96, "DepositContract: invalid signature length")
+            assert!(pubkey.len() == 48, "DepositContract: invalid pubkey length")
+            assert!(withdrawal_credentials.len() == 32, "DepositContract: invalid withdrawal_credentials length")
+            assert!(signature.len() == 96, "DepositContract: invalid signature length")
 
             let value: u256 = ctx.value()
             assert!(value >= ether(1), "DepositContract: deposit value too low")
@@ -130,7 +130,7 @@ pub contract DepositContract uses (ctx: Ctx, mem: mut RawMem, log: mut Log) {
 
             // Emit DepositEvent (index is the pre-increment deposit_count).
             log.emit(
-                DepositEvent {
+                event: DepositEvent {
                     pubkey,
                     withdrawal_credentials,
                     amount: ssz::serialize_u64(amount_gwei),
@@ -195,12 +195,12 @@ pub fn compute_deposit_data_root(
 ) -> u256
 uses (mem: mut RawMem)
 {
-    assert!(withdrawal_credentials.len == 32)
+    assert!(withdrawal_credentials.len() == 32)
     (
-        ssz::hash_tree_root<ssz::ByteVector<48>>(pubkey),
+        ssz::hash_tree_root<ssz::ByteVector<48>>(pubkey.view()),
         withdrawal_credentials.word_at(0),
         ssz::u64_chunk(amount_gwei),
-        ssz::hash_tree_root<ssz::ByteVector<96>>(signature),
+        ssz::hash_tree_root<ssz::ByteVector<96>>(signature.view()),
     )
         .merkleize()
 }
@@ -208,7 +208,7 @@ uses (mem: mut RawMem)
 // Test scaffolding and suite. Hidden from the rendered page but compiled and
 // executed by `fe test`.
 fn le_bytes_to_u64(_ b: Bytes) -> u64 {
-    assert!(b.len == 8)
+    assert!(b.len() == 8)
     let mut v: u256 = 0
     let mut i: u256 = 0
     while i < 8 {
@@ -550,7 +550,7 @@ incremental Merkle tree:
 Deposit { pubkey, withdrawal_credentials, signature, deposit_data_root }
 uses (mut store, ctx, mut mem, mut log)
 {
-    assert!(pubkey.len == 48, "DepositContract: invalid pubkey length")
+    assert!(pubkey.len() == 48, "DepositContract: invalid pubkey length")
     // ...
     let value: u256 = ctx.value()
     assert!(value >= ether(1), "DepositContract: deposit value too low")
@@ -607,7 +607,7 @@ fn test_deposit_success_updates_root_and_count() uses (evm: mut Evm, mem: mut Ra
 | Pattern | Where |
 |---------|-------|
 | Dynamic `bytes` inputs | `pubkey`, `withdrawal_credentials`, `signature` typed as `Bytes` |
-| Exact length validation | `assert!(pubkey.len == 48, "...")` |
+| Exact length validation | `assert!(pubkey.len() == 48, "...")` |
 | Revert reasons | `assert!(cond, "message")` macro |
 | Payable handler | `#[payable]` on `Deposit` |
 | Memory effect | `uses (mem: mut RawMem)` |

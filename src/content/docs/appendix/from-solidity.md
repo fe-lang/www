@@ -24,12 +24,16 @@ contract Token {
 
 **Fe**: Functions must declare what state they access via effects.
 
-```fe ignore
+```fe
+//<hide>
+struct TokenStore { balances: StorageMap<Address, u256> }
+//</hide>
 fn transfer(from: Address, to: Address, amount: u256)
-    uses mut store: TokenStore  // Explicit declaration
+    uses (store: mut TokenStore)  // Explicit declaration
 {
-    store.balances[from] -= amount
-    store.balances[to] += amount
+    let balance = store.balances.get(key: from)
+    store.balances.set(key: from, value: balance - amount)
+    store.balances.set(key: to, value: store.balances.get(key: to) + amount)
 }
 ```
 
@@ -97,9 +101,9 @@ store.balances.set(key: ctx.caller(), value: 100)
 | `uint8` | `u8` |
 | `address` | `Address` |
 | `bool` | `bool` |
-| `string` | `String<N>` |
-| `bytes32` | `u256` |
-| `mapping(K => V)` | `Map<K, V>` |
+| `string` | `String<N>` (fixed capacity); `DynString` (`std::abi::DynString`) for dynamic ABI strings |
+| `bytes32` | `u256`, or `Bytes32` (`std::abi::sol::Bytes32`) for ABI-typed fixed bytes |
+| `mapping(K => V)` | `StorageMap<K, V>` |
 
 ### Functions
 
@@ -209,12 +213,14 @@ fn __error_example() {
 let balance: u256 = 100
 let amount: u256 = 50
 //</hide>
-assert!(balance >= amount)
+assert!(balance >= amount, "Insufficient balance")
 revert("Error message")
 //<hide>
 }
 //</hide>
 ```
+
+`revert(value)` encodes a raw ABI value without a Solidity error selector. For structured Solidity-compatible errors, use `#[error]` structs and `revert_error`; see [Reverting](/errors/revert/).
 
 ### Constructors
 
@@ -258,9 +264,10 @@ function transfer(address to, uint256 amount) public returns (bool) {
 ```fe ignore
 Transfer { to, amount } -> bool uses (ctx, mut store, mut log) {
     let from = ctx.caller()
-    assert!(store.balances[from] >= amount, "Insufficient balance")
-    store.balances[from] -= amount
-    store.balances[to] += amount
+    assert!(store.balances.get(key: from) >= amount, "Insufficient balance")
+    let balance = store.balances.get(key: from)
+    store.balances.set(key: from, value: balance - amount)
+    store.balances.set(key: to, value: store.balances.get(key: to) + amount)
     log.emit(TransferEvent { from, to, value: amount })
     true
 }
@@ -282,7 +289,7 @@ function mint(address to, uint256 amount) public onlyOwner {
 
 **Fe**:
 ```fe ignore
-fn require_owner(owner: Address) uses ctx: Ctx {
+fn require_owner(owner: Address) uses (ctx: Ctx) {
     assert!(ctx.caller() == owner, "Not owner")
 }
 
@@ -318,6 +325,8 @@ let _ = allowed
 }
 //</hide>
 ```
+
+A tuple key gives the same lookup behavior as a nested mapping, but not the same storage layout: Fe hashes the concatenated tuple components once, while Solidity hashes each level separately. When you need Solidity-compatible slots (for example, to match an existing contract's layout), use `std::evm::SolMapping`; see [Contract Storage](/contracts/storage/) and [Maps](/compound-types/maps/#storage-layout).
 
 ## What's Different in Fe
 
@@ -423,11 +432,11 @@ let _ = (x, y)
 | Solidity | Fe |
 |----------|-----|
 | `msg.sender` | `ctx.caller()` |
-| `block.timestamp` | `ctx.block_timestamp()` |
+| `block.timestamp` | `ctx.timestamp()` |
 | `block.number` | `ctx.block_number()` |
 | `require(...)` | `assert!(...)` |
 | `emit Event(...)` | `log.emit(Event { ... })` |
-| `mapping(K => V)` | `Map<K, V>` |
+| `mapping(K => V)` | `StorageMap<K, V>` |
 | `constructor` | `init` |
 | `function` | `fn` |
 | `public` | `pub` |

@@ -239,6 +239,34 @@ contract Token {
 }
 ```
 
+## Payable Handlers and Fallbacks
+
+Handlers reject nonzero ETH value unless marked `#[payable]`. A bare `recv` block can include one wildcard arm, `_`, for unmatched selectors and calldata shorter than four bytes. Mark the fallback payable if it should accept plain ETH transfers:
+
+```fe
+use std::abi::sol
+
+msg DonationMsg {
+    #[selector = sol("received()")]
+    Received -> u256,
+}
+
+pub contract Donations {
+    mut received: u256,
+
+    recv {
+        DonationMsg::Received {} -> u256 uses received { received }
+
+        #[payable]
+        _ uses (ctx: Ctx, mut received) {
+            received += ctx.value()
+        }
+    }
+}
+```
+
+This fallback accepts unknown selectors too; it is not restricted to empty calldata. Without a fallback, unmatched calls revert. A matched but nonpayable handler still rejects ETH rather than falling through to the wildcard.
+
 ## Summary
 
 | Concept | Description |
@@ -248,3 +276,5 @@ contract Token {
 | Helper functions | Functions with `uses` clause |
 | Multiple effects | `uses (mut a, mut b)` |
 | Organization | Separate recv blocks per interface |
+| `#[payable]` | Handler accepts nonzero ETH value |
+| `_ { }` | Fallback arm in a bare recv block |

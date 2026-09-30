@@ -29,16 +29,16 @@ Topic 0 is always the keccak256 hash of the event signature:
 #[event]
 struct Transfer {
     #[indexed]
-    from: u256,
+    from: Address,
     #[indexed]
-    to: u256,
+    to: Address,
     amount: u256,
 }
 ```
 
-The signature is: `Transfer(uint256,uint256,uint256)`
+The signature is: `Transfer(address,address,uint256)`
 
-Topic 0 becomes: `keccak256("Transfer(uint256,uint256,uint256)")`
+Topic 0 becomes: `keccak256("Transfer(address,address,uint256)")`
 
 This matches Solidity's event encoding, ensuring tools recognize your events.
 
@@ -50,18 +50,18 @@ Each `#[indexed]` field becomes a topic:
 #[event]
 struct Transfer {
     #[indexed]
-    from: u256,      // → topics[1]
+    from: Address,      // → topics[1]
     #[indexed]
-    to: u256,        // → topics[2]
+    to: Address,        // → topics[2]
     amount: u256,    // → data
 }
 ```
 
-When emitting `Transfer { from: 0x123, to: 0x456, amount: 1000 }`:
+When emitting `Transfer { from: Address { inner: 0x123 }, to: Address { inner: 0x456 }, amount: 1000 }`:
 
 | Component | Value |
 |-----------|-------|
-| topics[0] | `keccak256("Transfer(uint256,uint256,uint256)")` |
+| topics[0] | `keccak256("Transfer(address,address,uint256)")` |
 | topics[1] | `0x123` (from) |
 | topics[2] | `0x456` (to) |
 | data | ABI-encoded `1000` |
@@ -74,7 +74,7 @@ Fields without `#[indexed]` are ABI-encoded into the data section:
 #[event]
 struct Swap {
     #[indexed]
-    sender: u256,
+    sender: Address,
     amount_in: u256,    // → data
     amount_out: u256,   // → data
     timestamp: u256,    // → data
@@ -97,6 +97,7 @@ Fe types map to Solidity/ABI types:
 | `u8` | `uint8` | Direct mapping |
 | `i256` | `int256` | Direct mapping |
 | `bool` | `bool` | Direct mapping |
+| `Address` | `address` | Use for address fields, including indexed ones |
 
 ## ERC20 Compatibility Example
 
@@ -108,9 +109,9 @@ To emit ERC20-compatible events:
 #[event]
 struct Transfer {
     #[indexed]
-    from: u256,      // address as u256
+    from: Address,      // Solidity address
     #[indexed]
-    to: u256,        // address as u256
+    to: Address,        // Solidity address
     value: u256,
 }
 
@@ -119,9 +120,9 @@ struct Transfer {
 #[event]
 struct Approval {
     #[indexed]
-    owner: u256,
+    owner: Address,
     #[indexed]
-    spender: u256,
+    spender: Address,
     value: u256,
 }
 ```
@@ -171,8 +172,8 @@ type Transfer @entity {
 Calculate event signatures the same way as Solidity:
 
 ```
-Event: Transfer(uint256 indexed from, uint256 indexed to, uint256 value)
-Signature string: "Transfer(uint256,uint256,uint256)"
+Event: Transfer(address indexed from, address indexed to, uint256 value)
+Signature string: "Transfer(address,address,uint256)"
 Topic 0: keccak256(signature string)
 ```
 
@@ -187,14 +188,14 @@ To emit events compatible with existing Solidity contracts:
 #[event]
 struct Transfer {
     #[indexed]
-    from: u256,
+    from: Address,
     #[indexed]
-    to: u256,
+    to: Address,
     value: u256,  // Use 'value' to match Solidity field name
 }
 ```
 
-The struct field names don't affect ABI encoding. Only the types and their order matter for the signature.
+The struct field names don't affect ABI encoding. The event struct name, field types, and their order determine the signature. A struct named `TransferEvent` has a different topic from `Transfer`.
 
 ## Topic Limitations
 
@@ -205,11 +206,10 @@ Remember the EVM constraints:
 | Max topics | 4 (including signature) |
 | Max indexed fields | 3 |
 | Topic size | 32 bytes each |
-| Data size | Unlimited |
 
-Large values in indexed fields are hashed:
-- Values ≤ 32 bytes: stored directly
-- Values > 32 bytes: keccak256 hash stored
+Fe adds its own limit on top of these: an event can have at most 16 non-indexed fields. The EVM itself does not limit the size of the data section.
+
+Fe rejects unsupported indexed dynamic fields. Put dynamic values in the data section, or compute and index a fixed-size hash explicitly. Do not assume a Solidity-style automatic hash is generated for every indexed type.
 
 ## Best Practices for ABI Compatibility
 
@@ -236,12 +236,12 @@ Field order affects the signature:
 #[event]
 struct Transfer {
     #[indexed]
-    from: u256,      // First in signature
+    from: Address,      // First in signature
     #[indexed]
-    to: u256,        // Second in signature
+    to: Address,        // Second in signature
     amount: u256,    // Third in signature
 }
-// Signature: Transfer(uint256,uint256,uint256)
+// Signature: Transfer(address,address,uint256)
 ```
 
 ### Document Event Signatures
@@ -250,14 +250,14 @@ Include signatures in your documentation:
 
 ```fe
 /// Transfer event
-/// Signature: Transfer(uint256,uint256,uint256)
+/// Signature: Transfer(address,address,uint256)
 /// Topic 0: 0xddf252ad1be2c89b69c2b068fc378daa952ba7f163c4a11628f55a4df523b3ef
 #[event]
 struct Transfer {
     #[indexed]
-    from: u256,
+    from: Address,
     #[indexed]
-    to: u256,
+    to: Address,
     amount: u256,
 }
 ```

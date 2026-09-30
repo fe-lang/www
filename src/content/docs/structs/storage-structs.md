@@ -18,7 +18,7 @@ pub struct TokenStorage {
 ```
 
 Key characteristics:
-- Contains `Map` fields for mappings
+- Contains `StorageMap` fields for mappings
 - Contains primitive fields for simple values
 - Used as effect types with `uses` clause
 - Bound to contract fields
@@ -53,13 +53,22 @@ Contracts hold storage structs as fields and provide them as effects:
 ```fe
 //<hide>
 use std::abi::sol
-pub struct TokenStorage { pub balances: StorageMap<Address, u256> }
+pub struct TokenStorage {
+    pub balances: StorageMap<Address, u256>,
+    pub total_supply: u256,
+}
 impl TokenStorage {
     fn get_balance(self, account: Address) -> u256 {
         self.balances.get(key: account)
     }
     fn transfer(mut self, from: Address, to: Address, amount: u256) -> bool {
-        let _ = (from, to, amount)
+        let from_bal = self.balances.get(key: from)
+        if from_bal < amount {
+            return false
+        }
+        self.balances.set(key: from, value: from_bal - amount)
+        let to_bal = self.balances.get(key: to)
+        self.balances.set(key: to, value: to_bal + amount)
         true
     }
 }
@@ -160,9 +169,9 @@ fn transfer(from: u256, to: u256, amount: u256)
 }
 ```
 
-## Map Fields
+## StorageMap Fields
 
-`Map` is the primary collection type for storage:
+`StorageMap` is the primary collection type for storage:
 
 ```fe
 pub struct Registry {
@@ -202,7 +211,7 @@ impl Registry {
 ```
 
 :::note[Map Implementation]
-The current `Map` is a temporary implementation that will be replaced with a more advanced Map type in the future.
+`StorageMap<K, V>` requires keys to implement `StorageKey` and values to implement `std::evm::word::WordRepr` (one EVM word). See [Maps](/compound-types/maps/) for supported representations and [Contract Storage](/contracts/storage/) for explicit Solidity layout access.
 :::
 
 ## Visibility
@@ -223,7 +232,7 @@ The `pub` on fields allows `store.balances` syntax in functions using the effect
 | Aspect | Storage Struct | Regular Struct |
 |--------|----------------|----------------|
 | Purpose | Persistent state | In-memory data |
-| Contains | Map, primitives | Any types |
+| Contains | `StorageMap`, primitives | Any types |
 | Used as | Effect type | Value type |
 | Access | Via `uses` clause | Direct |
 | Location | On-chain | Memory |
