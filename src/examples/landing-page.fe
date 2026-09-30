@@ -54,29 +54,31 @@ msg VaultMsg {
 }
 
 // Effects declared explicitly, no hidden state access
-pub contract Vault uses (ctx: Ctx, log: mut Log) {
+pub contract Vault uses (ctx: Ctx, log: mut Log, call: mut Call) {
     mut store: VaultStore
 
     recv VaultMsg {
+        #[payable]
         Deposit {} uses (ctx, mut store, mut log) {
             let who = ctx.caller()
-            store.balances.set(
-                key: who,
-                value: store.balances.get(key: who) + ctx.value()
-            )
+            let balance = store.balances.get(key: who)
+            store.balances.set(key: who, value: balance + ctx.value())
             log.emit(event: Deposited { owner: who, amount: ctx.value() })
         }
 
         // Pattern match on Result for control flow
-        Withdraw { amount } uses (ctx, mut store) {
+        Withdraw { amount } uses (ctx, mut store, mut call) {
             let who = ctx.caller()
-            let req = Withdrawal {
-                balance: store.balances.get(key: who),
-                amount
-            }
+            let balance = store.balances.get(key: who)
+            let req = Withdrawal { balance, amount }
             match req.validate() {
-                Ok(new_bal) => { store.balances.set(key: who, value: new_bal) }
-                Err(e) => { revert(e) }
+                Ok(new_bal) => {
+                    store.balances.set(key: who, value: new_bal)
+                    let outcome = call.send_value(addr: who, gas: ctx.gas(), value: amount)
+                    assert!(outcome.success(), "withdrawal failed")
+                }
+                Err(VaultError::InsufficientFunds) => { revert_error(InsufficientFunds {}) }
+                Err(VaultError::ZeroAmount) => { revert_error(ZeroAmount {}) }
             }
         }
 
@@ -86,30 +88,67 @@ pub contract Vault uses (ctx: Ctx, log: mut Log) {
     }
 }
 
-// Stubs for type checking (not shown on landing page)
+// Custom error payloads used by the validation branches.
+#[error]
+struct InsufficientFunds {}
 
-impl VaultError {
-    fn to_code(self) -> u256 {
-        match self {
-            VaultError::InsufficientFunds => 1
-            VaultError::ZeroAmount => 2
+#[error]
+struct ZeroAmount {}
+
+// Tests (not shown on landing page)
+#[test]
+fn validates_withdrawal() {
+    let request = Withdrawal { balance: 100, amount: 40 }
+    let remaining = match request.validate() {
+        Ok(balance) => balance
+        Err(_) => 0
+    }
+    assert!(remaining == 60)
+    let empty = Withdrawal { balance: 100, amount: 0 }
+    assert!(empty.validate().is_err())
+    let excessive = Withdrawal { balance: 100, amount: 101 }
+    assert!(excessive.validate().is_err())
+}
+
+msg VaultClientMsg {
+    #[selector = sol("exercise(address)")]
+    Exercise { vault: Address },
+}
+
+pub contract VaultClient {
+    recv {
+        #[payable]
+        VaultClientMsg::Exercise { vault } uses (ctx: Ctx, call: mut Call) {
+            call.call(addr: vault, gas: 300000, value: ctx.value(), message: VaultMsg::Deposit {})
+            call.call(addr: vault, gas: 300000, value: 0, message: VaultMsg::Withdraw { amount: 40 })
         }
+        #[payable]
+        _ {}
     }
 }
 
-impl AbiSize for VaultError {
-    const HEAD_SIZE: u256 = 32
-    const IS_DYNAMIC: bool = false
+#[test(balance = 1000)]
+fn withdrawal_transfers_eth() uses (evm: mut Evm) {
+    let vault = evm.create2<Vault>(value: 0, args: (), salt: 0)
+    let client = evm.create2<VaultClient>(value: 0, args: (), salt: 0)
+    evm.call(addr: client, gas: 1000000, value: 100, message: VaultClientMsg::Exercise { vault })
+    let remaining: u256 = evm.call(addr: vault, gas: 100000, value: 0,
+        message: VaultMsg::BalanceOf { addr: client })
+    assert!(remaining == 60)
+    assert!(evm.balance(vault) == 60)
+    assert!(evm.balance(client) == 40)
 }
 
-impl<A: Abi> Encode<A> for VaultError {
-    const DIRECT_ENCODE: bool = true
-
-    fn encode<E: AbiEncoder<A>>(own self, _ e: mut E) {
-        e.write_word(self.to_code())
-    }
-
-    fn encode_to_ptr(own self, _ ptr: u256) {
-        A::store_word(ptr, value: self.to_code())
-    }
+#[test(balance = 1000)]
+fn rejected_payment_restores_balance() uses (evm: mut Evm) {
+    let vault = evm.create2<Vault>(value: 0, args: (), salt: 0)
+    evm.call(addr: vault, gas: 300000, value: 100, message: VaultMsg::Deposit {})
+    // The test harness has no payable fallback and rejects the ETH payment.
+    let outcome = evm.try_call(addr: vault, gas: 300000, value: 0,
+        message: VaultMsg::Withdraw { amount: 40 })
+    assert!(!outcome.success())
+    let remaining: u256 = evm.call(addr: vault, gas: 100000, value: 0,
+        message: VaultMsg::BalanceOf { addr: evm.address() })
+    assert!(remaining == 100)
+    assert!(evm.balance(vault) == 100)
 }
