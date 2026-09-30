@@ -17,7 +17,7 @@ Your content here...
 
 ## Code Examples
 
-The documentation includes Fe code examples that are type-checked to ensure they remain valid as the language evolves.
+The guide targets Fe 26.4. All unignored `fe` blocks are checked with `fe check`; blocks containing `#[test]` are also executed with `fe test`. Standalone examples in `src/examples/` are included. Shell and TOML examples need separate verification.
 
 ### Code Block Conventions
 
@@ -37,7 +37,7 @@ fn add(a: u256, b: u256) -> u256 {
 ```markdown
 ```fe ignore
 // This is illustrative, may be incomplete
-store.balances[from] -= amount
+store.balances.set(key: from, value: balance - amount)
 ```(end)
 ```
 
@@ -54,7 +54,6 @@ Use hide directives to include necessary boilerplate without cluttering the visi
 ```markdown
 ```fe
 //<hide>
-use core::StorageMap
 
 pub struct TokenStorage {
     pub balances: StorageMap<u256, u256>,
@@ -89,28 +88,9 @@ let _ = y
 
 The file `scripts/boilerplate.fe` is automatically prepended to all Fe code blocks during type checking. It provides a `_boilerplate` module with common stubs that snippets can import:
 
-**Available imports:**
+The only stub traits are `Hashable`, `Printable`, `Readable`, and `Writable`. Opt in explicitly with `use _boilerplate::{Hashable, Printable}` for illustrative trait examples. Use real standard-library types and effects everywhere else; do not shadow them with mocks to make an outdated snippet compile.
 
-| Category | Items |
-|----------|-------|
-| **Storage** | `StorageMap` (re-exported from core), `Map` (non-storage), `Storage` |
-| **Effects** | `Log`, `Ctx` (execution context with caller, block info, etc.) |
-| **Types** | `Address`, `Option<T>`, `Result<T, E>` |
-| **Intrinsics** | `caller`, `revert`, `keccak`, `sload`, `sstore` (from core) |
-| **Functions** | `assert`, `self_address`, `block_number`, `block_timestamp`, `keccak256`, `sha256`, etc. |
-| **Traits** | `Hashable`, `Printable`, `Clone`, `Default`, `Readable`, `Writable`, `Storable` |
-
-**Usage:**
-```markdown
-```fe
-//<hide>
-use _boilerplate::{Map, caller, Address}
-//</hide>
-// Your visible code here
-```(end)
-```
-
-This allows documentation to show focused examples without repeating type definitions that readers don't need to see.
+`Address`, `StorageMap`, `Ctx`, `Log`, `Option<T>`, and `Result<E, T>` are supplied by the standard prelude. Other APIs need their actual imports. Runtime test blocks must be self-contained: the checker removes shared boilerplate before executing tests.
 
 Suppressing unused warnings:
 ```markdown
@@ -142,7 +122,7 @@ The output shows:
 
 1. Write or modify documentation
 2. Run `bash scripts/check-examples.sh`
-3. Fix any errors (add hide directives, fix syntax, or mark as `ignore`)
+3. Fix errors against the target compiler; use hide directives for required context. Reserve `ignore` for explicitly explained non-executable or intentionally invalid examples.
 4. Commit when all checks pass
 
 ## Reference Documentation
@@ -157,31 +137,15 @@ For language behavior not covered in docs, consult the [Fe compiler source](http
 
 ## Updating the Fe Binary
 
-The Fe compiler is resolved dynamically via `scripts/fe`.
-
-Behavior:
-- On first use, `scripts/fe` fetches the latest release from `argotorg/fe` and caches it in `bin/`.
-- It stores cache metadata in `bin/.fe-version` and `bin/.fe-last-check`.
-- By default it only re-checks for latest releases every 6 hours.
-
-Useful commands:
+Example validation uses the release in `.fe-version`. `scripts/fe` downloads the appropriate binary on first use and caches it in `bin/`. API generation uses the same release and a source checkout at its tag.
 
 ```bash
-# Validate all docs code examples using the wrapper
 bash scripts/check-examples.sh
-
-# Validate examples with a custom local Fe binary
-FE_BIN=~/code/fe/fix-scalar-ref-panic/target/release/fe bash scripts/check-examples.sh
-
-# Force an immediate latest-release check
-FE_FORCE_LATEST_CHECK=1 ./scripts/fe check path/to/file.fe
+FE_BIN=/path/to/fe bash scripts/check-examples.sh
+bash scripts/generate-docs.sh
 ```
 
-Environment variables:
-- `FE_BIN`: use a specific Fe binary instead of the cached/downloaded wrapper binary
-- `GITHUB_TOKEN`: used for authenticated GitHub API requests (recommended in CI)
-- `FE_LATEST_TTL_SECONDS`: override metadata freshness window (default: `21600`)
-- `FE_FORCE_LATEST_CHECK=1`: bypass freshness and force an API latest check
+To update the compiler, change `.fe-version`, run the full example checks and tests, update release-sensitive prose, and regenerate the API reference. Use `FE_VERSION=latest` to try the newest release without changing the pin. `FE_BIN` explicitly overrides binary selection; `GITHUB_TOKEN` can authenticate downloads. Pinned downloads never fall back to a different cached version.
 
 ## Site Customization
 
