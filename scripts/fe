@@ -1,5 +1,5 @@
 #!/usr/bin/env bash
-# Fe compiler wrapper with dynamic release resolution and local caching.
+# Fe compiler wrapper with release pinning, optional latest resolution, and caching.
 
 set -euo pipefail
 
@@ -15,6 +15,11 @@ VERSION_FILE="$BIN_DIR/.fe-version"
 LAST_CHECK_FILE="$BIN_DIR/.fe-last-check"
 
 OVERRIDE_FE_BINARY="${FE_BIN:-}"
+# A repository pin makes guide/CI checks reproducible. FE_VERSION=latest opts out.
+REQUESTED_VERSION="${FE_VERSION:-}"
+if [[ -z "$REQUESTED_VERSION" && -f "$SCRIPT_DIR/../.fe-version" ]]; then
+    REQUESTED_VERSION="$(tr -d '[:space:]' < "$SCRIPT_DIR/../.fe-version")"
+fi
 DEFAULT_TTL_SECONDS=21600
 TTL_SECONDS="${FE_LATEST_TTL_SECONDS:-$DEFAULT_TTL_SECONDS}"
 FORCE_LATEST_CHECK="${FE_FORCE_LATEST_CHECK:-0}"
@@ -196,6 +201,16 @@ main() {
     fi
 
     mkdir -p "$BIN_DIR"
+
+    if [[ -n "$REQUESTED_VERSION" && "$REQUESTED_VERSION" != "latest" ]]; then
+        [[ "$REQUESTED_VERSION" =~ ^v[0-9][a-zA-Z0-9._-]*$ ]] || die "Invalid Fe release tag: $REQUESTED_VERSION"
+        if [[ "$(current_cached_tag)" != "$REQUESTED_VERSION" ]] || ! has_cached_binary; then
+            download_binary_for_tag "$REQUESTED_VERSION" || die "Failed to download pinned Fe release '$REQUESTED_VERSION'."
+            printf '%s\n' "$REQUESTED_VERSION" > "$VERSION_FILE"
+            mark_last_check_now
+        fi
+        exec "$FE_BINARY" "$@"
+    fi
 
     if ! should_check_latest; then
         exec "$FE_BINARY" "$@"

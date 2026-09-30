@@ -54,3 +54,21 @@ PATH="$TEST_ROOT/fake-bin:$PATH" FE_FORCE_LATEST_CHECK=1 "$TEST_ROOT/scripts/fe"
 [[ -x "$TEST_ROOT/bin/fe" ]]
 [[ -s "$TEST_ROOT/bin/.fe-last-check" ]]
 [[ "$(tr -d '[:space:]' < "$TEST_ROOT/bin/.fe-version")" == "v26.0.0-alpha.8" ]]
+
+# A repository pin skips release discovery and reuses only a matching cache.
+printf '%s\n' 'v26.0.0-alpha.8' > "$TEST_ROOT/.fe-version"
+rm "$TEST_ROOT/bin/fe"
+PATH="$TEST_ROOT/fake-bin:$PATH" "$TEST_ROOT/scripts/fe" check "$TEST_ROOT/sample.fe"
+[[ "$(cat "$TEST_ROOT/bin/.fe-version")" == 'v26.0.0-alpha.8' ]]
+
+# A cached binary for another release must not mask a failed pinned download.
+printf '%s\n' 'v99.0.0' > "$TEST_ROOT/.fe-version"
+if PATH="$TEST_ROOT/fake-bin:$PATH" "$TEST_ROOT/scripts/fe" check "$TEST_ROOT/sample.fe" 2>/dev/null; then
+    echo 'Expected unavailable pinned release to fail' >&2
+    exit 1
+fi
+[[ "$(cat "$TEST_ROOT/bin/.fe-version")" == 'v26.0.0-alpha.8' ]]
+
+# Explicitly opting into latest retains the release discovery path.
+PATH="$TEST_ROOT/fake-bin:$PATH" FE_VERSION=latest FE_FORCE_LATEST_CHECK=1 "$TEST_ROOT/scripts/fe" check "$TEST_ROOT/sample.fe"
+echo 'Release pin regression checks passed'
