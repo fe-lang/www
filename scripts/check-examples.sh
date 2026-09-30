@@ -106,11 +106,11 @@ FAILED=0
 ensure_fe_bootstrapped() {
     local bootstrap_output fe_version
 
-    echo "Fe bin dir: $FE_BIN_DIR"
-
     if [[ "$VERBOSE" == true ]]; then
         echo "Bootstrapping Fe compiler..."
     fi
+
+    echo "Fe bin dir: $FE_BIN_DIR"
 
     if bootstrap_output=$("$SCRIPT_DIR/fe" check "$BOILERPLATE_FILE" 2>&1); then
         fe_version=$("$SCRIPT_DIR/fe" --version)
@@ -156,10 +156,11 @@ while IFS=: read -r fe_file md_file block_start_line; do
     fi
 
     # Run fe check on the file
-    FE_OUTPUT=$("$SCRIPT_DIR/fe" check "$fe_file" 2>&1) || true
+    FE_STATUS=0
+    FE_OUTPUT=$("$SCRIPT_DIR/fe" check "$fe_file" 2>&1) || FE_STATUS=$?
 
-    if [[ -z "$FE_OUTPUT" ]]; then
-        # No output means success
+    if [[ $FE_STATUS -eq 0 && -z "$FE_OUTPUT" ]]; then
+        # Require both a successful exit and no diagnostics
         : $((PASSED++))
         if [[ "$VERBOSE" == true ]]; then
             echo -e "${GREEN}OK${NC}"
@@ -174,6 +175,10 @@ while IFS=: read -r fe_file md_file block_start_line; do
 
         # Get relative path for the markdown file
         rel_md="${md_file#$PROJECT_ROOT/}"
+
+        if [[ $FE_STATUS -ne 0 ]]; then
+            ERRORS+=("$rel_md:$block_start_line: [fe check] exited with status $FE_STATUS")
+        fi
 
         # Transform error output to reference markdown source
         # Fe errors typically look like: /path/to/file.fe:LINE:COL: error message
@@ -210,9 +215,10 @@ if [[ -d "$EXAMPLES_DIR" ]] && [[ ${#FILES[@]} -eq 0 ]]; then
 
         temp_check_file="$TEMP_DIR/standalone_$(basename "$fe_file")"
         prepare_standalone_check_file "$fe_file" "$temp_check_file"
-        FE_OUTPUT=$("$SCRIPT_DIR/fe" check "$temp_check_file" 2>&1) || true
+        FE_STATUS=0
+        FE_OUTPUT=$("$SCRIPT_DIR/fe" check "$temp_check_file" 2>&1) || FE_STATUS=$?
 
-        if [[ -z "$FE_OUTPUT" ]]; then
+        if [[ $FE_STATUS -eq 0 && -z "$FE_OUTPUT" ]]; then
             : $((PASSED++))
             if [[ "$VERBOSE" == true ]]; then
                 echo -e "${GREEN}OK${NC}"
@@ -221,6 +227,9 @@ if [[ -d "$EXAMPLES_DIR" ]] && [[ ${#FILES[@]} -eq 0 ]]; then
             : $((FAILED++))
             if [[ "$VERBOSE" == true ]]; then
                 echo -e "${RED}FAILED${NC}"
+            fi
+            if [[ $FE_STATUS -ne 0 ]]; then
+                ERRORS+=("$rel_fe: [fe check] exited with status $FE_STATUS")
             fi
             while IFS= read -r error_line; do
                 if [[ -n "$error_line" ]]; then
@@ -231,7 +240,7 @@ if [[ -d "$EXAMPLES_DIR" ]] && [[ ${#FILES[@]} -eq 0 ]]; then
     done
 fi
 
-# Run fe test on blocks that contain #[test]
+# Run fe test on blocks containing test attributes, including should_revert.
 TESTED=0
 TEST_PASSED=0
 TEST_FAILED=0
@@ -245,7 +254,7 @@ strip_boilerplate() {
 
 while IFS=: read -r fe_file md_file block_start_line; do
     # Only run fe test on blocks containing #[test]
-    if ! grep -q '#\[test\]' "$fe_file" 2>/dev/null; then
+    if ! grep -Eq '#\[test(\]|[[:space:]]*\()' "$fe_file" 2>/dev/null; then
         continue
     fi
 
@@ -256,20 +265,22 @@ while IFS=: read -r fe_file md_file block_start_line; do
         echo -n "Testing $rel_md:$block_start_line... "
     fi
 
-    # Strip boilerplate for fe test (boilerplate conflicts with built-in assert)
+    # Runtime examples must compile without the shared pedagogical stubs.
     raw_file="$TEMP_DIR/raw_$(basename "$fe_file")"
     strip_boilerplate "$fe_file" "$raw_file"
 
-    FE_OUTPUT=$("$SCRIPT_DIR/fe" test "$raw_file" 2>&1) || true
+    FE_STATUS=0
+    FE_OUTPUT=$("$SCRIPT_DIR/fe" test "$raw_file" 2>&1) || FE_STATUS=$?
 
-    if echo "$FE_OUTPUT" | grep -q "FAILED\|failures:"; then
+    if [[ $FE_STATUS -ne 0 ]] || echo "$FE_OUTPUT" | grep -q "FAILED\|failures:"; then
         : $((TEST_FAILED++))
         if [[ "$VERBOSE" == true ]]; then
             echo -e "${RED}FAILED${NC}"
         fi
+        ERRORS+=("$rel_md:$block_start_line: [fe test] exited with status $FE_STATUS")
         # Extract failure info
         while IFS= read -r test_line; do
-            if [[ "$test_line" =~ FAIL|revert|failure ]]; then
+            if [[ -n "$test_line" ]]; then
                 ERRORS+=("$rel_md:$block_start_line: [fe test] $test_line")
             fi
         done <<< "$FE_OUTPUT"
@@ -286,7 +297,7 @@ if [[ -d "$EXAMPLES_DIR" ]] && [[ ${#FILES[@]} -eq 0 ]]; then
     for fe_file in "$EXAMPLES_DIR"/*.fe; do
         [[ -f "$fe_file" ]] || continue
         # Only test files containing #[test]
-        if ! grep -q '#\[test\]' "$fe_file" 2>/dev/null; then
+        if ! grep -Eq '#\[test(\]|[[:space:]]*\()' "$fe_file" 2>/dev/null; then
             continue
         fi
 
@@ -297,15 +308,17 @@ if [[ -d "$EXAMPLES_DIR" ]] && [[ ${#FILES[@]} -eq 0 ]]; then
             echo -n "Testing $rel_fe... "
         fi
 
-        FE_OUTPUT=$("$SCRIPT_DIR/fe" test "$fe_file" 2>&1) || true
+        FE_STATUS=0
+        FE_OUTPUT=$("$SCRIPT_DIR/fe" test "$fe_file" 2>&1) || FE_STATUS=$?
 
-        if echo "$FE_OUTPUT" | grep -q "FAILED\|failures:"; then
+        if [[ $FE_STATUS -ne 0 ]] || echo "$FE_OUTPUT" | grep -q "FAILED\|failures:"; then
             : $((TEST_FAILED++))
             if [[ "$VERBOSE" == true ]]; then
                 echo -e "${RED}FAILED${NC}"
             fi
+            ERRORS+=("$rel_fe: [fe test] exited with status $FE_STATUS")
             while IFS= read -r test_line; do
-                if [[ "$test_line" =~ FAIL|revert|failure ]]; then
+                if [[ -n "$test_line" ]]; then
                     ERRORS+=("$rel_fe: [fe test] $test_line")
                 fi
             done <<< "$FE_OUTPUT"
@@ -335,7 +348,7 @@ fi
 echo ""
 
 # Print errors if any
-if [[ ${#ERRORS[@]} -gt 0 ]]; then
+if [[ $FAILED -gt 0 || $TEST_FAILED -gt 0 ]]; then
     echo -e "${RED}Errors:${NC}"
     echo ""
     for error in "${ERRORS[@]}"; do

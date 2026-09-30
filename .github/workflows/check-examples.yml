@@ -42,6 +42,11 @@ jobs:
           chmod +x scripts/extract-fe-blocks.sh
           chmod +x scripts/check-examples.sh
 
+      - name: Setup Node
+        uses: actions/setup-node@v4
+        with:
+          node-version: 22
+
       - name: Check Fe code examples
         env:
           GITHUB_TOKEN: ${{ secrets.GITHUB_TOKEN }}

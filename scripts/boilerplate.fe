@@ -3,7 +3,7 @@
 //
 // These are *pedagogical* trait stubs used by trait/bounds examples. They are NOT
 // part of std — they exist only so illustrative snippets compile. Everything that
-// std/the prelude provides in Fe 26.2.0 (Ctx, Log, assert!, revert, StorageMap,
+// std/the prelude provides in Fe 26.4 (Ctx, Log, assert!, revert, StorageMap,
 // Default, Clone, the EVM intrinsics, ...) is used directly in the docs and has no
 // stub here.
 //
