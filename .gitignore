@@ -29,3 +29,6 @@ openspec/changes/
 
 # Local MCP config
 .mcp.json
+# Local language-server state
+.fe-lsp.json
+.fe-lsp/
