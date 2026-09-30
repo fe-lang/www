@@ -2,7 +2,7 @@
 
 The official documentation for [Fe](https://github.com/argotorg/fe), a statically typed smart contract programming language for the Ethereum Virtual Machine (EVM).
 
-**Live site**: https://fe-lang.github.io/www/
+**Live site**: https://fe-lang.org/
 
 ## Overview
 
@@ -13,7 +13,7 @@ Fe is designed for writing safe, expressive smart contracts. Key features includ
 - **Rust-inspired syntax**: Familiar patterns for systems programmers
 - **EVM-native**: Compiles to efficient EVM bytecode
 
-This documentation covers language fundamentals, contract development patterns, and practical examples.
+This documentation targets Fe 26.4 and covers language fundamentals, contract development patterns, and practical examples.
 
 ## Project Structure
 
@@ -58,15 +58,17 @@ npm run preview
 
 ### Validating Code Examples
 
-All Fe code blocks in the documentation are type-checked to ensure accuracy:
+All unignored Fe code blocks are type-checked; blocks with test attributes also run through `fe test`. Intentionally invalid examples and incomplete excerpts use `fe ignore`:
 
 ```bash
 # Validate all code snippets
 bash scripts/check-examples.sh
 
-# Check a specific Fe file
+# Check a specific file with the release compiler
 ./scripts/fe check path/to/file.fe
 ```
+
+The compiler wrapper downloads and caches the release pinned in `.fe-version` (currently `v26.4.1`). No Rust build or PR integration is needed. Use `FE_BIN=/path/to/fe` for an explicit local compiler or `FE_VERSION=latest` to test the latest release. A failed pinned download fails the check rather than silently using another release.
 
 ## Commands
 

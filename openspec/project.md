@@ -13,29 +13,15 @@
 
 ## Fe Compiler
 
-Use the wrapper script at `scripts/fe` for all compiler invocations. The wrapper downloads the latest Fe release on demand, caches it in `bin/`, and reuses cached metadata to avoid repeated GitHub API calls.
+The guide targets Fe 26.4. `.fe-version` pins the release used by `scripts/fe`, the example checker and CI. The wrapper downloads and caches that release; no local source build is required. `FE_BIN` explicitly selects a local compiler and `FE_VERSION=latest` opts into latest-release resolution.
 
 ```bash
-# Type-check a Fe file using the wrapper (recommended)
-./scripts/fe check path/to/file.fe
-
-# Validate all documentation code snippets
 bash scripts/check-examples.sh
-
-# Override the wrapper with a specific local Fe binary
-FE_BIN=~/code/fe/fix-scalar-ref-panic/target/release/fe bash scripts/check-examples.sh
-
-# Optional: force a latest-release check immediately
-FE_FORCE_LATEST_CHECK=1 ./scripts/fe check path/to/file.fe
+FE_BIN=/path/to/fe bash scripts/check-examples.sh
+bash scripts/generate-docs.sh
 ```
 
-Environment variables:
-- `FE_BIN`: use a specific Fe binary instead of the cached/downloaded wrapper binary
-- `GITHUB_TOKEN`: used for authenticated GitHub API requests (recommended in CI to avoid low unauthenticated rate limits)
-- `FE_LATEST_TTL_SECONDS`: freshness window for latest-release checks (default: `21600`)
-- `FE_FORCE_LATEST_CHECK=1`: bypass freshness window and force a latest check
-
-This local compiler wrapper should be used instead of any system-installed version to ensure consistency with the documented language features.
+The API generator uses the release compiler and its matching source checkout. Update `.fe-version` and regenerate the API when advancing the guide's compiler version.
 
 ## Project Conventions
 
@@ -81,16 +67,16 @@ The Fe compiler consists of these main crates:
 - **parser**: Lexer (logos-based) and parser producing AST
 - **hir**: Higher-level IR, semantic analysis, type system (uses Salsa for incremental computation)
 - **mir**: Mid-level IR for optimizations
-- **codegen**: Generates Yul (EVM intermediate language) from HIR
+- **codegen**: Lowers MIR through the Sonatina backend to EVM bytecode
 - **resolver**: Package/ingot dependency resolution
 - **driver**: Orchestrates compilation pipeline
 - **fmt**: Code formatter
 - **language-server**: LSP support
 
-**Compilation Pipeline**: Source → Parser (GreenNode/CST) → Lowering (HIR) → Semantic Analysis → MIR → Codegen (Yul) → EVM bytecode
+**Compilation Pipeline**: Source → Parser (GreenNode/CST) → Lowering (HIR) → Semantic Analysis → MIR → Sonatina → EVM bytecode
 
 ## Important Constraints
-- Site is deployed to `https://fe-lang.github.io/www/` (note the `/www/` base path)
+- Site is deployed to `https://fe-lang.org/` (base path `/`)
 - Must build successfully with `npm run build` before deployment
 - Documentation content should be accessible and follow Starlight conventions
 
