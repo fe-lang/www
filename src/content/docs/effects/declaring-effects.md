@@ -141,9 +141,9 @@ pub struct TokenStorage {
 // Helper function with explicit effects
 fn do_transfer(from: u256, to: u256, amount: u256) uses (store: mut TokenStorage) {
     let from_balance = store.balances.get(key: from)
-    let to_balance = store.balances.get(key: to)
 
     store.balances.set(key: from, value: from_balance - amount)
+    let to_balance = store.balances.get(key: to)
     store.balances.set(key: to, value: to_balance + amount)
 }
 ```

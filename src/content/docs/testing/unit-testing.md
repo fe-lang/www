@@ -85,9 +85,63 @@ fn test_assert_false_reverts() {
 
 This is useful for verifying that safety checks (overflow, access control, assertions) actually trigger.
 
+### Checking the Revert Reason
+
+A plain `should_revert` accepts any revert. To also check *why* the code reverted, add one of these arguments:
+
+- `selector = 0x…`: the revert data must start with this 4-byte selector (for example a custom error's selector, or `0x08c379a0` for `Error(string)`).
+- `panic = 0x…`: the revert must be a Solidity `Panic(uint256)` with this code, such as `0x01` (assertion), `0x11` (arithmetic overflow), or `0x12` (division by zero).
+
+Both require `should_revert`, and a test cannot combine `selector` and `panic`.
+
+`assert!(condition)` without a message reverts with `Panic(0x01)`. `assert!(condition, "message")` reverts with a Solidity `Error(string)`, whose selector is `0x08c379a0`:
+
+```fe
+#[error]
+pub struct InsufficientBalance {
+    pub balance: u256,
+    pub required: u256,
+}
+
+fn withdraw(balance: u256, amount: u256) -> u256 {
+    if amount > balance {
+        revert_error(InsufficientBalance { balance, required: amount })
+    }
+    balance - amount
+}
+
+// Bare assert! reverts with Panic(0x01)
+#[test(should_revert, panic = 0x01)]
+fn test_bare_assert_panics() {
+    assert!(false)
+}
+
+// assert! with a message reverts with Error(string)
+#[test(should_revert, selector = 0x08c379a0)]
+fn test_assert_message_is_error_string() {
+    assert!(false, "not owner")
+}
+
+// Checked arithmetic overflow reverts with Panic(0x11)
+#[test(should_revert, panic = 0x11)]
+fn test_overflow_panics() {
+    let x: u8 = 255
+    let _ = x + 1
+}
+
+// Custom errors revert with their selector:
+// bytes4(keccak256("InsufficientBalance(uint256,uint256)")) = 0xcf479181
+#[test(should_revert, selector = 0xcf479181)]
+fn test_withdraw_too_much() {
+    let _ = withdraw(balance: 100, amount: 200)
+}
+```
+
+See [Reverting](/errors/revert/#custom-errors) for defining custom errors with `#[error]` and reverting with `revert_error`.
+
 ## Assertions
 
-`assert!(condition)` reverts the test if the condition is false. Since `assert!` takes a single `bool`, use comparison expressions:
+`assert!(condition)` reverts the test if the condition is false. The condition is a `bool`; an optional second string argument describes the failure. Use comparison expressions:
 
 ```fe
 //<hide>

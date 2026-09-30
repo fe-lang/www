@@ -272,7 +272,7 @@ let _ = day_name
 
 ### For Loops
 
-Use `for` to iterate over a collection:
+Use `for` to iterate over a range (such as `0..n`), an array, or any other type that implements `core::seq::Seq`:
 
 ```fe
 //<hide>
@@ -288,6 +288,8 @@ for item in items {
 //</hide>
 ```
 
+Arrays implement `Seq` only when their element type is `Copy`, because each iteration copies an element out of the array. Primitive element types such as `u256` work out of the box. To loop over an array of your own structs, implement `Copy` for the struct (`impl Copy for User {}`); otherwise the compiler reports a move conflict.
+
 ### Pattern Binding in For Loops
 
 Destructure elements while iterating:
@@ -296,7 +298,11 @@ Destructure elements while iterating:
 //<hide>
 fn store_at(index: u256, value: u256) { let _ = (index, value) }
 fn credit(name: u256, balance: u256) { let _ = (name, balance) }
+//</hide>
 pub struct User { pub name: u256, pub balance: u256 }
+impl Copy for User {}  // required to iterate over [User; N]
+
+//<hide>
 fn __example2() {
 let indexed_items: [(u256, u256); 2] = [(0, 10), (1, 20)]
 let users: [User; 1] = [User { name: 1, balance: 100 }]
@@ -360,10 +366,11 @@ while true {
 Use `break` to exit a loop early:
 
 ```fe
-//<hide>
 pub struct Item {
     pub val: u256,
 }
+impl Copy for Item {}
+//<hide>
 impl Item {
     pub fn is_target(self) -> bool { self.val == 0 }
 }
@@ -388,10 +395,11 @@ let _ = found
 Use `continue` to skip to the next iteration:
 
 ```fe
-//<hide>
 pub struct Item {
     pub val: u256,
 }
+impl Copy for Item {}
+//<hide>
 impl Item {
     pub fn should_skip(self) -> bool { self.val == 0 }
 }

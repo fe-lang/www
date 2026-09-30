@@ -127,5 +127,8 @@ failures:
 | `--trace-evm` | Trace EVM opcodes |
 | `--call-trace` | Print call traces |
 | `--ingot NAME` | Test specific workspace member |
-| `--backend yul\|sonatina` | Codegen backend (default: sonatina) |
-| `--optimize 0\|s\|2` | Optimization level |
+| `--optimize 0\|1\|2\|s` | Optimization level (default: 1) |
+
+## EVM Revision
+
+Fe 26.4 compiles and runs EVM tests with **Osaka** rules. This includes instructions such as CLZ used by `leading_zeros`. The test runner lifts Osaka's per-transaction gas cap, so a passing high-gas test does not prove that the transaction can be submitted unchanged to a deployed chain. Use an Osaka-compatible node for deployment and check the target chain's limits separately.

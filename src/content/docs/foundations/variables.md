@@ -52,7 +52,7 @@ fn example() {
 // With annotation - type must be specified for integers
 let count: u256 = 100
 
-// Explicitly u8 for storage efficiency
+// Explicitly u8 when the value is meant to be a byte
 let small_count: u8 = 100
 //<hide>
 let _ = (count, small_count)
@@ -118,8 +118,10 @@ The `mut` keyword signals to readers that this variable's value will change duri
 Use `mut` when you genuinely need to modify a value:
 
 ```fe
-//<hide>
 pub struct Item { pub value: u256 }
+impl Copy for Item {}  // arrays are iterable only when the element type is Copy
+
+//<hide>
 fn __example2() {
 let items: [Item; 2] = [Item { value: 10 }, Item { value: 20 }]
 //</hide>

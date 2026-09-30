@@ -16,7 +16,7 @@ version = "1.0.0"
 
 [dependencies]
 utils = "../shared/utils"
-token_lib = { source = "https://github.com/example/token-lib.git", rev = "a1b2c3d4e5f6" }
+token_lib = { source = "https://github.com/example/token-lib.git", rev = "0123456789abcdef0123456789abcdef01234567" }
 ```
 
 ## Local Path Dependencies
@@ -72,7 +72,7 @@ Pull ingots from git repositories:
 
 ```toml
 [dependencies]
-token_lib = { source = "https://github.com/example/token-lib.git", rev = "abc1234" }
+token_lib = { source = "https://github.com/example/token-lib.git", rev = "0123456789abcdef0123456789abcdef01234567" }
 ```
 
 ### Required Fields
@@ -80,9 +80,9 @@ token_lib = { source = "https://github.com/example/token-lib.git", rev = "abc123
 | Field | Description |
 |-------|-------------|
 | `source` | Git repository URL |
-| `rev` | Git commit hash (full or abbreviated) |
+| `rev` | Full 40-character git commit hash |
 
-**Note:** Only commit hashes are supported for `rev`. Tags and branch names are not allowed because Fe does not yet support lock files. Pinning to exact commits ensures reproducible builds.
+**Note:** `rev` must be a full 40-character commit hash (as printed by `git rev-parse HEAD`). Abbreviated hashes, tags, and branch names are rejected, and there is no separate key for tags or branches. Because Fe does not yet support lock files, the exact commit is what makes builds reproducible.
 
 ### Optional Fields
 
@@ -92,18 +92,18 @@ token_lib = { source = "https://github.com/example/token-lib.git", rev = "abc123
 
 ### Examples
 
-Pin to a specific commit:
+Depend on a specific commit:
 
 ```toml
 [dependencies]
-lib = { source = "https://github.com/org/repo.git", rev = "a1b2c3d4" }
+lib = { source = "https://github.com/org/repo.git", rev = "0123456789abcdef0123456789abcdef01234567" }
 ```
 
 Use a subdirectory in the repository:
 
 ```toml
 [dependencies]
-contracts = { source = "https://github.com/org/monorepo.git", rev = "e7f8a9b0c1d2", path = "packages/contracts" }
+contracts = { source = "https://github.com/org/monorepo.git", rev = "0123456789abcdef0123456789abcdef01234567", path = "packages/contracts" }
 ```
 
 ## Using Dependencies
@@ -151,5 +151,5 @@ If two dependencies require different versions of the same ingot, you may encoun
 |-----------------|--------|
 | Local (simple) | `name = "path/to/ingot"` |
 | Local (explicit) | `name = { path = "path/to/ingot" }` |
-| Git remote | `name = { source = "url", rev = "ref" }` |
-| Git with path | `name = { source = "url", rev = "ref", path = "subdir" }` |
+| Git remote | `name = { source = "url", rev = "<40-hex commit>" }` |
+| Git with path | `name = { source = "url", rev = "<40-hex commit>", path = "subdir" }` |

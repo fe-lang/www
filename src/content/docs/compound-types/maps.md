@@ -32,7 +32,7 @@ pub struct Token {
 }
 ```
 
-Maps are always stored in contract storage. They cannot be created as local variables.
+Map entries live in contract storage. The map value is a handle carrying a layout salt, not an in-memory collection. Normally declare maps in contract fields so the compiler assigns their layout parameters.
 
 ## Map Operations
 
@@ -103,15 +103,16 @@ Map keys must implement the `StorageKey` trait. Common key types include:
 
 - `u256`, `u128`, `u64`, etc. - Unsigned integers
 - `i256`, `i128`, `i64`, etc. - Signed integers
+- `Address` - EVM account addresses
 - `bool` - Boolean values
 - Tuples of the above types
 
 ## Value Type Requirements
 
-Map values must implement `LoadableScalar` and `StorableScalar` traits. Common value types include:
+Map values must implement `std::evm::word::WordRepr`, representing one EVM word. Common value types include:
 
 - Numeric types (`u256`, `i256`, etc.)
-- `bool`
+- `bool` and `Address`
 
 ## Storage Layout
 
@@ -121,16 +122,15 @@ StorageMap uses a Solidity-compatible storage layout. Each key-value pair is sto
 slot = keccak256(key ++ base_slot)
 ```
 
-This ensures:
-- Different keys never collide
-- Storage layout is deterministic
-- Compatibility with Solidity contracts
+For scalar keys, the key word followed by the salt matches Solidity's mapping-slot derivation. Tuple keys concatenate their components before the salt; this is not the same layout as nested Solidity mappings. Distinct inferred salts separate different fields. Explicitly choosing the same salt deliberately shares the location space.
 
 ## Common Patterns
 
 ### Token Balances
 
 ```fe
+use std::abi::sol
+
 pub struct Token {
     balances: StorageMap<u256, u256>,
 }
@@ -138,13 +138,42 @@ pub struct Token {
 impl Token {
     pub fn transfer(mut self, from_id: u256, to_id: u256, amount: u256) {
         let from_balance = self.balances.get(key: from_id)
-        let to_balance = self.balances.get(key: to_id)
 
         self.balances.set(key: from_id, value: from_balance - amount)
+        let to_balance = self.balances.get(key: to_id)
         self.balances.set(key: to_id, value: to_balance + amount)
     }
 }
+
+msg LedgerMsg {
+    #[selector = sol("transfer(uint256,uint256,uint256)")]
+    Transfer { from_id: u256, to_id: u256, amount: u256 } -> u256,
+}
+
+pub contract Ledger {
+    mut token: Token,
+    init() uses (mut token) {
+        token.balances.set(key: 1, value: 100)
+    }
+    recv LedgerMsg {
+        Transfer { from_id, to_id, amount } -> u256 uses (mut token) {
+            token.transfer(from_id, to_id, amount)
+            token.balances.get(key: to_id)
+        }
+    }
+}
+
+#[test]
+fn self_transfer_preserves_balance() uses (evm: mut Evm) {
+    let addr = evm.create2<Ledger>(value: 0, args: (), salt: 0)
+    let balance: u256 = evm.call(addr, gas: 200000, value: 0,
+        message: LedgerMsg::Transfer { from_id: 1, to_id: 1, amount: 40 })
+    assert!(balance == 100)
+}
+
 ```
+
+Read the recipient balance after debiting the sender so a transfer to the same account preserves its balance. The `Ledger` contract initializes account `1` with 100 and exposes `transfer` through a message so the test can call it. An application must additionally authorize the sender; the numeric IDs here only illustrate map operations.
 
 ### Allowance System
 
@@ -172,8 +201,8 @@ impl Token {
 
         // Perform transfer
         let from_balance = self.balances.get(key: owner_id)
-        let to_balance = self.balances.get(key: to_id)
         self.balances.set(key: owner_id, value: from_balance - amount)
+        let to_balance = self.balances.get(key: to_id)
         self.balances.set(key: to_id, value: to_balance + amount)
     }
 }
@@ -206,7 +235,7 @@ impl AccessControl {
 
 - **No iteration**: You cannot iterate over all keys in a map. If you need iteration, maintain a separate list of keys.
 - **No deletion**: There's no explicit delete operation. Set a value to its default (e.g., 0) to "remove" an entry.
-- **Storage only**: Maps exist only in contract storage, not as local variables.
+- **Persistent entries**: Copying a map handle does not copy its entries. Explicitly constructing handles with the same salt accesses the same mapping.
 
 ## Summary
 

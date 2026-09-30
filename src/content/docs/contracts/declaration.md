@@ -25,7 +25,7 @@ A contract can contain:
 use std::abi::sol
 msg TokenMsg {
     #[selector = sol("transfer(address,uint256)")]
-    Transfer { to: u256, amount: u256 } -> bool,
+    Transfer { to: Address, amount: u256 } -> bool,
 }
 
 pub struct TokenStorage {
@@ -57,7 +57,7 @@ Fields declare the contract's storage and effect dependencies:
 
 ```fe
 pub struct TokenStorage {
-    pub balances: StorageMap<u256, u256>,
+    pub balances: StorageMap<Address, u256>,
     pub total_supply: u256,
 }
 
@@ -95,11 +95,11 @@ use std::abi::sol
 //</hide>
 
 pub struct TokenStorage {
-    pub balances: StorageMap<u256, u256>,
+    pub balances: StorageMap<Address, u256>,
 }
 
 impl TokenStorage {
-    fn get_balance(self, account: u256) -> u256 {
+    fn get_balance(self, account: Address) -> u256 {
         self.balances.get(key: account)
     }
 }
@@ -107,7 +107,7 @@ impl TokenStorage {
 //<hide>
 msg TokenMsg {
     #[selector = sol("balanceOf(address)")]
-    BalanceOf { account: u256 } -> u256,
+    BalanceOf { account: Address } -> u256,
 }
 //</hide>
 
@@ -129,21 +129,17 @@ The canonical structure of a Fe contract:
 ```fe
 //<hide>
 use std::abi::sol
-pub struct Ctx {}
-impl Ctx {
-    pub fn caller(self) -> u256 { todo() }
-}
 //</hide>
 
 // 1. Storage struct definition
 pub struct TokenStorage {
-    pub balances: StorageMap<u256, u256>,
+    pub balances: StorageMap<Address, u256>,
     pub total_supply: u256,
 }
 
 // 2. Methods on the storage struct
 impl TokenStorage {
-    fn do_transfer(mut self, from: u256, to: u256, amount: u256) -> bool {
+    fn do_transfer(mut self, from: Address, to: Address, amount: u256) -> bool {
         let from_bal = self.balances.get(key: from)
         if from_bal < amount {
             return false
@@ -159,10 +155,10 @@ impl TokenStorage {
 // 3. Message definitions
 msg TokenMsg {
     #[selector = sol("transfer(address,uint256)")]
-    Transfer { to: u256, amount: u256 } -> bool,
+    Transfer { to: Address, amount: u256 } -> bool,
 
     #[selector = sol("balanceOf(address)")]
-    BalanceOf { account: u256 } -> u256,
+    BalanceOf { account: Address } -> u256,
 }
 
 // 4. Contract declaration

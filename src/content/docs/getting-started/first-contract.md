@@ -106,7 +106,8 @@ This creates an `out/` directory with the compiled artifacts:
 ```
 out/
 ├── Counter.bin           # Deploy (init) bytecode
-└── Counter.runtime.bin   # Runtime bytecode
+├── Counter.runtime.bin   # Runtime bytecode
+└── Counter.abi.json      # Solidity-compatible ABI
 ```
 
 ## Deploy to a Local Chain
@@ -114,8 +115,10 @@ out/
 Start a local Ethereum node with Foundry's `anvil`:
 
 ```bash
-anvil
+anvil --hardfork osaka
 ```
+
+Fe 26.4 targets Osaka. Use a Foundry version that supports this hardfork, and verify EVM compatibility before deploying to another network.
 
 Anvil prints a list of pre-funded accounts and their private keys. Keep it running and **open a second terminal**.
 
@@ -170,6 +173,6 @@ It should now return `1`. Each `cast send` with `increment()` will increase the 
 You've written, tested, compiled, deployed, and interacted with a Fe contract. From here:
 
 - [Key Concepts](/getting-started/key-concepts/) — understand Fe's core ideas
-- [Effects & the `uses` Clause](/effects/overview/) — learn how Fe tracks state access
-- [Messages & Receive Blocks](/messages/overview/) — dig deeper into the message model
+- [Effects & the `uses` Clause](/effects/what-are-effects/) — learn how Fe tracks state access
+- [Messages & Receive Blocks](/messages/defining-messages/) — dig deeper into the message model
 - [Examples](/examples/erc20/) — see more realistic contracts

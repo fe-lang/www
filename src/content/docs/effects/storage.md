@@ -84,6 +84,9 @@ The flow is:
 The `mut` keyword on `self` controls whether a method can modify storage:
 
 ```fe
+//<hide>
+use std::abi::sol
+//</hide>
 pub struct TokenStorage {
     pub balances: StorageMap<u256, u256>,
     pub total_supply: u256,
@@ -102,6 +105,22 @@ impl TokenStorage {
         self.total_supply = self.total_supply + amount
     }
 }
+//<hide>
+msg TokenMsg {
+    #[selector = sol("mint(uint256,uint256)")]
+    Mint { to: u256, amount: u256 },
+}
+
+contract Token {
+    mut store: TokenStorage,
+
+    recv TokenMsg {
+        Mint { to, amount } uses (mut store) {
+            store.mint(to, amount)
+        }
+    }
+}
+//</hide>
 ```
 
 A method with `mut self` can call methods that only need `self`, but not vice versa.
@@ -118,9 +137,9 @@ pub struct Balances {
 impl Balances {
     fn transfer(mut self, from: u256, to: u256, amount: u256) {
         let from_balance = self.data.get(key: from)
-        let to_balance = self.data.get(key: to)
 
         self.data.set(key: from, value: from_balance - amount)
+        let to_balance = self.data.get(key: to)
         self.data.set(key: to, value: to_balance + amount)
     }
 }
@@ -201,7 +220,7 @@ The method signature makes all dependencies visible: storage access through `mut
 
 ## Storage Layout
 
-The Fe compiler automatically maps storage structs to EVM storage slots. You define your structs and the compiler handles slot assignment, map key hashing (`keccak256`), and packing of small types.
+The Fe compiler automatically maps storage structs to EVM storage slots. You define your structs and the compiler handles slot assignment and map key hashing (`keccak256`). Do not assume that small scalar fields are automatically packed into a shared slot.
 
 ## Summary
 

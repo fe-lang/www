@@ -14,10 +14,10 @@ use std::abi::sol
 
 msg TokenMsg {
     #[selector = sol("transfer(address,uint256)")]
-    Transfer { to: u256, amount: u256 } -> bool,
+    Transfer { to: Address, amount: u256 } -> bool,
 
     #[selector = sol("balanceOf(address)")]
-    BalanceOf { account: u256 } -> u256,
+    BalanceOf { account: Address } -> u256,
 
     #[selector = sol("totalSupply()")]
     TotalSupply -> u256,
@@ -36,7 +36,7 @@ use std::abi::sol
 msg Example {
 //</hide>
     #[selector = sol("transfer(address,uint256)")]
-    Transfer { to: u256, amount: u256 } -> bool,
+    Transfer { to: Address, amount: u256 } -> bool,
 //<hide>
 }
 //</hide>
@@ -45,7 +45,7 @@ msg Example {
 Components:
 - **Selector attribute**: The 4-byte identifier (`#[selector = sol(...)]`)
 - **Name**: The variant name (`Transfer`)
-- **Fields**: Parameters in curly braces (`{ to: u256, amount: u256 }`)
+- **Fields**: Parameters in curly braces (`{ to: Address, amount: u256 }`)
 - **Return type**: What the handler returns (`-> bool`)
 
 ### Variants Without Parameters
@@ -74,7 +74,7 @@ use std::abi::sol
 msg Example {
 //</hide>
     #[selector = sol("safeTransferFrom(address,address,uint256)")]
-    SafeTransfer { from: u256, to: u256, token_id: u256 },
+    SafeTransfer { from: Address, to: Address, token_id: u256 },
 //<hide>
 }
 //</hide>
@@ -91,19 +91,19 @@ use std::abi::sol
 
 msg Erc20 {
     #[selector = sol("transfer(address,uint256)")]
-    Transfer { to: u256, amount: u256 } -> bool,
+    Transfer { to: Address, amount: u256 } -> bool,
 
     #[selector = sol("approve(address,uint256)")]
-    Approve { spender: u256, amount: u256 } -> bool,
+    Approve { spender: Address, amount: u256 } -> bool,
 
     #[selector = sol("transferFrom(address,address,uint256)")]
-    TransferFrom { from: u256, to: u256, amount: u256 } -> bool,
+    TransferFrom { from: Address, to: Address, amount: u256 } -> bool,
 
     #[selector = sol("balanceOf(address)")]
-    BalanceOf { account: u256 } -> u256,
+    BalanceOf { account: Address } -> u256,
 
     #[selector = sol("allowance(address,address)")]
-    Allowance { owner: u256, spender: u256 } -> u256,
+    Allowance { owner: Address, spender: Address } -> u256,
 
     #[selector = sol("totalSupply()")]
     TotalSupply -> u256,
@@ -128,7 +128,7 @@ Messages are handled in recv blocks within contracts:
 use std::abi::sol
 msg Erc20 {
     #[selector = sol("transfer(address,uint256)")]
-    Transfer { to: u256, amount: u256 } -> bool,
+    Transfer { to: Address, amount: u256 } -> bool,
 }
 //</hide>
 
@@ -146,3 +146,38 @@ contract Token {
 ```
 
 See [Receive Blocks](/messages/receive-blocks/) for details on implementing handlers.
+
+## Multiple Return Values
+
+A handler returning a tuple uses Solidity's multiple-return-value encoding. For example, `-> (DynString, u256)` corresponds to `returns (string, uint256)`. The ABI lists two outputs, and the dynamic string's offset is measured from that output parameter list.
+
+Fe 26.4 corrects the encoding of tuples containing dynamic elements: earlier compilers could insert an extra outer offset. Static tuple returns are unchanged. A single `DynString` return still follows the usual single-dynamic-output encoding.
+
+```fe
+use std::abi::{sol, DynString}
+
+msg InfoMsg {
+    #[selector = sol("info()")]
+    Info -> (DynString, u256),
+}
+
+pub contract Info {
+    recv InfoMsg {
+        Info -> (DynString, u256) { ("Fe", 264) }
+    }
+}
+
+#[test]
+fn multiple_return_values() uses (evm: mut Evm) {
+    let target = evm.create2<Info>(value: 0, args: (), salt: 0)
+    let outcome = evm.try_call(addr: target, gas: 1000000, value: 0, message: InfoMsg::Info {})
+    assert!(outcome.success())
+    let data = outcome.returndata()
+    assert!(data.word_at(0) == 64) // String tail follows the two-word head.
+    assert!(data.word_at(32) == 264)
+    let (name, version): (DynString, u256) = evm.call(
+        addr: target, gas: 1000000, value: 0, message: InfoMsg::Info {},
+    )
+    assert!(name == "Fe" && version == 264)
+}
+```

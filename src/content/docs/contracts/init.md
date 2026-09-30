@@ -33,21 +33,21 @@ Init blocks can accept parameters passed during deployment:
 //<hide>
 pub struct TokenStorage {
     pub total_supply: u256,
-    pub balances: StorageMap<u256, u256>,
+    pub balances: StorageMap<Address, u256>,
 }
 //</hide>
 
 contract Token {
     mut store: TokenStorage,
 
-    init(initial_supply: u256, owner: u256) uses (mut store) {
+    init(initial_supply: u256, owner: Address) uses (mut store) {
         store.total_supply = initial_supply
         store.balances.set(key: owner, value: initial_supply)
     }
 }
 ```
 
-These parameters are encoded in the deployment transaction's calldata.
+These parameters are ABI-encoded and appended to the creation bytecode in the deployment transaction.
 
 ## Initializing Storage
 
@@ -114,7 +114,7 @@ contract Counter {
 
 ## Optional Init
 
-The init block is optional. Contracts without init have default-initialized storage (zeros):
+The init block is optional for contracts whose fields are all `mut`. That state starts at zero:
 
 ```fe
 //<hide>
@@ -135,6 +135,48 @@ contract Simple {
             0
         }
     }
+}
+```
+
+Immutable (non-`mut`) contract fields are embedded in the deployed code, so a contract that declares one needs an init block that assigns it on every successful constructor exit. Otherwise compilation fails with `error[8-0086]: immutable contract field is not initialized`:
+
+```fe
+//<hide>
+use std::abi::sol
+msg OwnedMsg {
+    #[selector = sol("owner()")]
+    Owner -> Address,
+}
+//</hide>
+
+contract Owned {
+    owner: Address,
+
+    init(initial_owner: Address) uses (mut owner) {
+        owner = initial_owner
+    }
+
+    recv OwnedMsg {
+        Owner -> Address uses owner {
+            owner
+        }
+    }
+}
+```
+
+Deployment is non-payable by default. Deploying with a non-zero ETH value reverts unless the init block is marked `#[payable]`, and this also applies to contracts that have no init block at all:
+
+```fe
+//<hide>
+pub struct VaultStorage { pub deposits: u256 }
+//</hide>
+
+contract Vault {
+    mut store: VaultStorage,
+
+    // Accept ETH sent with the deployment transaction
+    #[payable]
+    init() {}
 }
 ```
 
@@ -176,7 +218,7 @@ contract Token uses (ctx: Ctx) {
 
 The init block has some restrictions:
 
-- **No external calls**: Init runs during deployment, so calling other contracts is restricted
+- **Declared effects only**: Like handlers, init can only use the effects it names in `uses`. Calling other contracts works, but requires the call effect: declare `uses (call: mut Call)` on the contract and `uses (mut call)` on init
 - **No message receiving**: Init handles deployment, not incoming messages
 - **Single execution**: Init runs exactly once per contract deployment
 
@@ -252,5 +294,6 @@ Deploy Transaction
 | `init() { }` | Constructor block |
 | `init(params) { }` | Constructor with parameters |
 | Direct access | Init can access `store.field` directly |
-| Optional | Contracts work without init (default values) |
+| Optional | Contracts with only `mut` fields work without init (default values) |
+| `#[payable] init` | Required to accept ETH at deployment |
 | Single run | Executes once at deployment |

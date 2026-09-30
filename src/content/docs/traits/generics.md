@@ -349,3 +349,21 @@ fn get_value(key: u256) -> u256 uses (storage: Storage) {
 | `foo::<Type>()` | Explicit type argument |
 | `struct Foo<T>` | Generic struct |
 | `impl<T> Foo<T>` | Generic implementation |
+
+## Default Type Arguments
+
+A generic function can supply a default type argument. Callers may use that default or explicitly select another supported type:
+
+```fe
+fn zero<T: Default = u256>() -> T {
+    T::default()
+}
+
+#[test]
+fn default_type_arguments() {
+    let default_value = zero()
+    let small = zero<u8>()
+    assert!(default_value == 0)
+    assert!(small == 0)
+}
+```

@@ -3,7 +3,9 @@ title: Complete ERC20
 description: Full walkthrough of CoolCoin
 ---
 
-This chapter presents a complete ERC20 token implementation called CoolCoin. This example demonstrates real Fe patterns including contract-level effects, storage structs, access control, events, and message handling.
+This chapter presents CoolCoin, an ERC20 teaching implementation. This example demonstrates real Fe patterns including contract-level effects, storage structs, access control, events, and message handling.
+
+The events are named `Transfer` and `Approval` so their signature hashes match ERC20. The tests exercise self-transfers, supply preservation, and allowance consumption. This example has not been audited.
 
 ## Full Source Code
 
@@ -13,19 +15,17 @@ use std::abi::sol
 //</hide>
 // roles
 const MINTER: u256 = 1
-const BURNER: u256 = 2
 
 pub contract CoolCoin uses (ctx: mut Ctx, log: mut Log) {
     // Storage fields. These act as effects within the contract.
     mut store: TokenStore,
     mut auth: AccessControl,
 
-    // Initialize the token with name, symbol, decimals, and initial supply
+    // Grant roles and mint the initial supply
     init(initial_supply: u256, owner: Address)
       uses (mut store, mut auth, mut ctx, mut log)
     {
         auth.grant(role: MINTER, to: owner)
-        auth.grant(role: BURNER, to: owner)
 
         if initial_supply > 0 {
             store.mint(to: owner, amount: initial_supply)
@@ -80,7 +80,7 @@ pub contract CoolCoin uses (ctx: mut Ctx, log: mut Log) {
             true
         }
 
-        // Burns tokens from an account using allowance (requires BURNER or allowance)
+        // Burns tokens from an account using allowance (requires allowance)
         BurnFrom { from, amount } -> bool uses (ctx, mut store, mut log) {
             store.spend_allowance(owner: from, spender: ctx.caller(), amount)
             store.burn(from, amount)
@@ -124,7 +124,7 @@ impl TokenStore {
         self.balances.set(key: from, value: from_balance - amount)
         self.balances.set(key: to, value: self.balances.get(key: to) + amount)
 
-        log.emit(event: TransferEvent { from, to, value: amount })
+        log.emit(event: Transfer { from, to, value: amount })
     }
 
     fn mint(mut self, to: Address, amount: u256) uses (log: mut Log) {
@@ -133,7 +133,7 @@ impl TokenStore {
         self.total_supply += amount
         self.balances.set(key: to, value: self.balances.get(key: to) + amount)
 
-        log.emit(event: TransferEvent { from: Address::zero(), to, value: amount })
+        log.emit(event: Transfer { from: Address::zero(), to, value: amount })
     }
 
     fn burn(mut self, from: Address, amount: u256) uses (log: mut Log) {
@@ -145,7 +145,7 @@ impl TokenStore {
         self.balances.set(key: from, value: from_balance - amount)
         self.total_supply -= amount
 
-        log.emit(event: TransferEvent { from, to: Address::zero(), value: amount })
+        log.emit(event: Transfer { from, to: Address::zero(), value: amount })
     }
 
     fn approve(mut self, owner: Address, spender: Address, amount: u256) uses (log: mut Log) {
@@ -154,15 +154,14 @@ impl TokenStore {
 
         self.allowances.set(key: (owner, spender), value: amount)
 
-        log.emit(event: ApprovalEvent { owner, spender, value: amount })
+        log.emit(event: Approval { owner, spender, value: amount })
     }
 
     fn spend_allowance(mut self, owner: Address, spender: Address, amount: u256) {
         let current = self.allowances.get(key: (owner, spender))
-        // if current != u256::MAX { // TODO: define ::MAX constants
-            assert!(current >= amount, "insufficient allowance")
-            self.allowances.set(key: (owner, spender), value: current - amount)
-        // }
+        // This token decreases every allowance, including the largest value.
+        assert!(current >= amount, "insufficient allowance")
+        self.allowances.set(key: (owner, spender), value: current - amount)
     }
 }
 
@@ -239,7 +238,7 @@ msg Erc20Extended {
 
 // ERC20 events
 #[event]
-struct TransferEvent {
+struct Transfer {
     #[indexed]
     from: Address,
     #[indexed]
@@ -248,13 +247,58 @@ struct TransferEvent {
 }
 
 #[event]
-struct ApprovalEvent {
+struct Approval {
     #[indexed]
     owner: Address,
     #[indexed]
     spender: Address,
     value: u256,
 }
+
+#[test]
+fn transfer_preserves_supply_and_self_balance() uses (evm: mut Evm) {
+    let owner = evm.address()
+    let token = evm.create2<CoolCoin>(value: 0, args: (1000, owner), salt: 0)
+    let ok: bool = evm.call(addr: token, gas: 300000, value: 0,
+        message: Erc20::Transfer { to: owner, amount: 100 })
+    assert!(ok)
+    let balance: u256 = evm.call(addr: token, gas: 100000, value: 0,
+        message: Erc20::BalanceOf { account: owner })
+    assert!(balance == 1000)
+    let recipient = Address { inner: 42 }
+    let moved: bool = evm.call(addr: token, gas: 300000, value: 0,
+        message: Erc20::Transfer { to: recipient, amount: 100 })
+    assert!(moved)
+    let received: u256 = evm.call(addr: token, gas: 100000, value: 0,
+        message: Erc20::BalanceOf { account: recipient })
+    let supply: u256 = evm.call(addr: token, gas: 100000, value: 0,
+        message: Erc20::TotalSupply {})
+    assert!(received == 100)
+    assert!(supply == 1000)
+}
+
+#[test]
+fn allowance_is_consumed() uses (evm: mut Evm) {
+    let owner = evm.address()
+    let token = evm.create2<CoolCoin>(value: 0, args: (1000, owner), salt: 0)
+    let approved: bool = evm.call(addr: token, gas: 300000, value: 0,
+        message: Erc20::Approve { spender: owner, amount: 100 })
+    assert!(approved)
+    let moved: bool = evm.call(addr: token, gas: 300000, value: 0,
+        message: Erc20::TransferFrom { from: owner, to: Address { inner: 42 }, amount: 40 })
+    assert!(moved)
+    let allowance: u256 = evm.call(addr: token, gas: 100000, value: 0,
+        message: Erc20::Allowance { owner, spender: owner })
+    assert!(allowance == 60)
+}
+
+#[test(should_revert)]
+fn rejects_transfer_above_balance() uses (evm: mut Evm) {
+    let token = evm.create2<CoolCoin>(value: 0, args: (10, evm.address()), salt: 0)
+    let _: bool = evm.call(addr: token, gas: 300000, value: 0,
+        message: Erc20::Transfer { to: Address { inner: 42 }, amount: 11 })
+}
+
 ```
 
 ## Walkthrough
@@ -360,7 +404,6 @@ msg Erc20Init {
 }
 
 const MINTER: u256 = 1
-const BURNER: u256 = 2
 
 contract CoolCoinInit uses (ctx: mut Ctx, log: mut Log) {
     mut store: TokenStore,
@@ -371,7 +414,6 @@ contract CoolCoinInit uses (ctx: mut Ctx, log: mut Log) {
       uses (mut store, mut auth, mut ctx, mut log)
     {
         auth.grant(role: MINTER, to: owner)
-        auth.grant(role: BURNER, to: owner)
 
         if initial_supply > 0 {
             store.mint(to: owner, amount: initial_supply)
@@ -383,7 +425,7 @@ contract CoolCoinInit uses (ctx: mut Ctx, log: mut Log) {
 ```
 
 The constructor:
-1. Grants MINTER and BURNER roles to the owner
+1. Grants the MINTER role to the owner
 2. Mints initial supply to the owner if non-zero
 3. Declares which effects it uses from the contract
 
@@ -396,7 +438,7 @@ Each handler declares its specific effect requirements:
 use std::abi::sol
 
 #[event]
-struct TransferEvent {
+struct Transfer {
     #[indexed]
     from: Address,
     #[indexed]
@@ -469,7 +511,7 @@ impl TokenStore {
         self.balances.set(key: from, value: from_balance - amount)
         self.balances.set(key: to, value: self.balances.get(key: to) + amount)
 
-        log.emit(event: TransferEvent { from, to, value: amount })
+        log.emit(event: Transfer { from, to, value: amount })
     }
 }
 ```
@@ -488,7 +530,7 @@ Events are structs with `#[indexed]` fields for filtering:
 
 ```fe
 #[event]
-struct TransferEvent {
+struct Transfer {
     #[indexed]
     from: Address,
     #[indexed]
@@ -497,7 +539,7 @@ struct TransferEvent {
 }
 
 #[event]
-struct ApprovalEvent {
+struct Approval {
     #[indexed]
     owner: Address,
     #[indexed]
@@ -511,7 +553,7 @@ Events are emitted via the Log effect:
 ```fe
 //<hide>
 #[event]
-struct TransferEvent {
+struct Transfer {
     #[indexed]
     from: Address,
     #[indexed]
@@ -521,7 +563,7 @@ struct TransferEvent {
 
 fn __example_emit(from: Address, to: Address, amount: u256) uses (log: mut Log) {
 //</hide>
-log.emit(event: TransferEvent { from, to, value: amount })
+log.emit(event: Transfer { from, to, value: amount })
 //<hide>
 }
 //</hide>
@@ -543,7 +585,6 @@ impl AccessControl {
 }
 //</hide>
 const MINTER: u256 = 1
-const BURNER: u256 = 2
 
 impl AccessControl {
     pub fn require(self, role: u256) uses (ctx: Ctx) {
@@ -564,7 +605,7 @@ Usage in handlers:
 use std::abi::sol
 
 #[event]
-struct TransferEvent {
+struct Transfer {
     #[indexed]
     from: Address,
     #[indexed]
@@ -631,13 +672,13 @@ The `require` method checks if the caller has the specified role, reverting if n
 | Storage as fields | `mut store: TokenStore` |
 | Handler-specific effects | `uses (ctx, mut store, mut log)` |
 | Storage methods | `impl TokenStore { fn transfer(mut self, ...) uses (log: mut Log) }` |
-| Event emission | `log.emit(event: TransferEvent { ... })` |
+| Event emission | `log.emit(event: Transfer { ... })` |
 | Role-based access | `auth.require(role: MINTER)` |
 | Zero address checks | `assert!(to != Address::zero(), "transfer to zero address")` |
 
 ## Summary
 
-CoolCoin demonstrates how to build a production-quality ERC20 token in Fe:
+CoolCoin demonstrates how to build a teaching ERC20 token in Fe:
 
 1. **Explicit effects** make capabilities visible in signatures
 2. **Storage structs** organize related state

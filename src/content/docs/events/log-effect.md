@@ -11,21 +11,21 @@ Unlike languages where logging is implicit, Fe treats it as a tracked capability
 
 ```fe
 //<hide>
-pub struct TokenStorage { pub balances: StorageMap<u256, u256> }
+pub struct TokenStorage { pub balances: StorageMap<Address, u256> }
 //</hide>
 
 #[event]
 struct Transfer {
     #[indexed]
-    from: u256,
+    from: Address,
     #[indexed]
-    to: u256,
+    to: Address,
     amount: u256,
 }
 
 impl TokenStorage {
     // This method CAN emit events
-    fn transfer_with_event(mut self, from: u256, to: u256, amount: u256)
+    fn transfer_with_event(mut self, from: Address, to: Address, amount: u256)
         uses (log: mut Log)
     {
         // ... transfer logic ...
@@ -36,7 +36,7 @@ impl TokenStorage {
     }
 
     // This method CANNOT emit events
-    fn transfer_silent(mut self, from: u256, to: u256, amount: u256) {
+    fn transfer_silent(mut self, from: Address, to: Address, amount: u256) {
         // ... transfer logic only ...
         // log.emit(...) would be a compile error here
         //<hide>
@@ -53,15 +53,15 @@ Use it in function signatures:
 #[event]
 struct Transfer {
     #[indexed]
-    from: u256,
+    from: Address,
     #[indexed]
-    to: u256,
+    to: Address,
     amount: u256,
 }
 //</hide>
 
 // Read-only logging isn't meaningful, so always use mut
-fn emit_transfer(from: u256, to: u256, amount: u256) uses (log: mut Log) {
+fn emit_transfer(from: Address, to: Address, amount: u256) uses (log: mut Log) {
     log.emit(event: Transfer { from, to, amount })
 }
 ```
@@ -96,25 +96,7 @@ In Solidity, you'd need to read the implementation to know if events are emitted
 
 ### Testability
 
-Mock or replace the Log effect in tests:
-
-```fe ignore
-pub struct MockEventLog {
-    pub events: Vec<u256>,  // Track emitted events
-}
-
-fn test_transfer() {
-    let storage = TokenStorage { ... }
-    let mock_log = MockEventLog { events: Vec::new() }
-
-    with (TokenStorage = storage, EventLog = mock_log) {
-        transfer(alice, bob, 100)
-    }
-
-    // Verify events were emitted
-    assert!(mock_log.events.len() == 1)
-}
-```
+The standard `Log` trait is a sealed EVM capability, so an application cannot implement it on an arbitrary mock. Use `Evm` integration tests and `fe test --show-logs` to inspect emitted events. For unit-testable business logic, define your own application-level event-sink trait and supply a recording implementation; see [Mocking Effects](/testing/mocking/).
 
 ### Composition Control
 
@@ -126,14 +108,14 @@ pub struct Balances { pub data: u256 }
 #[event]
 struct Deposit {
     #[indexed]
-    account: u256,
+    account: Address,
     amount: u256,
 }
 //</hide>
 
 impl Balances {
     // Internal helper - no logging
-    fn update_balance(mut self, account: u256, delta: u256) {
+    fn update_balance(mut self, account: Address, delta: u256) {
         // Pure state update, no events
         //<hide>
         let _ = (account, delta)
@@ -141,7 +123,7 @@ impl Balances {
     }
 
     // Public interface - with logging
-    fn deposit(mut self, account: u256, amount: u256) uses (log: mut Log) {
+    fn deposit(mut self, account: Address, amount: u256) uses (log: mut Log) {
         self.update_balance(account, delta: amount)
         log.emit(event: Deposit { account, amount })
     }
@@ -154,24 +136,24 @@ Functions calling logging functions must declare the effect:
 
 ```fe
 //<hide>
-pub struct TokenStorage { pub balances: StorageMap<u256, u256> }
+pub struct TokenStorage { pub balances: StorageMap<Address, u256> }
 #[event]
 struct Transfer {
     #[indexed]
-    from: u256,
+    from: Address,
     #[indexed]
-    to: u256,
+    to: Address,
     amount: u256,
 }
 //</hide>
 
-fn emit_transfer(from: u256, to: u256, amount: u256) uses (log: mut Log) {
+fn emit_transfer(from: Address, to: Address, amount: u256) uses (log: mut Log) {
     log.emit(event: Transfer { from, to, amount })
 }
 
 impl TokenStorage {
     // Must declare Log because it calls emit_transfer
-    fn do_transfer(mut self, from: u256, to: u256, amount: u256)
+    fn do_transfer(mut self, from: Address, to: Address, amount: u256)
         -> bool uses (log: mut Log)
     {
         // ... transfer logic ...
@@ -187,7 +169,7 @@ impl TokenStorage {
 ```fe ignore
 // Compile error: missing Log effect
 impl TokenStorage {
-    fn broken_transfer(mut self, from: u256, to: u256, amount: u256) -> bool {
+    fn broken_transfer(mut self, from: Address, to: Address, amount: u256) -> bool {
         // ... transfer logic ...
         emit_transfer(from, to, amount)  // Error: Log not available
         true
@@ -202,16 +184,16 @@ Contracts provide the Log effect via the `uses` clause on handlers:
 ```fe
 //<hide>
 use std::abi::sol
-pub struct TokenStorage { pub balances: StorageMap<u256, u256> }
+pub struct TokenStorage { pub balances: StorageMap<Address, u256> }
 impl TokenStorage {
-    fn do_transfer(mut self, from: Address, to: u256, amount: u256) -> bool uses (log: mut Log) {
+    fn do_transfer(mut self, from: Address, to: Address, amount: u256) -> bool uses (log: mut Log) {
         let _ = (from, to, amount, log)
         true
     }
 }
 msg TokenMsg {
     #[selector = sol("transfer(address,uint256)")]
-    Transfer { to: u256, amount: u256 } -> bool,
+    Transfer { to: Address, amount: u256 } -> bool,
 }
 //</hide>
 
@@ -226,123 +208,66 @@ contract Token uses (ctx: Ctx, log: mut Log) {
 }
 ```
 
-## Separate Log Effects
+## Restricting Which Events a Function Can Emit
 
-Use different Log effects for different event categories:
+`Log` is sealed, so you cannot implement it for your own type, and a `uses (log: mut Log)` function can emit any event. To narrow that, wrap the real `Log` in a struct that only exposes the events you allow, and pass the wrapper as the effect:
 
 ```fe
 //<hide>
-pub struct TokenStorage { pub balances: StorageMap<u256, u256> }
-pub struct AdminStorage { pub owner: u256 }
+use std::abi::sol
 //</hide>
-
-pub struct TransferLog {}
-impl TransferLog {
-    pub fn emit<T>(self, event: T) { todo() }
-}
-
-pub struct AdminLog {}
-impl AdminLog {
-    pub fn emit<T>(self, event: T) { todo() }
-}
-
-#[event]
-struct Transfer {
-    #[indexed]
-    from: u256,
-    #[indexed]
-    to: u256,
-    amount: u256,
-}
-
 #[event]
 struct OwnershipTransferred {
     #[indexed]
-    previous_owner: u256,
+    previous_owner: Address,
     #[indexed]
-    new_owner: u256,
+    new_owner: Address,
 }
 
-impl TokenStorage {
-    fn transfer(mut self, from: u256, to: u256, amount: u256)
-        uses (log: mut TransferLog)
-    {
-        // ... transfer logic ...
-        //<hide>
-        let _ = (from, to, amount)
-        //</hide>
-        log.emit(event: Transfer { from, to, amount })
+pub struct AdminLog<L> {
+    inner: L,
+}
+
+impl<L: Log> AdminLog<L> {
+    pub fn ownership_transferred(mut self, previous_owner: Address, new_owner: Address) {
+        self.inner.emit(event: OwnershipTransferred { previous_owner, new_owner })
     }
 }
 
-impl AdminStorage {
-    fn transfer_ownership(mut self, new_owner: u256) uses (log: mut AdminLog) {
-        let previous = self.owner
-        self.owner = new_owner
-        log.emit(event: OwnershipTransferred { previous_owner: previous, new_owner })
-    }
-}
-```
-
-This gives fine-grained control over which functions can emit which events.
-
-## Log Effect Patterns
-
-### Combined Storage and Log
-
-Often storage and its events are paired:
-
-```fe
-//<hide>
-#[event]
-struct Transfer {
-    #[indexed]
-    from: u256,
-    #[indexed]
-    to: u256,
-    amount: u256,
-}
-//</hide>
-
-pub struct TokenStorage {
-    pub balances: StorageMap<u256, u256>,
-    pub total_supply: u256,
+pub struct AdminStorage {
+    pub owner: Address,
 }
 
-pub struct TokenEvents {}
-impl TokenEvents {
-    pub fn emit<T>(self, event: T) { todo() }
+// Can emit OwnershipTransferred, and nothing else
+fn transfer_ownership<L: Log>(new_owner: Address)
+    uses (store: mut AdminStorage, admin_log: mut AdminLog<L>)
+{
+    let previous = store.owner
+    store.owner = new_owner
+    admin_log.ownership_transferred(previous_owner: previous, new_owner)
 }
 
-impl TokenStorage {
-    fn mint(mut self, to: u256, amount: u256) uses (log: mut TokenEvents) {
-        self.balances.set(key: to, value: self.balances.get(key: to) + amount)
-        self.total_supply = self.total_supply + amount
-        log.emit(event: Transfer { from: 0, to, amount })
+msg AdminMsg {
+    #[selector = sol("transferOwnership(address)")]
+    TransferOwnership { new_owner: Address },
+}
+
+pub contract Admin uses (log: mut Log) {
+    mut store: AdminStorage,
+
+    recv AdminMsg {
+        TransferOwnership { new_owner } uses (mut store, mut log) {
+            with (AdminLog { inner: log }) {
+                transfer_ownership(new_owner)
+            }
+        }
     }
 }
 ```
 
-### Event-Only Functions
+`AdminLog` has no general `emit` method, so `admin_log.emit(event: ...)` is a compile error inside `transfer_ownership`. The events still go through the real `Log`, so they appear in the transaction logs as usual.
 
-Some functions exist solely to emit events:
-
-```fe
-pub struct DebugLog {}
-impl DebugLog {
-    pub fn emit<T>(self, event: T) { todo() }
-}
-
-struct DebugMessage {
-    value: u256,
-}
-
-fn log_debug(message: u256) uses (log: mut DebugLog) {
-    log.emit(event: DebugMessage { value: message })
-}
-```
-
-### Optional Logging
+## Optional Logging
 
 Make logging optional by separating concerns:
 
@@ -377,7 +302,7 @@ impl Config {
 | Aspect | Fe (Explicit) | Implicit Logging |
 |--------|---------------|------------------|
 | Signature | Shows `uses (log: mut Log)` | No indication |
-| Testing | Easy to mock | Harder to intercept |
+| Testing | EVM integration tests; custom application effects for unit tests | Requires observing emitted logs |
 | Composition | Fine-grained control | All-or-nothing |
 | Refactoring | Compiler catches missing effects | Silent failures |
 
@@ -385,7 +310,7 @@ impl Config {
 
 | Concept | Description |
 |---------|-------------|
-| `pub struct Log {}` | Define a log effect type |
+| `Log` | Standard sealed event-emission trait |
 | `uses (log: mut Log)` | Declare logging capability |
 | `log.emit(...)` | Emit an event |
 | Effect propagation | Callers must declare effects of callees |

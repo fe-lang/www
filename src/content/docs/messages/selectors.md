@@ -26,10 +26,10 @@ use std::abi::sol
 
 msg TokenMsg {
     #[selector = sol("transfer(address,uint256)")]
-    Transfer { to: u256, amount: u256 } -> bool,
+    Transfer { to: Address, amount: u256 } -> bool,
 
     #[selector = sol("balanceOf(address)")]
-    BalanceOf { account: u256 } -> u256,
+    BalanceOf { account: Address } -> u256,
 }
 ```
 
@@ -42,13 +42,13 @@ use std::abi::sol
 
 msg Example {
     #[selector = sol("transfer(address,uint256)")]  // sol() helper (preferred)
-    Transfer { to: u256, amount: u256 } -> bool,
+    Transfer { to: Address, amount: u256 } -> bool,
 
     // Hex format also valid: #[selector = 0xa9059cbb]
 }
 ```
 
-The value must fit in 4 bytes (u32).
+The value must fit in 4 bytes (`u32`). In Fe, a `sol("...")` signature is also checked against the number and ABI types of the variant fields. `address` requires `Address`; `u256` encodes `uint256`. A tuple is one argument and needs parentheses in the signature, such as `setPoint((uint256,uint256))`.
 
 ## Required Selectors
 
@@ -144,7 +144,7 @@ use std::abi::sol
 
 msg TokenMsg {
     #[selector = sol("balanceOf(address)")]
-    BalanceOf { account: u256 } -> u256,
+    BalanceOf { account: Address } -> u256,
 }
 ```
 
@@ -180,7 +180,7 @@ Fe requires explicit selectors rather than auto-generating them because:
 4. **Stability**: Renaming a variant doesn't accidentally change its selector
 5. **Verification**: Easy to verify against interface specifications
 
-6. **Type flexibility**: The `sol()` signature string can reference Solidity types that Fe doesn't have as built-in types (e.g., `uint24`, `bytes4`). This lets you implement any existing interface regardless of Fe's type system
+6. **Type flexibility**: The `sol()` signature string can reference Solidity types that Fe doesn't have as built-in types (e.g., `uint24`, `bytes4`). Use the matching standard-library wrappers, such as `std::abi::Uint24` or `Bytes4`; the selector alone does not change field encoding
 
 For example, you can name your variant `BalanceOf` or `balance_of`. It doesn't matter because the selector derived from `balanceOf(address)` is what the EVM uses for routing:
 
@@ -190,7 +190,7 @@ use std::abi::sol
 msg Erc20 {
     // Fe-style naming, but ABI-compatible with ERC20's balanceOf(address)
     #[selector = sol("balanceOf(address)")]
-    BalanceOf { account: u256 } -> u256,
+    BalanceOf { account: Address } -> u256,
 }
 ```
 

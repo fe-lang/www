@@ -275,7 +275,7 @@ pub struct Storage { pub balance: u256 }
 
 msg TransferMsg {
     #[selector = sol("transfer(address,uint256)")]
-    Transfer { to: u256, amount: u256 } -> bool,
+    Transfer { to: Address, amount: u256 } -> bool,
 }
 //</hide>
 contract MyToken {
@@ -362,3 +362,57 @@ For comprehensive coverage of effects, see the [Effects](/effects/what-are-effec
 | Public function | `pub fn name()` | `pub fn api() { }` |
 | Generic function | `fn name<T>()` | `fn id<T>(x: T) -> T` |
 | With effects | `fn name() uses E` | `fn read() uses Storage` |
+
+## Compile-Time Effects and Borrows
+
+A `const fn` can call const trait methods through an immutable provider. Supply the provider with `with`, just as at runtime:
+
+```fe
+trait Rate {
+    const fn value(self) -> u256
+}
+
+struct FixedRate {}
+impl Rate for FixedRate {
+    const fn value(self) -> u256 { 3 }
+}
+
+const fn price(quantity: u256) -> u256 uses (rate: Rate) {
+    quantity * rate.value()
+}
+
+const fn configured_price() -> u256 {
+    with (Rate = FixedRate {}) { price(quantity: 4) }
+}
+
+const PRICE: u256 = configured_price()
+
+#[test]
+fn compile_time_provider() {
+    assert!(PRICE == 12)
+    with (Rate = FixedRate {}) {
+        assert!(price(quantity: 4) == PRICE)
+    }
+}
+```
+
+Mutable effects, storage effects, and extern functions with effects are not supported in compile-time evaluation. A const function can still borrow its own locals and parameters with `mut` or `ref`; this does not require a mutable effect:
+
+```fe
+const fn increment(value: mut u256) { value += 1 }
+
+const fn next(value: u256) -> u256 {
+    let mut result = value
+    increment(value: mut result)
+    result
+}
+
+const NEXT: u256 = next(value: 41)
+
+#[test]
+fn compile_time_local_borrow() {
+    assert!(NEXT == 42)
+}
+```
+
+A borrow cannot escape the lifetime of its local owner, including during const evaluation.

@@ -30,7 +30,7 @@ This appendix lists all reserved keywords in Fe, organized by category.
 | `if` | Conditional branch |
 | `else` | Alternative branch |
 | `match` | Pattern matching expression |
-| `for` | Loop over an iterator |
+| `for` | Loop over a range, array, or other `Seq` value |
 | `while` | Loop while condition is true |
 | `break` | Exit a loop early |
 | `continue` | Skip to next loop iteration |
@@ -64,7 +64,7 @@ This appendix lists all reserved keywords in Fe, organized by category.
 | Keyword | Description |
 |---------|-------------|
 | `own` | Takes ownership of a value |
-| `ref` | Reserved for future use (references) |
+| `ref` | Creates a read-only reference |
 
 ## Module Keywords
 

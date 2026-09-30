@@ -126,12 +126,12 @@ let _ = (present, absent)
 Match expressions extract data from enum variants:
 
 ```fe
-enum Result<T, E> {
+enum Result<E, T> {
     Ok(T),
     Err(E),
 }
 
-fn handle_result(result: Result<u256, String<20>>) {
+fn handle_result(result: Result<String<20>, u256>) {
     match result {
         Result::Ok(value) => {
             // Use value
@@ -321,7 +321,7 @@ enum Option<T> {
     None,
 }
 
-enum Result<T, E> {
+enum Result<E, T> {
     Ok(T),
     Err(E),
 }
@@ -336,7 +336,7 @@ enum Option<T> {
     None,
 }
 
-enum Result<T, E> {
+enum Result<E, T> {
     Ok(T),
     Err(E),
 }
@@ -351,7 +351,7 @@ fn find_user(id: u256) -> Option<User> {
     Option::Some(load_user(id))
 }
 
-fn divide(a: u256, b: u256) -> Result<u256, String<20>> {
+fn divide(a: u256, b: u256) -> Result<String<20>, u256> {
     if b == 0 {
         return Result::Err("division by zero")
     }
@@ -364,11 +364,6 @@ fn divide(a: u256, b: u256) -> Result<u256, String<20>> {
 Constrain generic types:
 
 ```fe
-//<hide>
-trait Clone {
-    fn clone(self) -> Self
-}
-//</hide>
 enum Container<T: Clone> {
     Single(T),
     Pair(T, T),
@@ -434,7 +429,7 @@ Represent success or failure:
 
 ```fe
 // Result is available from the prelude:
-//   enum Result<T, E> {
+//   enum Result<E, T> {
 //       Ok(T),
 //       Err(E),
 //   }

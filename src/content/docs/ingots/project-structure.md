@@ -45,7 +45,7 @@ version = "1.0.0"
 
 ### The [ingot] Section
 
-Every `fe.toml` requires an `[ingot]` section with:
+An ingot manifest uses `[ingot]`; a workspace root uses `[workspace]` instead. Standalone ingots specify:
 
 | Field | Required | Description |
 |-------|----------|-------------|
@@ -130,7 +130,7 @@ pub use approval::Approval
 
 ## Creating a New Project
 
-To create a new Fe project:
+The quickest way is `fe new my_project`. The equivalent manual steps are:
 
 1. Create the project directory:
    ```bash
