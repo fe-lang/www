@@ -4,13 +4,13 @@ import { DOC_URL as docUrl } from '../consts';
 
 const base = import.meta.env.BASE_URL;
 
-// Extract only the display portion (before stubs comment)
-const stubsMarker = '// Stubs for type checking';
-const displayCode = exampleCodeRaw.split(stubsMarker)[0].trim();
+// Extract only the display portion (before tests comment)
+const testsMarker = '// Tests (not shown on landing page)';
+const displayCode = exampleCodeRaw.split(testsMarker)[0].trim();
 
 const installCommands = [
   {
-    command: 'curl -fsSL https://raw.githubusercontent.com/argotorg/fe/master/feup/feup.sh | bash',
+    command: 'curl -fsSL https://raw.githubusercontent.com/argotorg/fe/master/feup/feup.sh | bash -s -- --version v26.4.1',
     compact: false,
   },
   {
@@ -194,6 +194,7 @@ const installCommands = [
             </div>
           ))}
         </div>
+        <p class="mt-2 text-xs text-gray-600">Examples target Fe 26.4. <a class="underline" href={`${base}getting-started/installation/`}>Installation instructions</a>.</p>
       </div>
     </section>
     <section class="max-w-6xl mx-auto mt-1 bg-white sm:rounded-xl overflow-hidden border border-gray-100 shadow-sm">
@@ -338,8 +339,8 @@ const installCommands = [
           <svg xmlns="http://www.w3.org/2000/svg" fill="none" viewBox="0 0 24 24" stroke-width="2" stroke="currentColor" class="h-8 w-8 text-indigo-500 mb-3">
             <path stroke-linecap="round" stroke-linejoin="round" d="M5.25 14.25h13.5m-13.5 0a3 3 0 01-3-3m3 3a3 3 0 100 6h13.5a3 3 0 100-6m-16.5-3a3 3 0 013-3h13.5a3 3 0 013 3m-19.5 0a4.5 4.5 0 01.9-2.7L5.737 5.1a3.375 3.375 0 012.7-1.35h7.126c1.062 0 2.062.5 2.7 1.35l2.587 3.45a4.5 4.5 0 01.9 2.7" />
           </svg>
-          <h3 class="text-lg font-semibold text-gray-900 mb-2">Dual Backend</h3>
-          <p class="text-sm text-gray-600">Compiles through Sonatina, Fe's custom SSA-based backend, or via Yul for Solidity toolchain compatibility.</p>
+          <h3 class="text-lg font-semibold text-gray-900 mb-2">EVM and Native</h3>
+          <p class="text-sm text-gray-600">Compiles EVM contracts through Sonatina. An experimental native backend for standalone programs is available only in source builds with the <code>cranelift</code> feature.</p>
         </div>
       </div>
       <div class="text-center px-4 py-12">
