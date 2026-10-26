@@ -124,7 +124,7 @@ struct Point {
 
 fn example() {
 //</hide>
-let mut point = Point { x: 0, y: 0 }
+var point = Point { x: 0, y: 0 }
 
 point.x = 10
 point.y = 20
@@ -230,7 +230,7 @@ struct Point {
 fn example() {
 //</hide>
 let point = Point { x: 10, y: 20 }
-let Point { x, y } = ref point
+let Point { x, y } = point
 // x is 10, y is 20
 //<hide>
 let _ = (x, y)

@@ -235,7 +235,7 @@ Use `=` to assign a value to a mutable variable:
 //<hide>
 fn example() {
 //</hide>
-let mut x: u256 = 10
+var x: u256 = 10
 x = 20  // x is now 20
 //<hide>
 let _ = x
@@ -264,12 +264,12 @@ Compound assignment operators combine an operation with assignment:
 //<hide>
 fn example() {
 //</hide>
-let mut count: u256 = 10
+var count: u256 = 10
 count += 5   // count is now 15
 count -= 3   // count is now 12
 count *= 2   // count is now 24
 
-let mut flags: u8 = 0b0000
+var flags: u8 = 0b0000
 flags |= 0b0001  // Set bit 0
 flags |= 0b0100  // Set bit 2
 // flags is now 0b0101

@@ -56,7 +56,7 @@ fn declares_erc721(token: Address) -> bool uses (call: Call) {
 
 ## Handling Token Failures Explicitly
 
-Fe 26.4 adds non-reverting ERC20 helpers: `try_transfer`, `try_transfer_from`, and `try_approve`. They copy at most 32 bytes of returndata and return a `TokenCall` outcome, so the caller can choose its own error:
+Fe provides non-reverting ERC20 helpers: `try_transfer`, `try_transfer_from`, and `try_approve`. They copy at most 32 bytes of returndata and return a `TokenCall` outcome, so the caller can choose its own error:
 
 ```fe
 use std::evm::{erc20, TokenCall}
@@ -77,7 +77,7 @@ uses (ctx: Ctx, call: mut Call) {
 #[test]
 fn rejects_missing_token_code() uses (ctx: Ctx, call: mut Call) {
     let result = erc20::try_transfer(
-        token: Address { inner: 0x123456 }, receiver: Address { inner: 7 }, amount: 1,
+        token: Address::new(0x123456), receiver: Address::new(7), amount: 1,
     )
     match result {
         TokenCall::NoCode => {},

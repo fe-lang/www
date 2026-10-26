@@ -50,7 +50,7 @@ fn set_value(new_value: u256) uses (config: mut Config) {
 Mutable effects:
 - Allow both reading and writing
 - Must be explicitly declared with `mut`
-- Require a mutable binding when provided
+- Require a mutable (`var`) binding when provided
 
 ## Mutability Matching Rules
 
@@ -113,8 +113,8 @@ fn example() {
     let _ = counter
     //</hide>
 
-    // Mutable binding - can satisfy mut effect
-    let mut counter2 = Counter { value: 0 }
+    // Mutable `var` binding - can satisfy mut effect
+    var counter2 = Counter { value: 0 }
 
     with (Counter = counter2) {
         needs_mut()  // OK: counter2 is mutable

@@ -61,11 +61,11 @@ pub contract Token uses (ctx: Ctx) {
 
 #[test]
 fn test_token() uses (evm: mut Evm) {
-    let owner = Address { inner: 1 }
-    let addr = evm.create2<Token>(value: 0, args: (owner,), salt: 0)
+    let owner = Address::new(1)
+    let addr = evm.create2<Token>(value: Wei::zero(), args: (owner,), salt: 0)
 
     let supply: u256 = evm.call(
-        addr: addr, gas: 100000, value: 0,
+        addr: addr, gas: 100000, value: Wei::zero(),
         message: TokenMsg::GetSupply {},
     )
     assert!(supply == 0)
@@ -208,7 +208,7 @@ impl TokenStore {
         self.total_supply += amount
 
         log.emit(Transfer {
-            from: Address { inner: 0 },
+            from: Address::zero(),
             to,
             value: amount,
         })
@@ -220,7 +220,7 @@ The method signature makes all dependencies visible: storage access through `mut
 
 ## Storage Layout
 
-The Fe compiler automatically maps storage structs to EVM storage slots. You define your structs and the compiler handles slot assignment and map key hashing (`keccak256`). Do not assume that small scalar fields are automatically packed into a shared slot.
+The Fe compiler automatically maps storage structs to EVM storage slots. You define your structs and the compiler handles slot assignment and map key hashing (`keccak256`). Struct fields narrower than a word are packed into shared slots the way Solidity packs struct members. See [Storage Layout](/contracts/storage/#storage-layout) for the full rules.
 
 ## Summary
 

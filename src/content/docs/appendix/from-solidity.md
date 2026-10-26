@@ -104,6 +104,11 @@ store.balances.set(key: ctx.caller(), value: 100)
 | `string` | `String<N>` (fixed capacity); `DynString` (`std::abi::DynString`) for dynamic ABI strings |
 | `bytes32` | `u256`, or `Bytes32` (`std::abi::sol::Bytes32`) for ABI-typed fixed bytes |
 | `mapping(K => V)` | `StorageMap<K, V>` |
+| `uint256` holding wei (`msg.value`, `1 ether`) | `Wei` (`ctx.value()`, `ether(1)`) |
+| `uint256` holding seconds (`block.timestamp`, `1 days`) | `Timestamp`, `Duration` (`ctx.timestamp()`, `days(1)`) |
+| `T[] memory` | `MemVec<T>` (growable) or `MemArray<T>` |
+| `struct` used in the ABI | `#[abi] struct` |
+| `transient` state variable | `TSlot<T>` field |
 
 ### Functions
 
@@ -161,7 +166,7 @@ if x > 0 {
 fn __loop_example() {
 //</hide>
 
-let mut i: u256 = 0
+var i: u256 = 0
 while i < 10 {
     // ...
     i = i + 1
@@ -312,21 +317,21 @@ uint256 allowed = allowances[owner][spender];
 **Fe**:
 ```fe
 struct Storage {
-    allowances: StorageMap<(Address, Address), u256>,
+    allowances: StorageMap<Address, StorageMap<Address, u256>>,
 }
 
 //<hide>
 fn __example_map(owner: Address, spender: Address, amount: u256) uses (store: mut Storage) {
 //</hide>
-store.allowances.set(key: (owner, spender), value: amount)
-let allowed = store.allowances.get((owner, spender))
+store.allowances[owner][spender] = amount
+let allowed = store.allowances[owner][spender]
 //<hide>
 let _ = allowed
 }
 //</hide>
 ```
 
-A tuple key gives the same lookup behavior as a nested mapping, but not the same storage layout: Fe hashes the concatenated tuple components once, while Solidity hashes each level separately. When you need Solidity-compatible slots (for example, to match an existing contract's layout), use `std::evm::SolMapping`; see [Contract Storage](/contracts/storage/) and [Maps](/compound-types/maps/#storage-layout).
+A nested `StorageMap` uses the same storage slots as the nested Solidity mapping. A tuple key (`StorageMap<(Address, Address), u256>`) gives the same lookup behavior, but not the same storage layout: Fe hashes the concatenated tuple components once, while Solidity hashes each level separately. See [Maps](/compound-types/maps/#storage-layout).
 
 ## What's Different in Fe
 
@@ -432,7 +437,8 @@ let _ = (x, y)
 | Solidity | Fe |
 |----------|-----|
 | `msg.sender` | `ctx.caller()` |
-| `block.timestamp` | `ctx.timestamp()` |
+| `block.timestamp` | `ctx.timestamp()` (a `Timestamp`) |
+| `msg.value` | `ctx.value()` (a `Wei`) |
 | `block.number` | `ctx.block_number()` |
 | `require(...)` | `assert!(...)` |
 | `emit Event(...)` | `log.emit(Event { ... })` |

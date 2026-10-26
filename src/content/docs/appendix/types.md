@@ -218,25 +218,25 @@ fn array_equality() {
 
 ## Dynamic ABI Arrays
 
-`std::abi::DynArray<T>` represents an ABI array with a runtime length. Fe provides typed `get(index)` access and `MemVec<T>` for building mutable arrays in memory. `MemVec` has a fixed length chosen at construction; it does not provide `push`.
+`std::abi::DynArray<T>` represents an ABI array with a runtime length. Build the elements in memory with a `MemVec<T>` (a growable array from the prelude) or a `MemArray<T>`, then encode them with `DynArray::from_slice`:
 
 ```fe
-use std::abi::{DynArray, MemVec}
+use std::abi::DynArray
 
 #[test]
 fn dynamic_array_copy() {
-    let mut values = MemVec<u256>::zeroed(2)
-    values.set(index: 0, value: 10)
-    values.set(index: 1, value: 20)
-    let encoded: DynArray<u256> = values.to_dyn_array()
+    var values = MemVec<u256>::new()
+    values.push(10)
+    values.push(20)
+    let encoded: DynArray<u256> = DynArray::from_slice(values.as_slice())
     values.set(index: 0, value: 99)
     assert!(encoded.len() == 2)
     assert!(encoded.get(0) == 10)
-    assert!(values.get(0) == 99)
+    assert!(values.as_slice()[0] == 99)
 }
 ```
 
-`to_dyn_array` creates an independent copy suitable for ABI arguments, return values, or event fields. `from_dyn_array` copies in the other direction. In Fe 26.4, typed `DynArray::get` and `MemVec` support sealed single-word static ABI element types: integers, booleans, addresses, and fixed bytes. They do not support structs, tuple elements, or dynamic elements such as `Bytes`. Out-of-bounds access reverts with `Panic(0x32)`.
+`from_slice` creates an independent copy suitable for ABI arguments, return values, or event fields. `to_mem_array` decodes the elements back into a `MemArray`. `DynArray::get` works for any ABI element type: one-word values, multi-word static structs and tuples, and dynamic elements such as `Bytes`. Lengths and indices are `usize`. Out-of-bounds access reverts with `Panic(0x32)`.
 
 ## Unit Type
 
@@ -286,6 +286,39 @@ match maybe_value {
 }
 //</hide>
 ```
+
+## ETH Amounts and Time
+
+`std` types ETH amounts and block time, so that they cannot be mixed up with each other or with plain numbers. All three are in the prelude and are a single `uint256` in the ABI:
+
+| Type | Description |
+|------|-------------|
+| `Wei` | An amount of native ETH |
+| `Timestamp` | A point in time, in unix seconds |
+| `Duration` | A span of time, in seconds |
+
+### Usage
+
+```fe
+use std::evm::{days, ether, gwei, hours}
+
+const LOCK: Duration = days(2) + hours(12)
+
+#[test]
+fn typed_amounts_and_time() {
+    let price = gwei(30) * 21_000
+    assert!(price < ether(1))
+    assert!(price / gwei(1) == 630_000)
+    assert!(ether(1).mul_div(numerator: 3, denominator: 1000) == gwei(3_000_000))
+
+    let start = Timestamp::from_seconds(1_700_000_000)
+    let unlock = start + LOCK
+    assert!(unlock - start == LOCK)
+    assert!(LOCK.as_seconds() == 216_000)
+}
+```
+
+`Timestamp + Duration` is a `Timestamp`, `Timestamp - Timestamp` is a `Duration`, and `Wei / Wei` is a plain `u256` ratio; `Timestamp + Timestamp` or `Wei + Duration` do not compile. `Wei` and `Duration` add, subtract, scale and divide by a `u256`, take a remainder, and compare. Build values with `wei`, `gwei`, `ether`, `seconds`, `minutes`, `hours`, `days` and `weeks` (all `const fn`s in `std::evm`), or the constants `WEI`, `GWEI`, `ETHER`, `SECOND`, `MINUTE`, `HOUR`, `DAY` and `WEEK`. Use `as_wei()` or `as_seconds()` where a plain number is needed.
 
 ## StorageMap
 
@@ -363,14 +396,17 @@ let _ = (big, unsigned)
 | Array | `[T; N]` |
 | Unit | `()` |
 | Optional | `Option<T>` |
+| ETH and time | `Wei`, `Timestamp`, `Duration` |
+| Memory collections | `MemVec<T>`, `MemArray<T>`, `MemSlice<T>` |
+| ABI arrays | `DynArray<T>` |
 | Map | `StorageMap<K, V>` |
 
 ## EVM Considerations
 
-An EVM storage slot is 32 bytes. Do not infer Fe field layout by dividing a type's bit width by 256: smaller integer types do not imply Solidity-style automatic packing. Inspect the compiler's contract layout information when layout matters. `StorageMap` derives entry locations with Keccak-256 and a map salt.
+An EVM storage slot is 32 bytes. Each contract field gets its own root slot, in declaration order. Inside a struct, fields narrower than a word share slots the way Solidity packs struct members. A `StorageMap` keeps its entry for `key` at `keccak256(key ++ slot)`, like a Solidity mapping, and stores values in their type's native layout. Inspect the compiler's contract layout information when layout matters.
 
 Pointer-bearing memory values cannot be persisted in contract storage.
 
 ## ABI Array Limits
 
-To construct arrays of supported static elements, use `MemVec::zeroed`, `set`, and `to_dyn_array` as shown above. Do not assume a `DynArray<Bytes>` can be indexed with `get`; dynamic and composite elements require APIs beyond this release's typed array helpers.
+To construct an ABI array, collect the elements in a `MemVec` or `MemArray` and encode them with `DynArray::from_slice` as shown above. `DynArray` moved from `core::abi` to `std::abi`; import it from there.

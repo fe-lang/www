@@ -258,20 +258,20 @@ struct Approval {
 #[test]
 fn transfer_preserves_supply_and_self_balance() uses (evm: mut Evm) {
     let owner = evm.address()
-    let token = evm.create2<CoolCoin>(value: 0, args: (1000, owner), salt: 0)
-    let ok: bool = evm.call(addr: token, gas: 300000, value: 0,
+    let token = evm.create2<CoolCoin>(value: Wei::zero(), args: (1000, owner), salt: 0)
+    let ok: bool = evm.call(addr: token, gas: 300000, value: Wei::zero(),
         message: Erc20::Transfer { to: owner, amount: 100 })
     assert!(ok)
-    let balance: u256 = evm.call(addr: token, gas: 100000, value: 0,
+    let balance: u256 = evm.call(addr: token, gas: 100000, value: Wei::zero(),
         message: Erc20::BalanceOf { account: owner })
     assert!(balance == 1000)
-    let recipient = Address { inner: 42 }
-    let moved: bool = evm.call(addr: token, gas: 300000, value: 0,
+    let recipient = Address::new(42)
+    let moved: bool = evm.call(addr: token, gas: 300000, value: Wei::zero(),
         message: Erc20::Transfer { to: recipient, amount: 100 })
     assert!(moved)
-    let received: u256 = evm.call(addr: token, gas: 100000, value: 0,
+    let received: u256 = evm.call(addr: token, gas: 100000, value: Wei::zero(),
         message: Erc20::BalanceOf { account: recipient })
-    let supply: u256 = evm.call(addr: token, gas: 100000, value: 0,
+    let supply: u256 = evm.call(addr: token, gas: 100000, value: Wei::zero(),
         message: Erc20::TotalSupply {})
     assert!(received == 100)
     assert!(supply == 1000)
@@ -280,23 +280,23 @@ fn transfer_preserves_supply_and_self_balance() uses (evm: mut Evm) {
 #[test]
 fn allowance_is_consumed() uses (evm: mut Evm) {
     let owner = evm.address()
-    let token = evm.create2<CoolCoin>(value: 0, args: (1000, owner), salt: 0)
-    let approved: bool = evm.call(addr: token, gas: 300000, value: 0,
+    let token = evm.create2<CoolCoin>(value: Wei::zero(), args: (1000, owner), salt: 0)
+    let approved: bool = evm.call(addr: token, gas: 300000, value: Wei::zero(),
         message: Erc20::Approve { spender: owner, amount: 100 })
     assert!(approved)
-    let moved: bool = evm.call(addr: token, gas: 300000, value: 0,
-        message: Erc20::TransferFrom { from: owner, to: Address { inner: 42 }, amount: 40 })
+    let moved: bool = evm.call(addr: token, gas: 300000, value: Wei::zero(),
+        message: Erc20::TransferFrom { from: owner, to: Address::new(42), amount: 40 })
     assert!(moved)
-    let allowance: u256 = evm.call(addr: token, gas: 100000, value: 0,
+    let allowance: u256 = evm.call(addr: token, gas: 100000, value: Wei::zero(),
         message: Erc20::Allowance { owner, spender: owner })
     assert!(allowance == 60)
 }
 
 #[test(should_revert)]
 fn rejects_transfer_above_balance() uses (evm: mut Evm) {
-    let token = evm.create2<CoolCoin>(value: 0, args: (10, evm.address()), salt: 0)
-    let _: bool = evm.call(addr: token, gas: 300000, value: 0,
-        message: Erc20::Transfer { to: Address { inner: 42 }, amount: 11 })
+    let token = evm.create2<CoolCoin>(value: Wei::zero(), args: (10, evm.address()), salt: 0)
+    let _: bool = evm.call(addr: token, gas: 300000, value: Wei::zero(),
+        message: Erc20::Transfer { to: Address::new(42), amount: 11 })
 }
 
 ```

@@ -130,16 +130,13 @@ Contracts can have multiple fields for different effects:
 //<hide>
 use std::abi::sol
 fn do_transfer(c: Address, to: Address, amount: u256) -> bool uses (tokens: mut TokenStorage) {
-    let _ = (c, to, amount, tokens)
     true
 }
 fn set_allowance(c: Address, spender: Address, amount: u256) uses (permits: mut AllowanceStorage) {
-    let _ = (c, spender, amount, permits)
 }
 fn do_transfer_from(c: Address, from: Address, to: Address, amount: u256) -> bool
     uses (tokens: mut TokenStorage, permits: mut AllowanceStorage)
 {
-    let _ = (c, from, to, amount, tokens, permits)
     true
 }
 msg TokenMsg {

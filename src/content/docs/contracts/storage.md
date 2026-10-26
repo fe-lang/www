@@ -78,7 +78,7 @@ pub struct TokenStorage {
 }
 ```
 
-Each structural occurrence of a map with an inferred salt receives its own layout parameter, including maps nested in structs and arrays. Fe 26.3 fixed collisions in these inferred layouts. Explicitly shared salts still share entries.
+Each map takes its own slot in the contract layout, and its entries lie at `keccak256(key ++ slot)`, just like a Solidity `mapping`. A map is a storage collection: it is never copied, so a struct holding one is only ever reached through a contract field, a parameter, or an effect. See [Maps](/compound-types/maps/) for details.
 
 ### Nested Structs
 
@@ -93,6 +93,43 @@ pub struct Metadata {
 pub struct TokenStorage {
     pub balances: StorageMap<Address, u256>,
     pub metadata: Metadata,
+}
+```
+
+### Transient Storage
+
+A `TSlot<T>` field lives in [transient storage](https://eips.ethereum.org/EIPS/eip-1153): it is cleared at the end of every transaction. Read and write it through its `value` field. Transient fields are numbered separately from persistent ones, so adding one never moves persistent data:
+
+```fe
+use std::abi::sol
+use std::evm::TSlot
+
+msg GuardMsg {
+    #[selector = sol("enter()")]
+    Enter -> u256,
+}
+
+pub contract Guarded {
+    mut entered: TSlot<bool>,
+    mut calls: u256,
+
+    recv GuardMsg {
+        Enter -> u256 uses (mut entered, mut calls) {
+            assert!(!entered.value, "reentrant call")
+            entered.value = true
+            calls += 1
+            entered.value = false
+            calls
+        }
+    }
+}
+
+#[test]
+fn guard_resets() uses (evm: mut Evm) {
+    let addr = evm.create2<Guarded>(value: Wei::zero(), args: (), salt: 0)
+    let first: u256 = evm.call(addr, gas: 100000, value: Wei::zero(), message: GuardMsg::Enter {})
+    let second: u256 = evm.call(addr, gas: 100000, value: Wei::zero(), message: GuardMsg::Enter {})
+    assert!(first == 1 && second == 2)
 }
 ```
 
@@ -216,11 +253,9 @@ Contracts can have multiple storage fields for logical separation:
 //<hide>
 use std::abi::sol
 fn do_transfer(from: Address, to: Address, amount: u256) -> bool uses (tokens: mut BalanceStorage) {
-    let _ = (from, to, amount, tokens)
     true
 }
 fn initiate_transfer(new_owner: Address) uses (ownership: mut OwnerStorage) {
-    let _ = (new_owner, ownership)
 }
 msg TokenMsg {
     #[selector = sol("transfer(address,uint256)")]
@@ -262,28 +297,40 @@ contract OwnableToken uses (ctx: Ctx) {
 
 ## Storage Layout
 
-Fe computes storage slots automatically. Each field gets a deterministic location based on:
-- The struct layout
-- The field position
-- For maps, the key combined with the base slot
+Fe computes storage slots automatically, compatible with Solidity's layout rules:
+- Each `mut` contract field gets its own root slot, in declaration order
+- Inside a struct, fields narrower than a word share slots the way Solidity packs struct members
+- A `StorageMap` keeps the entry for `key` at `keccak256(key ++ slot)`, like a Solidity mapping
+- Storage and transient fields are numbered separately, so a transient field never moves a persistent one
 
-You don't need to manually specify storage slots.
+You don't need to manually specify storage slots. When you do need a fixed location (for example ERC-7201 namespaced storage), place a field with `#[slot(e)]`, where `e` is any constant `u256` expression:
+
+```fe
+use std::evm::StorageMap
+
+pub contract Store {
+    #[slot(0x7a9f)]
+    mut legacy: u256,
+    // Numbered as usual, skipping the slots that placed fields take.
+    mut balances: StorageMap<Address, u256>,
+}
+```
 
 ## Explicit Solidity Layouts
 
-`SolSlot` accesses a runtime storage slot using Solidity's packed layout. Offsets count bytes from the low end of the word, and writing a field preserves its neighbours. `SolPacked` covers booleans, addresses, integer widths (including `sol::` wrappers), and fixed bytes. This is explicit layout access; it does not change Fe's ordinary field layout.
+`SolSlot` accesses a runtime storage slot using Solidity's packed layout. `SolSlot::at` is an `unsafe fn`: the caller vouches that nothing the compiler allocates, such as a contract field, uses that slot. Offsets count bytes from the low end of the word, and writing a field preserves its neighbours. `SolPacked` covers booleans, addresses, integer widths (including `sol::` wrappers), and fixed bytes. This is explicit layout access; it does not change Fe's ordinary field layout.
 
 ```fe
 use std::evm::{RawStorage, SolSlot}
 
 #[test]
 fn packed_fields_preserve_neighbours() uses (storage: mut RawStorage) {
-    let slot = SolSlot::at(0)
-    slot.write(offset: 0, value: Address { inner: 123 })
+    let slot = unsafe { mut SolSlot::at(0) }
+    slot.write(offset: 0, value: Address::new(123))
     slot.write(offset: 20, value: true)
     let owner: Address = slot.read(offset: 0)
     let paused: bool = slot.read(offset: 20)
-    assert!(owner.inner == 123 && paused)
+    assert!(owner.word() == 123 && paused)
     slot.write(offset: 20, value: false)
     let unchanged: Address = slot.read(offset: 0)
     assert!(unchanged == owner)
@@ -298,8 +345,8 @@ fn packed_fields_preserve_neighbours() uses (storage: mut RawStorage) {
 use std::evm::{SolMapping, SolSlot, RawStorage}
 
 fn allowance(owner: Address, spender: Address) -> u256 uses (storage: RawStorage) {
-    let slot = SolMapping::at(5).nested(owner).slot_of(spender)
-    SolSlot::at(slot).read(offset: 0)
+    let slot = unsafe { SolMapping::at(5) }.nested(owner).slot_of(spender)
+    unsafe { SolSlot::at(slot) }.read(offset: 0)
 }
 ```
 

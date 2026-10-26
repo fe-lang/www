@@ -13,7 +13,6 @@ In a contract, recv blocks access storage via `uses` clauses:
 //<hide>
 use std::abi::sol
 fn do_transfer(from: Address, to: Address, amount: u256) -> bool uses (store: mut TokenStorage) {
-    let _ = (from, to, amount, store)
     true
 }
 //</hide>
@@ -135,7 +134,6 @@ use std::abi::sol
 fn do_transfer_from(c: Address, from: Address, to: Address, amount: u256) -> bool
     uses (balances: mut BalanceStorage, allowances: mut AllowanceStorage)
 {
-    let _ = (c, from, to, amount, balances, allowances)
     true
 }
 msg TokenMsg {
@@ -259,7 +257,7 @@ pub contract Donations {
 
         #[payable]
         _ uses (ctx: Ctx, mut received) {
-            received += ctx.value()
+            received += ctx.value().as_wei()
         }
     }
 }

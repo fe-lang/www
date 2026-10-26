@@ -112,16 +112,16 @@ create_point(10, 20, named: true)
 
 ### Mutable Parameters
 
-Use `mut` to declare a parameter that can be modified within the function:
+An owned parameter is immutable unless it is declared with `var`:
 
 ```fe
-fn increment(mut value: own u256) -> u256 {
+fn increment(var value: own u256) -> u256 {
     value = value + 1
     value
 }
 ```
 
-Note that this creates a mutable local copy; it doesn't modify the caller's variable.
+The function owns `value`, so this changes its own copy, not the caller's variable. To modify the caller's variable instead, take the parameter as `value: mut u256` and pass it as `increment(value: mut x)`. See [Ownership & Mutability](/foundations/ownership/) for the parameter modes.
 
 ## The `self` Receiver
 
@@ -165,7 +165,7 @@ impl Counter {
 
 fn use_counter() {
 //</hide>
-let mut counter = Counter { value: 0 }
+var counter = Counter { value: 0 }
 counter = counter.increment()
 let current = counter.get()
 //<hide>
@@ -287,9 +287,6 @@ contract MyToken {
             let fee = calculate_fee(amount)
 
             // Recv block handles the message
-            //<hide>
-            let _ = (to, fee, store)
-            //</hide>
             true
         }
     }
@@ -356,14 +353,15 @@ For comprehensive coverage of effects, see the [Effects](/effects/what-are-effec
 | With return type | `fn name() -> T { }` | `fn get() -> u256 { }` |
 | Labeled parameter | `label name: T` | `from sender: u256` |
 | Unlabeled parameter | `_ name: T` | `_ x: u256` |
-| Mutable parameter | `mut name: T` | `mut count: u256` |
+| Mutable owned parameter | `var name: own T` | `var count: own u256` |
+| Mutable access parameter | `name: mut T` | `count: mut u256` |
 | Method (immutable) | `fn name(self)` | `fn get(self) -> u256` |
 | Method (mutable) | `fn name(mut self)` | `fn set(mut self, v: u256)` |
 | Public function | `pub fn name()` | `pub fn api() { }` |
 | Generic function | `fn name<T>()` | `fn id<T>(x: T) -> T` |
 | With effects | `fn name() uses E` | `fn read() uses Storage` |
 
-## Compile-Time Effects and Borrows
+## Compile-Time Effects and Accesses
 
 A `const fn` can call const trait methods through an immutable provider. Supply the provider with `with`, just as at runtime:
 
@@ -396,13 +394,13 @@ fn compile_time_provider() {
 }
 ```
 
-Mutable effects, storage effects, and extern functions with effects are not supported in compile-time evaluation. A const function can still borrow its own locals and parameters with `mut` or `ref`; this does not require a mutable effect:
+Mutable effects, storage effects, and extern functions with effects are not supported in compile-time evaluation. A const function can still pass its own locals and parameters on as `mut` or `ref` accesses; this does not require a mutable effect:
 
 ```fe
 const fn increment(value: mut u256) { value += 1 }
 
 const fn next(value: u256) -> u256 {
-    let mut result = value
+    var result = value
     increment(value: mut result)
     result
 }
@@ -410,9 +408,9 @@ const fn next(value: u256) -> u256 {
 const NEXT: u256 = next(value: 41)
 
 #[test]
-fn compile_time_local_borrow() {
+fn compile_time_local_access() {
     assert!(NEXT == 42)
 }
 ```
 
-A borrow cannot escape the lifetime of its local owner, including during const evaluation.
+An access cannot outlive its local owner, including during const evaluation.

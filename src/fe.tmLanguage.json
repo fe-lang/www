@@ -157,7 +157,7 @@
                 {
                     "comment": "Control flow keywords.",
                     "name": "keyword.control.fe",
-                    "match": "\\b(?:if|else|for|while|match|return|break|continue)\\b"
+                    "match": "\\b(?:if|else|for|while|match|return|break|continue|yield)\\b"
                 },
                 {
                     "comment": "Other keywords: imports, clauses, contract handlers.",
@@ -167,12 +167,12 @@
                 {
                     "comment": "Storage/declaration keywords.",
                     "name": "storage.type.fe",
-                    "match": "\\b(?:fn|struct|enum|contract|msg|trait|impl|type|mod|extern|const|let)\\b"
+                    "match": "\\b(?:fn|struct|enum|contract|msg|trait|impl|type|mod|extern|const|let|var)\\b"
                 },
                 {
                     "comment": "Modifiers.",
                     "name": "storage.modifier.fe",
-                    "match": "\\b(?:pub|mut|unsafe)\\b"
+                    "match": "\\b(?:pub|mut|unsafe|own|ref)\\b"
                 },
                 {
                     "comment": "Self type.",

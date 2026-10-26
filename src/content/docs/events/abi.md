@@ -57,7 +57,7 @@ struct Transfer {
 }
 ```
 
-When emitting `Transfer { from: Address { inner: 0x123 }, to: Address { inner: 0x456 }, amount: 1000 }`:
+When emitting `Transfer { from: Address::new(0x123), to: Address::new(0x456), amount: 1000 }`:
 
 | Component | Value |
 |-----------|-------|

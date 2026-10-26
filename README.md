@@ -13,7 +13,7 @@ Fe is designed for writing safe, expressive smart contracts. Key features includ
 - **Rust-inspired syntax**: Familiar patterns for systems programmers
 - **EVM-native**: Compiles to efficient EVM bytecode
 
-This documentation targets Fe 26.4 and covers language fundamentals, contract development patterns, and practical examples.
+This documentation targets Fe 26.5 and covers language fundamentals, contract development patterns, and practical examples.
 
 ## Project Structure
 
@@ -68,7 +68,7 @@ bash scripts/check-examples.sh
 ./scripts/fe check path/to/file.fe
 ```
 
-The compiler wrapper downloads and caches the release pinned in `.fe-version` (currently `v26.4.1`). No Rust build or PR integration is needed. Use `FE_BIN=/path/to/fe` for an explicit local compiler or `FE_VERSION=latest` to test the latest release. A failed pinned download fails the check rather than silently using another release.
+The compiler wrapper downloads and caches the release pinned in `.fe-version` (currently `v26.5.0`). No Rust build or PR integration is needed. Use `FE_BIN=/path/to/fe` for an explicit local compiler or `FE_VERSION=latest` to test the latest release. A failed pinned download fails the check rather than silently using another release.
 
 ## Commands
 

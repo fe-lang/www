@@ -9,6 +9,7 @@ This ballot demonstrates a mapping, an immutable deadline, caller-based authoriz
 
 ```fe
 use std::abi::sol
+use std::evm::minutes
 
 msg BallotMsg {
     #[selector = sol("vote(uint256)")]
@@ -25,11 +26,11 @@ struct VoteCast {
 }
 
 pub contract Ballot {
-    deadline: u256,
+    deadline: Timestamp,
     mut voted: StorageMap<Address, bool>,
     mut totals: StorageMap<u256, u256>,
 
-    init(closes_at: u256) uses (ctx: Ctx, mut deadline) {
+    init(closes_at: Timestamp) uses (ctx: Ctx, mut deadline) {
         assert!(closes_at > ctx.timestamp(), "deadline must be in future")
         deadline = closes_at
     }
@@ -53,32 +54,32 @@ pub contract Ballot {
 
 #[test]
 fn records_vote() uses (evm: mut Evm) {
-    let addr = evm.create2<Ballot>(value: 0, args: (evm.timestamp() + 100,), salt: 0)
-    evm.call(addr, gas: 200000, value: 0, message: BallotMsg::Vote { proposal: 1 })
-    let votes: u256 = evm.call(addr, gas: 100000, value: 0, message: BallotMsg::Votes { proposal: 1 })
+    let addr = evm.create2<Ballot>(value: Wei::zero(), args: (evm.timestamp() + minutes(5),), salt: 0)
+    evm.call(addr, gas: 200000, value: Wei::zero(), message: BallotMsg::Vote { proposal: 1 })
+    let votes: u256 = evm.call(addr, gas: 100000, value: Wei::zero(), message: BallotMsg::Votes { proposal: 1 })
     assert!(votes == 1)
-    let other: u256 = evm.call(addr, gas: 100000, value: 0, message: BallotMsg::Votes { proposal: 0 })
+    let other: u256 = evm.call(addr, gas: 100000, value: Wei::zero(), message: BallotMsg::Votes { proposal: 0 })
     assert!(other == 0)
 }
 
 #[test]
 fn rejects_duplicate_vote() uses (evm: mut Evm) {
-    let addr = evm.create2<Ballot>(value: 0, args: (evm.timestamp() + 100,), salt: 0)
-    evm.call(addr, gas: 200000, value: 0, message: BallotMsg::Vote { proposal: 0 })
-    let second = evm.try_call(addr, gas: 200000, value: 0, message: BallotMsg::Vote { proposal: 1 })
+    let addr = evm.create2<Ballot>(value: Wei::zero(), args: (evm.timestamp() + minutes(5),), salt: 0)
+    evm.call(addr, gas: 200000, value: Wei::zero(), message: BallotMsg::Vote { proposal: 0 })
+    let second = evm.try_call(addr, gas: 200000, value: Wei::zero(), message: BallotMsg::Vote { proposal: 1 })
     assert!(!second.success())
 }
 
 #[test]
 fn rejects_unknown_proposal() uses (evm: mut Evm) {
-    let addr = evm.create2<Ballot>(value: 0, args: (evm.timestamp() + 100,), salt: 0)
-    let outcome = evm.try_call(addr, gas: 200000, value: 0, message: BallotMsg::Vote { proposal: 2 })
+    let addr = evm.create2<Ballot>(value: Wei::zero(), args: (evm.timestamp() + minutes(5),), salt: 0)
+    let outcome = evm.try_call(addr, gas: 200000, value: Wei::zero(), message: BallotMsg::Vote { proposal: 2 })
     assert!(!outcome.success())
 }
 ```
 
 ## Walkthrough
 
-The constructor writes `deadline` once into the deployed code. The mutable maps start at their default values: `false` for participation and zero for totals. Each vote validates the deadline and proposal, marks the caller as having voted, increases the total, and emits an event. The read handler needs only `totals`.
+The constructor writes `deadline` once into the deployed code. It is a `Timestamp`, the type `ctx.timestamp()` returns, so it can only be compared with other timestamps; adding a `Duration` such as `minutes(5)` yields a new `Timestamp`. The mutable maps start at their default values: `false` for participation and zero for totals. Each vote validates the deadline and proposal, marks the caller as having voted, increases the total, and emits an event. The read handler needs only `totals`.
 
 The tests deploy the contract and exercise real message dispatch. The negative tests make only the call under test with `try_call` and check that it failed; setup goes through `evm.call`, so a failing setup step fails the test instead of counting as the expected revert. Run them with `fe test ballot.fe`. An application extending this example should test the exact deadline boundary and define eligibility, tie handling, and how the result becomes final.

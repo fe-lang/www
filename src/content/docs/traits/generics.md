@@ -173,7 +173,7 @@ fn max_i256(a: i256, b: i256) -> i256 {
 }
 
 // With generics: one function
-fn max<T: Comparable>(a: T, b: T) -> T {
+fn max<T: Comparable>(a: own T, b: own T) -> T {
     if a.greater_than(other: b) { a } else { b }
 }
 ```

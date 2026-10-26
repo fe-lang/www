@@ -137,6 +137,17 @@ helpers = "../some/path/to/utils"
 use helpers::some_function
 ```
 
+## Trusting Unsafe Code
+
+A dependency's `unsafe` code (its `unsafe { .. }` blocks, `unsafe fn` bodies and `unsafe impl`s) may only run if you trust the dependency. Grant trust with `allow_unsafe = true`:
+
+```toml
+[dependencies]
+my_lib = { path = "../my_lib", allow_unsafe = true }
+```
+
+Your own ingot, workspace members, `core` and `std` are always trusted. A trusted dependency's own `allow_unsafe` entries extend trust to its dependencies; an untrusted one grants nothing. Only use counts: calling an untrusted dependency's safe functions needs no trust, and `fe check`, `fe build` and `fe test` report an error only at a call in your code that reaches `unsafe` code of an untrusted dependency.
+
 ## Version Conflicts
 
 If two dependencies require different versions of the same ingot, you may encounter conflicts. Strategies to resolve:
@@ -153,3 +164,4 @@ If two dependencies require different versions of the same ingot, you may encoun
 | Local (explicit) | `name = { path = "path/to/ingot" }` |
 | Git remote | `name = { source = "url", rev = "<40-hex commit>" }` |
 | Git with path | `name = { source = "url", rev = "<40-hex commit>", path = "subdir" }` |
+| Trust unsafe code | `name = { path = "path/to/ingot", allow_unsafe = true }` |

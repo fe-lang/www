@@ -134,7 +134,7 @@ fn combine<A: Hashable, B: Printable>(a: A, b: B) -> String<31> {
     b.to_string()
 }
 
-fn transform<T: Readable, U: Writable>(input: T, mut output: own U) {
+fn transform<T: Readable, U: Writable>(input: T, var output: own U) {
     let value = input.read()
     output.write(value)
 }
@@ -221,12 +221,12 @@ trait Comparable {
     fn equals(self, other: Self) -> bool
 }
 
-fn min<T: Comparable>(a: T, b: T) -> T {
+fn min<T: Comparable>(a: own T, b: own T) -> T {
     if a.less_than(other: b) { a } else { b }
 }
 
 fn find<T: Comparable>(items: [T; 8], target: T) -> bool {
-    for item in items {
+    for ref item in items {
         if item.equals(other: target) {
             return true
         }
@@ -288,6 +288,39 @@ fn count_for<T: Storable + Default>() -> u256 uses (reg: Registry) {
 }
 ```
 
+## Callable Bounds
+
+A generic parameter can be bounded by a callable shape such as `F: Fn(u256) -> bool`, so the function accepts closures and named functions. See [Closures](/traits/closures/).
+
+## Const Predicates
+
+A `where` clause can also state a boolean condition on const generic parameters. The condition is checked wherever the item is used with concrete values:
+
+```fe
+pub struct Ring<const N: usize> where N > 0 {
+    items: [u256; N],
+}
+
+const fn fits(_ bits: usize) -> bool {
+    bits > 0 && bits < 256
+}
+
+fn mask<const BITS: usize>() -> u256 where fits(BITS) {
+    (1 << (BITS as u256)) - 1
+}
+
+#[test]
+fn const_predicates() {
+    let r = Ring<4> { items: [1, 2, 3, 4] }
+    assert!(r.items[0] == 1)
+    assert!(mask<8>() == 255)
+    // `Ring<0>` or `mask<256>()` would be a compile error:
+    // "const requirement is not satisfied"
+}
+```
+
+A condition can call any `const fn`, and a condition that needs several lines can be written as a block, `where { ... }`. A generic caller satisfies a predicate only by stating the same condition itself. Const predicates are not yet supported on traits, generic trait impls or generic `impl` blocks.
+
 ## Error Messages
 
 When bounds aren't satisfied, you get clear errors:
@@ -320,3 +353,5 @@ The error points to the call site, making it easy to understand what's missing.
 | `<T: Trait>` | Bound in function signature |
 | `struct Foo<T: Trait>` | Bound in struct definition |
 | `impl<T: Trait>` | Bound in impl block |
+| `F: Fn(A) -> R` | Callable bound |
+| `where N > 0` | Const predicate on const generics |

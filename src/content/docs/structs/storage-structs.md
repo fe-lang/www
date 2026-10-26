@@ -162,9 +162,6 @@ fn transfer(from: u256, to: u256, amount: u256)
         return false
     }
     // ... transfer logic
-    //<hide>
-    let _ = (from, to, amount, balances)
-    //</hide>
     true
 }
 ```
@@ -211,7 +208,7 @@ impl Registry {
 ```
 
 :::note[Map Implementation]
-`StorageMap<K, V>` requires keys to implement `StorageKey` and values to implement `std::evm::word::WordRepr` (one EVM word). See [Maps](/compound-types/maps/) for supported representations and [Contract Storage](/contracts/storage/) for explicit Solidity layout access.
+`StorageMap<K, V>` requires keys to implement `StorageKey`; values can be any type that can live in storage, including structs and other maps. See [Maps](/compound-types/maps/) for supported representations and [Contract Storage](/contracts/storage/) for explicit Solidity layout access.
 :::
 
 ## Visibility

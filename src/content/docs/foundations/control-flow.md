@@ -272,7 +272,7 @@ let _ = day_name
 
 ### For Loops
 
-Use `for` to iterate over a range (such as `0..n`), an array, or any other type that implements `core::seq::Seq`:
+Use `for` to iterate over a range (such as `0..n`), an array, a `MemVec`, a `DynArray`, or any other type that implements `core::iter::Collection`:
 
 ```fe
 //<hide>
@@ -288,7 +288,70 @@ for item in items {
 //</hide>
 ```
 
-Arrays implement `Seq` only when their element type is `Copy`, because each iteration copies an element out of the array. Primitive element types such as `u256` work out of the box. To loop over an array of your own structs, implement `Copy` for the struct (`impl Copy for User {}`); otherwise the compiler reports a move conflict.
+A loop does not consume the collection. Its pattern binds each element the way a `let` binds a value:
+
+| Pattern | Binds |
+|---------|-------|
+| `for x in xs` | A copy of each element (the element type must be `Copy`) |
+| `for ref x in xs` | A read access to each element, read in place |
+| `for var x in xs` | A mutable copy of each element |
+| `for mut x in xs` | A mutable access to each element; writes change the collection |
+
+Use `ref` to loop over elements that are not `Copy`, and `mut` to update elements in place:
+
+```fe
+pub struct Account { pub balance: u256 }
+
+#[test]
+fn loop_binding_modes() {
+    var accounts = [Account { balance: 10 }, Account { balance: 20 }]
+
+    var total = 0
+    for ref account in accounts {
+        total += account.balance
+    }
+    assert!(total == 30)
+
+    for mut account in accounts {
+        account.balance *= 2
+    }
+    assert!(accounts[1].balance == 40)
+}
+```
+
+### Loop Adapters
+
+Collections provide adapters that change how a loop walks them: `enumerate()`, `reversed()`, `take(n)`, `skip(n)`, `step_by(k)`, `filter(p)` and `map(f)`. They take [closures](/traits/closures/) and combine as method chains:
+
+```fe
+#[test]
+fn loop_adapters() {
+    let xs: [u256; 5] = [1, 2, 3, 4, 5]
+
+    var weighted = 0
+    for (i, x) in xs.enumerate() {
+        weighted += i as u256 * x
+    }
+    assert!(weighted == 40)
+
+    var evens = 0
+    for x in xs.filter(|x| x % 2 == 0) {
+        evens += x
+    }
+    assert!(evens == 6)
+
+    var last_two = 0
+    for x in xs.reversed().take(2) {
+        last_two += x
+    }
+    assert!(last_two == 9)
+
+    // fold, any, count and find work without a loop
+    assert!(xs.fold(0, |acc, x| acc + x) == 15)
+    assert!(xs.any(|x| x > 4))
+    assert!(xs.count(|x| x % 2 == 1) == 3)
+}
+```
 
 ### Pattern Binding in For Loops
 
@@ -300,7 +363,6 @@ fn store_at(index: u256, value: u256) { let _ = (index, value) }
 fn credit(name: u256, balance: u256) { let _ = (name, balance) }
 //</hide>
 pub struct User { pub name: u256, pub balance: u256 }
-impl Copy for User {}  // required to iterate over [User; N]
 
 //<hide>
 fn __example2() {
@@ -311,9 +373,9 @@ for (index, value) in indexed_items {
     store_at(index, value)
 }
 
-for User { name, balance } in users {
-    if balance > 0 {
-        credit(name, balance)
+for ref user in users {
+    if user.balance > 0 {
+        credit(name: user.name, balance: user.balance)
     }
 }
 //<hide>
@@ -330,7 +392,7 @@ Use `while` for condition-based loops:
 fn process_next() {}
 fn example() {
 //</hide>
-let mut count: u256 = 5
+var count: u256 = 5
 while count > 0 {
     process_next()
     count = count - 1
@@ -376,7 +438,7 @@ impl Item {
 }
 fn __example3() {
 let items: [Item; 2] = [Item { val: 1 }, Item { val: 0 }]
-let mut found = Item { val: 0 }
+var found = Item { val: 0 }
 //</hide>
 for item in items {
     if item.is_target() {
@@ -426,7 +488,7 @@ fn __example5() {
 let values: [u256; 3] = [1, 2, 3]
 let limit: u256 = 5
 //</hide>
-let mut sum: u256 = 0
+var sum: u256 = 0
 for value in values {
     // Skip negative values
     if value < 0 {

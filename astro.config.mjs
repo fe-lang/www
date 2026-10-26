@@ -150,6 +150,7 @@ export default defineConfig({
 						{ label: 'Implementing Traits', slug: 'traits/implementing' },
 						{ label: 'Generic Functions', slug: 'traits/generics' },
 						{ label: 'Trait Bounds', slug: 'traits/bounds' },
+						{ label: 'Closures', slug: 'traits/closures' },
 						{ label: 'Standard Traits', slug: 'traits/standard-traits' },
 					],
 				},

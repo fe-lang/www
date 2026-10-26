@@ -278,7 +278,7 @@ The `Address` type represents a 20-byte EVM address. It is provided by the stand
 fn example() {
 //</hide>
 let zero = Address::zero()
-let addr = Address { inner: 0x742d35Cc6634C0532925a3b844Bc9e7595f5e123 }
+let addr = Address::new(0x742d35Cc6634C0532925a3b844Bc9e7595f5e123)
 //<hide>
 let _ = (zero, addr)
 }
@@ -309,7 +309,7 @@ use std::abi::DynString
 use std::text::{decimal, TextBuilder}
 
 fn token_label(id: u256) -> DynString {
-    let mut builder = TextBuilder::with_capacity(32)
+    var builder = TextBuilder::with_capacity(32)
     builder = builder.push("Token #")
     builder = builder.push(decimal(id))
     builder.finish()
@@ -321,18 +321,17 @@ fn formats_token_label() {
 }
 ```
 
-Use `concat_slice` when the number of fragments is known only at runtime. Initialize each element of a memory array before passing its slice to the helper:
+Use `concat_slice` when the number of fragments is known only at runtime. Collect the fragments in a `MemVec` and pass its slice to the helper:
 
 ```fe
-use core::ptr::MemArray
 use std::abi::DynString
 use std::text::concat_slice
 
 #[test]
 fn joins_runtime_fragments() {
-    let mut parts = MemArray<DynString>::new_uninit(2)
-    *parts.ptr_at(0) = "hello "
-    *parts.ptr_at(1) = "world"
+    var parts = MemVec<DynString>::new()
+    parts.push("hello ")
+    parts.push("world")
     assert!(concat_slice(parts.as_slice()) == "hello world")
 }
 ```

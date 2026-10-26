@@ -19,9 +19,6 @@ pub struct Balances {}
 fn transfer(from: u256, to: u256, amount: u256) uses (balances: mut Balances) {
     // Can ONLY modify Balances
     // Cannot access Allowances, Config, or anything else
-    //<hide>
-    let _ = (from, to, amount, balances)
-    //</hide>
 }
 ```
 
@@ -97,8 +94,8 @@ fn process_payment(amount: u256) uses (config: Config, balances: mut Balances, l
 // In tests, provide mock effects:
 fn test_payment() {
     let config = Config { fee_rate: 100 }  // 1% fee
-    let mut balances = Balances::new()
-    let mut logger = Logger::new()
+    var balances = Balances::new()
+    var logger = Logger::new()
 
     with (Config = config, Balances = balances, Logger = logger) {
         process_payment(amount: 1000)
@@ -187,9 +184,6 @@ pub struct EventLog {}
 fn transfer(to: u256, amount: u256)
     uses (ctx: Ctx, tokens: TokenStore, balances: mut Balances, log: mut EventLog)
 {
-    //<hide>
-    let _ = (to, amount, ctx, tokens, balances, log)
-    //</hide>
 }
 ```
 

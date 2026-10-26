@@ -120,7 +120,7 @@ impl Counter {
 
 fn example() {
 //</hide>
-let mut counter = Counter { value: 0 }
+var counter = Counter { value: 0 }
 
 let v = counter.get()      // 0
 counter.increment()

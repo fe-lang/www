@@ -7,12 +7,12 @@ description: Setting up the Fe compiler
 Fe is not yet recommended for production use.
 :::
 
-## Install Fe 26.4
+## Install Fe 26.5
 
-This guide and its CI examples target **Fe 26.4.1**. Install it with **feup**, the Fe toolchain installer:
+This guide and its CI examples target **Fe 26.5.0**. Install it with **feup**, the Fe toolchain installer:
 
 ```bash
-curl -fsSL https://raw.githubusercontent.com/argotorg/fe/master/feup/feup.sh | bash -s -- --version v26.4.1
+curl -fsSL https://raw.githubusercontent.com/argotorg/fe/master/feup/feup.sh | bash -s -- --version v26.5.0
 ```
 
 This installs the `fe` compiler and `feup` command to `~/.fe/bin/`. Restart your shell or load the environment:
@@ -29,7 +29,7 @@ On macOS and Linux you can also install Fe via Homebrew:
 brew install fe-lang/tap/fe
 ```
 
-The Homebrew formula can lag behind the latest release. Check the installed version as described [below](#verify-installation), and use feup if it does not report 26.4.1.
+The Homebrew formula can lag behind the latest release. Check the installed version as described [below](#verify-installation), and use feup if it does not report 26.5.0.
 
 ## Supported Platforms
 
@@ -49,7 +49,7 @@ After installing, verify that Fe is working:
 fe --version
 ```
 
-The version should start with `fe 26.4.1`.
+The version should start with `fe 26.5.0`.
 
 ## Build from Source
 
@@ -58,7 +58,7 @@ To build the compiler from source, clone the repository and build with Cargo:
 ```bash
 git clone https://github.com/argotorg/fe.git
 cd fe
-git checkout v26.4.1
+git checkout v26.5.0
 npm ci --prefix crates/tree-sitter-fe
 cargo install --locked --path crates/fe
 ```
