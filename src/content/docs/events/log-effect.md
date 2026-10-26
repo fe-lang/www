@@ -85,9 +85,6 @@ pub struct Balances { pub data: u256 }
 fn process_payment(amount: u256)
     -> bool uses (config: Config, balances: mut Balances, log: mut Log)
 {
-    //<hide>
-    let _ = (amount, config, balances, log)
-    //</hide>
     true
 }
 ```
@@ -187,7 +184,6 @@ use std::abi::sol
 pub struct TokenStorage { pub balances: StorageMap<Address, u256> }
 impl TokenStorage {
     fn do_transfer(mut self, from: Address, to: Address, amount: u256) -> bool uses (log: mut Log) {
-        let _ = (from, to, amount, log)
         true
     }
 }
@@ -210,7 +206,7 @@ contract Token uses (ctx: Ctx, log: mut Log) {
 
 ## Restricting Which Events a Function Can Emit
 
-`Log` is sealed, so you cannot implement it for your own type, and a `uses (log: mut Log)` function can emit any event. To narrow that, wrap the real `Log` in a struct that only exposes the events you allow, and pass the wrapper as the effect:
+`Log` is sealed, so you cannot implement it for your own type, and a `uses (log: mut Log)` function can emit any event. To narrow that, declare a trait that only exposes the events you allow, implement it for every `Log`, and use the trait as the effect:
 
 ```fe
 //<hide>
@@ -224,13 +220,13 @@ struct OwnershipTransferred {
     new_owner: Address,
 }
 
-pub struct AdminLog<L> {
-    inner: L,
+pub trait AdminLog {
+    fn ownership_transferred(mut self, previous_owner: Address, new_owner: Address)
 }
 
-impl<L: Log> AdminLog<L> {
-    pub fn ownership_transferred(mut self, previous_owner: Address, new_owner: Address) {
-        self.inner.emit(event: OwnershipTransferred { previous_owner, new_owner })
+impl<L: Log> AdminLog for L {
+    fn ownership_transferred(mut self, previous_owner: Address, new_owner: Address) {
+        self.emit(event: OwnershipTransferred { previous_owner, new_owner })
     }
 }
 
@@ -239,8 +235,8 @@ pub struct AdminStorage {
 }
 
 // Can emit OwnershipTransferred, and nothing else
-fn transfer_ownership<L: Log>(new_owner: Address)
-    uses (store: mut AdminStorage, admin_log: mut AdminLog<L>)
+fn transfer_ownership(new_owner: Address)
+    uses (store: mut AdminStorage, admin_log: mut AdminLog)
 {
     let previous = store.owner
     store.owner = new_owner
@@ -257,7 +253,7 @@ pub contract Admin uses (log: mut Log) {
 
     recv AdminMsg {
         TransferOwnership { new_owner } uses (mut store, mut log) {
-            with (AdminLog { inner: log }) {
+            with (AdminLog = log) {
                 transfer_ownership(new_owner)
             }
         }
@@ -265,7 +261,7 @@ pub contract Admin uses (log: mut Log) {
 }
 ```
 
-`AdminLog` has no general `emit` method, so `admin_log.emit(event: ...)` is a compile error inside `transfer_ownership`. The events still go through the real `Log`, so they appear in the transaction logs as usual.
+`with (AdminLog = log)` provides the contract's `Log` as the `AdminLog` effect. `AdminLog` has no general `emit` method, so `admin_log.emit(event: ...)` is a compile error inside `transfer_ownership`. The events still go through the real `Log`, so they appear in the transaction logs as usual.
 
 ## Optional Logging
 

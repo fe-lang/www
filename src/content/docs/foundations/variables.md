@@ -1,6 +1,6 @@
 ---
 title: Variables & Mutability
-description: Variable declaration with let, mutability with mut, shadowing, and scope
+description: Variable declaration with let, mutability with var, shadowing, and scope
 ---
 
 Variables are fundamental to any program. Fe provides a straightforward yet powerful system for declaring and working with variables, with immutability as the default for safer code.
@@ -68,7 +68,7 @@ You can declare a variable without immediately initializing it:
 //<hide>
 fn example() {
 //</hide>
-let mut x: u256
+var x: u256
 // ... later in the code
 x = 42
 //<hide>
@@ -96,13 +96,13 @@ This design choice promotes:
 
 ## Mutable Variables
 
-When you need a variable whose value can change, use the `mut` keyword:
+When you need a variable whose value can change, declare it with `var` instead of `let`:
 
 ```fe
 //<hide>
 fn example() {
 //</hide>
-let mut counter: u256 = 0
+var counter: u256 = 0
 counter = 1      // OK: counter is mutable
 counter = 2      // OK: can reassign multiple times
 //<hide>
@@ -111,22 +111,25 @@ let _ = counter
 //</hide>
 ```
 
-The `mut` keyword signals to readers that this variable's value will change during execution.
+The `var` keyword signals to readers that this variable's value will change during execution.
+
+:::note
+`let mut x = ...` is not Fe. In Fe, `mut` always means a mutable *access* to some other place (for example `let h = mut p.x`), while `var` declares a mutable value. See [Ownership & Mutability](/foundations/ownership/).
+:::
 
 ### When to Use Mutability
 
-Use `mut` when you genuinely need to modify a value:
+Use `var` when you genuinely need to modify a value:
 
 ```fe
 pub struct Item { pub value: u256 }
-impl Copy for Item {}  // arrays are iterable only when the element type is Copy
 
 //<hide>
 fn __example2() {
 let items: [Item; 2] = [Item { value: 10 }, Item { value: 20 }]
 //</hide>
-let mut total = 0
-for item in items {
+var total = 0
+for ref item in items {  // `ref`: read each element in place
     total = total + item.value
 }
 //<hide>
@@ -135,7 +138,7 @@ let _ = total
 //</hide>
 ```
 
-Prefer immutable variables when possible. If you find yourself using `mut` frequently, consider whether there's a more functional approach.
+Prefer immutable variables when possible. If you find yourself using `var` frequently, consider whether there's a more functional approach.
 
 ## Variable Shadowing
 
@@ -168,7 +171,7 @@ let value = "42"           // value is a String<2>
 let value: u256 = 42       // value is now u256 (new variable)
 
 // Mutation requires same type
-let mut count: u256 = 0
+var count: u256 = 0
 count = 1                  // OK: same type
 // count = "one"           // Error: type mismatch
 //<hide>
@@ -183,7 +186,7 @@ Shadowing is useful when:
 
 - Transforming a value through multiple steps
 - Converting between types while keeping a meaningful name
-- Reusing a name in a new scope without `mut`
+- Reusing a name in a new scope without `var`
 
 ```fe
 //<hide>
@@ -287,7 +290,7 @@ The `let` statement supports pattern matching, allowing you to destructure value
 fn example() {
 //</hide>
 let point: (u256, u256) = (10, 20)
-let (x, y) = ref point      // x = 10, y = 20
+let (x, y) = point      // x = 10, y = 20
 //<hide>
 let _ = (x, y)
 }
@@ -320,7 +323,7 @@ struct Point {
 fn example() {
 //</hide>
 let point = Point { x: 10, y: 20 }
-let Point { x, y } = ref point    // x = 10, y = 20
+let Point { x, y } = point    // x = 10, y = 20
 //<hide>
 let _ = (x, y)
 }
@@ -339,7 +342,7 @@ struct Point {
 fn example() {
 //</hide>
 let point = Point { x: 10, y: 20 }
-let Point { x: horizontal, y: vertical } = ref point
+let Point { x: horizontal, y: vertical } = point
 // horizontal = 10, vertical = 20
 //<hide>
 let _ = (horizontal, vertical)
@@ -349,13 +352,13 @@ let _ = (horizontal, vertical)
 
 ### Mutable Pattern Bindings
 
-Use `mut` in patterns to make specific bindings mutable:
+Use `var` in patterns to make specific bindings mutable:
 
 ```fe
 //<hide>
 fn example() {
 //</hide>
-let (mut x, y): (u256, u256) = (1, 2)
+let (var x, y): (u256, u256) = (1, 2)
 x = 10       // OK: x is mutable
 // y = 20    // Error: y is immutable
 //<hide>
@@ -376,8 +379,8 @@ struct Point {
 fn example() {
 //</hide>
 let point = Point { x: 10, y: 20 }
-let Point { mut x, y } = Point { x: point.x, y: point.y }
-x = 100      // OK: x is mutable
+let Point { var x, y } = point
+x = 100      // OK: x is a mutable copy; point is unchanged
 //<hide>
 let _ = (x, y)
 }
@@ -389,8 +392,10 @@ let _ = (x, y)
 | Feature | Syntax | Description |
 |---------|--------|-------------|
 | Immutable variable | `let x = value` | Cannot be reassigned |
-| Mutable variable | `let mut x = value` | Can be reassigned |
+| Mutable variable | `var x = value` | Can be reassigned |
 | Type annotation | `let x: Type = value` | Explicit type |
 | Shadowing | `let x = ...` (again) | New variable, same name |
 | Tuple destructuring | `let (a, b) = tuple` | Bind tuple elements |
 | Struct destructuring | `let S { field } = s` | Bind struct fields |
+| Mutable pattern binding | `let (var a, b) = t` | Bind `a` as a mutable value |
+| Access binding | `let h = mut x` / `let r = ref x` | Access `x` in place (see [Ownership & Mutability](/foundations/ownership/)) |

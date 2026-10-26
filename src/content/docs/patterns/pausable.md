@@ -46,26 +46,26 @@ pub contract PausableCounter {
 
 #[test]
 fn increments_when_active() uses (evm: mut Evm) {
-    let addr = evm.create2<PausableCounter>(value: 0, args: (evm.address(),), salt: 0)
-    evm.call(addr, gas: 100000, value: 0, message: CounterMsg::Increment {})
-    let count: u256 = evm.call(addr, gas: 100000, value: 0, message: CounterMsg::Count {})
+    let addr = evm.create2<PausableCounter>(value: Wei::zero(), args: (evm.address(),), salt: 0)
+    evm.call(addr, gas: 100000, value: Wei::zero(), message: CounterMsg::Increment {})
+    let count: u256 = evm.call(addr, gas: 100000, value: Wei::zero(), message: CounterMsg::Count {})
     assert!(count == 1)
-    evm.call(addr, gas: 100000, value: 0, message: CounterMsg::SetPaused { value: true })
-    evm.call(addr, gas: 100000, value: 0, message: CounterMsg::SetPaused { value: false })
-    evm.call(addr, gas: 100000, value: 0, message: CounterMsg::Increment {})
+    evm.call(addr, gas: 100000, value: Wei::zero(), message: CounterMsg::SetPaused { value: true })
+    evm.call(addr, gas: 100000, value: Wei::zero(), message: CounterMsg::SetPaused { value: false })
+    evm.call(addr, gas: 100000, value: Wei::zero(), message: CounterMsg::Increment {})
 }
 
 #[test(should_revert)]
 fn rejects_increment_while_paused() uses (evm: mut Evm) {
-    let addr = evm.create2<PausableCounter>(value: 0, args: (evm.address(),), salt: 0)
-    evm.call(addr, gas: 100000, value: 0, message: CounterMsg::SetPaused { value: true })
-    evm.call(addr, gas: 100000, value: 0, message: CounterMsg::Increment {})
+    let addr = evm.create2<PausableCounter>(value: Wei::zero(), args: (evm.address(),), salt: 0)
+    evm.call(addr, gas: 100000, value: Wei::zero(), message: CounterMsg::SetPaused { value: true })
+    evm.call(addr, gas: 100000, value: Wei::zero(), message: CounterMsg::Increment {})
 }
 
 #[test(should_revert)]
 fn rejects_unauthorized_pause() uses (evm: mut Evm) {
-    let addr = evm.create2<PausableCounter>(value: 0, args: (Address { inner: 1 },), salt: 0)
-    evm.call(addr, gas: 100000, value: 0, message: CounterMsg::SetPaused { value: true })
+    let addr = evm.create2<PausableCounter>(value: Wei::zero(), args: (Address::new(1),), salt: 0)
+    evm.call(addr, gas: 100000, value: Wei::zero(), message: CounterMsg::SetPaused { value: true })
 }
 ```
 

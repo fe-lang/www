@@ -202,7 +202,7 @@ Variables are immutable by default:
 fn __mut_example() {
 //</hide>
 let x: u256 = 10    // Immutable
-let mut y: u256 = 10 // Mutable
+var y: u256 = 10    // Mutable (Rust: let mut)
 y = 20              // OK
 //<hide>
 let _ = (x, y)
@@ -212,9 +212,9 @@ let _ = (x, y)
 
 ## Key Differences
 
-### Simplified Ownership Model
+### Mutable Value Semantics
 
-Fe has ownership concepts similar to Rust (`own`, `ref`, `mut`) but with key differences:
+Fe has ownership concepts similar to Rust (`own`, `ref`, `mut`), but references are not values: Fe has *mutable value semantics*. Key differences:
 
 - **Default is view mode** (no keyword): the function can read the value but not move or modify it. Unlike Rust, view-mode parameters can be used multiple times without explicit borrowing:
 
@@ -244,21 +244,24 @@ process(data: a)  // Fine: view mode doesn't consume the value
 ```
 
 - **`own`** transfers ownership (like Rust's move): the caller cannot use the value after passing it
-- **`ref`** creates a read-only reference that can be stored in struct fields (like Rust's `&T`)
-- **`mut`** creates a mutable handle (like Rust's `&mut T`)
+- **`mut`** grants mutable access to the caller's place for the duration of a call or binding (`let h = mut p.x`), similar to `&mut T`
+- **`ref`** grants read access to a place (`let r = ref p.x`), similar to `&T`
+- **`var`** declares a mutable value, replacing Rust's `let mut`
 
-Fe also has a borrow checker that prevents simultaneous `ref` and `mut` access to the same data.
+Unlike Rust's `&T` and `&mut T`, `ref` and `mut` are not types. An access cannot be stored in a struct field or returned from an ordinary function; a function that returns `ref T` or `mut T` is a *projection* that grants its caller access to a place. An access checker (instead of a borrow checker) rejects overlapping accesses unless both only read, and accesses to different fields of one struct never overlap.
 
 ### No Lifetimes
 
-Fe does not require lifetime annotations. References are scoped but the compiler manages lifetimes implicitly.
+Fe does not require lifetime annotations. Since accesses cannot be stored, an access simply lasts until its last use.
 
 See [Ownership & Mutability](/foundations/ownership/) for details on `own`, `ref`, and `mut`.
 
 
-### Iterators
+### Iteration
 
-Fe's `for` loop works over ranges, arrays, and any type implementing the `core::seq::Seq` trait (a length plus indexed `get`). There is no Rust-style `Iterator` trait with adapters such as `map`, `filter`, or `collect`:
+Fe's `for` loop works over ranges, arrays, `MemVec`, `DynArray` and any type implementing the `core::iter::Collection` trait. Collections are not consumed by a loop; instead the loop's pattern chooses how each element is bound: `for x in xs` copies a `Copy` element, `for ref x in xs` reads it in place and `for mut x in xs` modifies it in place.
+
+Collections provide adapters such as `enumerate`, `filter`, `map`, `take`, `skip` and `reversed` for loops, and `fold`, `any`, `count` and `find`:
 
 ```fe
 //<hide>
@@ -266,10 +269,13 @@ fn __iter_example() {
 let items: [u256; 3] = [1, 2, 3]
 //</hide>
 // Rust: items.iter().map(|x| x + 1).sum()
-// Fe: loop and accumulate explicitly
-let mut sum: u256 = 0
-for item in items {
-    sum = sum + item + 1
+let sum = items.fold(0, |acc, x| acc + x + 1)
+
+// Rust: for (i, x) in items.iter().enumerate().filter(..)
+for (i, x) in items.enumerate() {
+    //<hide>
+    let _ = (i, x)
+    //</hide>
 }
 //<hide>
 let _ = sum
@@ -277,19 +283,26 @@ let _ = sum
 //</hide>
 ```
 
-Arrays are iterable only when their element type is `Copy`; see [For Loops](/foundations/control-flow/#for-loops).
+See [For Loops](/foundations/control-flow/#for-loops).
 
-### No Closures
+### Closures
 
-Fe doesn't support closures:
+Closures look like Rust's, `|a, b| a + b`. A closure captures what it uses by copy or move and cannot modify its captures; state is threaded through parameters and results instead, as `fold` does. Functions take callables with bounds such as `F: Fn(u256) -> u256`:
 
 ```fe
-// Rust: let add = |a, b| a + b;
-// Fe: Use named functions
-fn add(a: u256, b: u256) -> u256 {
-    a + b
+fn apply<F: Fn(u256) -> u256>(_ f: F, _ x: u256) -> u256 uses F::E {
+    f(x)
+}
+
+#[test]
+fn closures() {
+    let add = |a: u256, b: u256| a + b
+    assert!(add(2, 3) == 5)
+    assert!(apply(|x| x * 2, 21) == 42)
 }
 ```
+
+`uses F::E` forwards the effects the closure's body needs. See [Closures](/traits/closures/).
 
 ### Modules and Ingots
 
@@ -390,9 +403,6 @@ fn transfer(from: Address, to: Address, amount: u256)
     uses (store: mut TokenStore, log: mut Log)
 {
     // Function declares what it accesses
-    //<hide>
-    let _ = (from, to, amount, store, log)
-    //</hide>
 }
 ```
 
@@ -411,7 +421,7 @@ fn transfer(from: Address, to: Address, amount: u256)
 | Loop | `loop {}` | `while true {}` |
 | For | `for x in iter {}` | `for x in iter {}` |
 | Let | `let x = 1;` | `let x = 1` |
-| Mut | `let mut x = 1;` | `let mut x = 1` |
+| Mut | `let mut x = 1;` | `var x = 1` |
 | Return | `return x` | `return x` |
 | Self | `self` | `self` |
 | Self type | `Self` | `Self` |
@@ -420,10 +430,10 @@ fn transfer(from: Address, to: Address, amount: u256)
 
 | Feature | Status in Fe |
 |---------|-------------|
-| Ownership/Borrowing | Simplified: `own`, `ref`, and `mut` modes; no lifetimes (see [Simplified Ownership Model](#simplified-ownership-model)) |
+| Ownership/Borrowing | Mutable value semantics: `own`, `ref`, and `mut` modes, no reference types, no lifetimes (see [Mutable Value Semantics](#mutable-value-semantics)) |
 | Lifetimes | Not needed |
-| Closures | Not available |
-| Iterators | `for` over ranges, arrays, and `Seq` types; no iterator adapters |
+| Closures | Available; captures are read-only copies or moves |
+| Iterators | `for` over collections with adapters (`enumerate`, `filter`, `map`, ...) and `fold`/`any`/`count`/`find`; no `Iterator` trait |
 | `async`/`await` | Not applicable |
 | Macros | No user-defined macros; `assert!` is built in |
 
@@ -437,6 +447,7 @@ fn transfer(from: Address, to: Address, amount: u256)
 | `init` | Contract constructors |
 | `uses` | Effect declarations |
 | `with` | Effect binding |
+| `var` | Mutable binding (instead of `let mut`) |
 | `#[selector]` | ABI selector attributes |
 | `#[indexed]` | Event indexing |
 | `StorageMap<K, V>` | Storage mappings |

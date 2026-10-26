@@ -118,7 +118,7 @@ Start a local Ethereum node with Foundry's `anvil`:
 anvil --hardfork osaka
 ```
 
-Fe 26.4 targets Osaka. Use a Foundry version that supports this hardfork, and verify EVM compatibility before deploying to another network.
+Fe 26.5 targets Osaka. Use a Foundry version that supports this hardfork, and verify EVM compatibility before deploying to another network.
 
 Anvil prints a list of pre-funded accounts and their private keys. Keep it running and **open a second terminal**.
 

@@ -84,7 +84,7 @@ fn test_fee_rates() {
 
 ## Testing Mutable Effects
 
-For functions that modify effects, use `mut` bindings:
+For functions that modify effects, declare the value with `var` and provide it with `with (mut counter)`:
 
 ```fe
 struct Counter {
@@ -106,7 +106,7 @@ fn current() -> u256 uses (counter: Counter) {
 
 #[test]
 fn test_increment_with_limit() {
-    let mut counter = Counter { value: 0, limit: 2 }
+    var counter = Counter { value: 0, limit: 2 }
 
     with (mut counter) {
         // Below the limit — increments succeed

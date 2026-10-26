@@ -13,7 +13,7 @@
 
 ## Fe Compiler
 
-The guide targets Fe 26.4. `.fe-version` pins the release used by `scripts/fe`, the example checker and CI. The wrapper downloads and caches that release; no local source build is required. `FE_BIN` explicitly selects a local compiler and `FE_VERSION=latest` opts into latest-release resolution.
+The guide targets Fe 26.5. `.fe-version` pins the release used by `scripts/fe`, the example checker and CI. The wrapper downloads and caches that release; no local source build is required. `FE_BIN` explicitly selects a local compiler and `FE_VERSION=latest` opts into latest-release resolution.
 
 ```bash
 bash scripts/check-examples.sh

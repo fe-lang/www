@@ -6,7 +6,7 @@ description: Philosophy, goals, and Rust-inspired safety for smart contracts
 Fe is a statically typed language for the Ethereum Virtual Machine (EVM) that blends Rust-like syntax with an innovative message-passing paradigm tailored to the platform. It offers a complete, batteries-included toolchain, featuring a built-in package manager, formatter, and robust language server to streamline development. Designed for safety and correctness, Fe empowers developers with features like generics, traits, pattern matching, and even higher-kinded types, while ensuring a smooth, modern developer experience. It serves as a secure foundation for building the next generation of decentralized applications.
 
 :::caution[Not Production-Ready]
-Fe has known bugs, a limited standard library, and generates sub-optimal bytecode in some cases. See the [release announcement](https://blog.fe-lang.org/posts/fe26-a-fresh-start/) for details. This guide targets Fe 26.4; see [Installation](/getting-started/installation/) for the matching compiler.
+Fe has known bugs, a limited standard library, and generates sub-optimal bytecode in some cases. See the [release announcement](https://blog.fe-lang.org/posts/fe26-a-fresh-start/) for details. This guide targets Fe 26.5; see [Installation](/getting-started/installation/) for the matching compiler.
 :::
 
 ## Philosophy
@@ -84,7 +84,7 @@ Every value has a known type at compile time. The compiler rejects type mismatch
 
 ### Explicit Mutability
 
-Variables are immutable by default. The `mut` keyword explicitly marks what can change. This applies to effect parameters too, making it clear at a glance whether a function reads or modifies state.
+Variables are immutable by default; `var` declares one that can change. The `mut` keyword explicitly marks where a function or binding may modify someone else's data, at the declaration and at the call site. This applies to effect parameters too, making it clear at a glance whether a function reads or modifies state. Fe has mutable value semantics: there are no reference types to alias data, so an access checker can rule out conflicting reads and writes without lifetime annotations.
 
 ### Pattern Matching
 
@@ -100,4 +100,4 @@ Fe supports generic programming with trait bounds, enabling reusable code that w
 
 ## Release Reference
 
-Fe 26.4 adds plain ETH transfers, bounded calls, Solidity storage access, clone deployment, dynamic text construction, Merkle proof helpers, and classified token-call outcomes. See the [release notes](https://github.com/argotorg/fe/releases/tag/v26.4.0) for the full changes. Consult [Types](/appendix/types/), [Intrinsics](/appendix/intrinsics/), and [Token Patterns](/patterns/tokens/) for checked examples.
+Fe 26.5 introduces mutable value semantics: `var` replaces `let mut`, `ref` and `mut` describe accesses rather than reference types, and an access checker replaces the borrow checker (see [Ownership & Mutability](/foundations/ownership/)). It also adds [closures](/traits/closures/) and loop adapters, `unsafe` blocks, tuple structs, typed ETH amounts and timestamps (`Wei`, `Timestamp`, `Duration`), a growable `MemVec`, and Solidity-compatible storage layouts with struct packing, nested maps and transient `TSlot` fields. The standard library gains fixed-point numbers, sorting, signature verification, EIP-712, RLP, multicall, ERC-4337 and more. Several of these changes are breaking; see the [release notes](https://github.com/argotorg/fe/releases/tag/v26.5.0) for the full list. Consult [Types](/appendix/types/), [Intrinsics](/appendix/intrinsics/), and [Token Patterns](/patterns/tokens/) for checked examples.

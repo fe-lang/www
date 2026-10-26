@@ -50,7 +50,7 @@ pub trait MsgVariant<A: Abi>: Encode<A> + Decode<A> {
 
 ```fe
 use std::abi::Sol
-use core::abi::{AbiSize, Encode, Decode, AbiDecoder, store_word}
+use core::abi::{AbiDecoder, AbiFrame, AbiSize, ByteInput, Decode, Encode}
 use core::message::MsgVariant
 
 // The variant struct
@@ -65,20 +65,20 @@ impl AbiSize for Transfer {
     const IS_DYNAMIC: bool = false
 }
 
-// Encoding: write each field as a 32-byte word
+// Encoding: write each field as a 32-byte word into the frame
 impl Encode<Sol> for Transfer {
-    fn encode(own self, _ ptr: *u8) {
-        store_word(ptr: ptr, value: self.to.inner)
-        store_word(ptr: core::ptr::offset_bytes(ptr, 32), value: self.amount)
+    fn encode(own self, _ out: AbiFrame) {
+        out.store_word(at: 0, value: self.to.word())
+        out.store_word(at: 32, value: self.amount)
     }
 }
 
-// Decoding: read each field back
+// Decoding: read each field back from the input
 impl Decode<Sol> for Transfer {
-    fn decode_payload<D: AbiDecoder<Sol>>(_ d: mut D) -> Self {
+    fn decode_payload<D: AbiDecoder<Sol>, I: ByteInput>(_ d: mut D, _ input: I) -> Self {
         Transfer {
-            to: Address::decode_payload(mut d),
-            amount: u256::decode_payload(mut d),
+            to: Address::decode_payload(mut d, input),
+            amount: u256::decode_payload(mut d, input),
         }
     }
 }

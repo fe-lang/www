@@ -14,13 +14,14 @@ declares `uses (ctx: Ctx)` can call them:
 |--------|---------|-------------|
 | `ctx.caller()` | `Address` | Address that called this contract |
 | `ctx.block_number()` | `u256` | Current block number |
-| `ctx.timestamp()` | `u256` | Current block timestamp (seconds since epoch) |
+| `ctx.timestamp()` | `Timestamp` | Current block timestamp (use `.as_seconds()` for the raw `u256`) |
 | `ctx.coinbase()` | `Address` | Current block miner/validator address |
 | `ctx.prevrandao()` | `u256` | Block randomness (post-Merge; replaces difficulty) |
 | `ctx.gaslimit()` | `u256` | Current block gas limit |
 | `ctx.chainid()` | `u256` | Current chain ID |
 | `ctx.origin()` | `Address` | Original transaction sender |
 | `ctx.gasprice()` | `u256` | Gas price of the transaction |
+| `ctx.basefee()` | `u256` | Current block base fee |
 | `ctx.gas()` | `u256` | Remaining gas for execution |
 
 ### Usage
@@ -30,8 +31,12 @@ fn only_owner(owner: Address) uses (ctx: Ctx) {
     assert!(ctx.caller() == owner, "not owner")
 }
 
-fn get_timestamp() -> u256 uses (ctx: Ctx) {
+fn get_timestamp() -> Timestamp uses (ctx: Ctx) {
     ctx.timestamp()
+}
+
+fn get_timestamp_seconds() -> u256 uses (ctx: Ctx) {
+    ctx.timestamp().as_seconds()
 }
 ```
 
@@ -42,20 +47,38 @@ Contract state and identity are also `Ctx` methods:
 | Method | Returns | Description |
 |--------|---------|-------------|
 | `ctx.address()` | `Address` | This contract's address |
-| `ctx.balance(addr)` | `u256` | ETH balance of address (in wei) |
-| `ctx.selfbalance()` | `u256` | This contract's ETH balance |
+| `ctx.balance(addr)` | `Wei` | ETH balance of address |
+| `ctx.selfbalance()` | `Wei` | This contract's ETH balance |
 | `ctx.extcodesize(addr)` | `u256` | Size of code at address |
 | `ctx.extcodehash(addr)` | `u256` | Keccak256 hash of code at address |
 
 ### Usage
 
 ```fe
-fn get_contract_balance() -> u256 uses (ctx: Ctx) {
+fn get_contract_balance() -> Wei uses (ctx: Ctx) {
     ctx.selfbalance()
 }
 
 fn is_contract(addr: Address) -> bool uses (ctx: Ctx) {
     ctx.extcodesize(addr) > 0
+}
+```
+
+ETH amounts and block timestamps are typed. `Wei` is an amount of ETH, `Timestamp` a point in time and `Duration` a span of seconds; all three are in the prelude. Build amounts with `wei(n)`, `gwei(n)`, `ether(n)` or `Wei::zero()`, and durations with `seconds(n)`, `minutes(n)`, `hours(n)`, `days(n)` or `weeks(n)` from `std::evm`. Use `as_wei()` or `as_seconds()` where a plain number is needed:
+
+```fe
+use std::evm::{days, ether, gwei}
+
+#[test]
+fn typed_units() {
+    let price = ether(1) + gwei(5)
+    assert!(price.as_wei() == 1_000_000_005_000_000_000)
+    assert!(price / gwei(1) == 1_000_000_005)
+
+    let start = Timestamp::from_seconds(1_000)
+    let deadline = start + days(1)
+    assert!(deadline > start)
+    assert!((deadline - start).as_seconds() == 86_400)
 }
 ```
 
@@ -115,7 +138,7 @@ fn hashes_empty_bytes() {
 
 `payload_span()` excludes the ABI length word. `encoded_span()` includes the ABI representation and hashes different bytes.
 
-For tightly packed encoding, Fe also provides `std::evm::packed::{encode_packed, keccak_packed, Packed}`. For EIP-712, use `crypto::eip712_digest(domain_separator, struct_hash)` (it requires a `uses (mem: mut RawMem)` effect) after constructing the domain separator and struct hash according to your schema. Packed encoding is distinct from ordinary ABI encoding; concatenating multiple variable-length values can be ambiguous.
+For tightly packed encoding, Fe also provides `std::evm::packed::{encode_packed, keccak_packed, Packed}`. For EIP-712, use `crypto::eip712_digest(domain_separator, struct_hash)` after constructing the domain separator and struct hash according to your schema. Packed encoding is distinct from ordinary ABI encoding; concatenating multiple variable-length values can be ambiguous.
 
 ## Integer Square Root
 
@@ -147,8 +170,8 @@ Control flow for error handling:
 
 ```fe
 fn transfer(from: Address, to: Address, amount: u256, balance: u256) {
-    assert!(from.inner != 0)
-    assert!(to.inner != 0)
+    assert!(from.word() != 0)
+    assert!(to.word() != 0)
     assert!(balance >= amount)
     //<hide>
     let _ = (from, to, amount, balance)
@@ -183,34 +206,40 @@ Use `call.call(addr, gas, value, message)` when gas and value need explicit cont
 
 ## Typed Memory
 
-Fe uses `*T` for typed memory pointers and `core::ptr` for allocation. Initialize an allocation before reading it:
+Fe uses `*T` for typed memory pointers and `core::ptr` for allocation. Dereferencing a raw pointer, and calling an `unsafe fn`, is only allowed inside an `unsafe { .. }` block or an `unsafe fn`. Initialize an allocation before reading it:
 
 ```fe
 use core::ptr
 
 #[test]
 fn pointer_read_and_write() {
-    let mut value: *u256 = ptr::alloc<u256>()
-    *value = 41
-    *value += 1
-    assert!(*value == 42)
+    let value: *u256 = ptr::alloc<u256>()
+    unsafe {
+        *value = 41
+        *value += 1
+        assert!(*value == 42)
+    }
 }
 ```
+
+The `unsafe` block is where the code vouches that the pointer is valid and initialized. A dependency's `unsafe` code can only be used if its `fe.toml` entry sets `allow_unsafe = true`.
 
 | Type | Purpose |
 |------|---------|
 | `MemSlice<T>` | Bounded read-only view of typed memory |
 | `MemSpan` | Byte view, an alias for `MemSlice<u8>` |
 | `MemBuffer` | Owned byte allocation with length and writable capacity |
+| `MemArray<T>` | Owned fixed-length array of `T` in memory |
+| `MemVec<T>` | Owned growable array of `T` in memory (`push`, `pop`, `set`, ...) |
 | `FixedMemBuffer<N>` | Owned allocation with a compile-time byte size |
 
-The old `MemPtr`, `MemoryInput`, `MemoryBytes`, and integer-address allocation APIs are removed. Pointer-bearing values cannot be stored in persistent or transient storage. A `ref T` borrow and a `*T` memory pointer serve different purposes; see [Ownership & Mutability](/foundations/ownership/).
+The old `MemPtr`, `MemoryInput`, `MemoryBytes`, and integer-address allocation APIs are removed. Pointer-bearing values cannot be stored in persistent or transient storage. Collection lengths and indices are `usize`. A `ref` access and a `*T` memory pointer serve different purposes; see [Ownership & Mutability](/foundations/ownership/).
 
 A leading `*` starts a dereference statement. For multiline multiplication, leave the multiplication operator at the end of the preceding line.
 
 ## Storage Access
 
-Use contract fields and `StorageMap` for ordinary storage. Low-level capabilities such as `RawStorage` and `RawMem` live under `std::evm`. Most opcode wrappers in `std::evm::ops` are internal to `std`; the exceptions are the pure `ops::byte(pos, value)` and `ops::signextend(byte, value)`, which are public and re-exported as `std::evm::byte` and `std::evm::signextend`.
+Use contract fields and `StorageMap` for ordinary storage. Low-level capabilities such as `RawStorage` and `RawOps` live under `std::evm`; memory needs no effect, and raw memory access goes through `unsafe` code instead. Most opcode wrappers in `std::evm::ops` are internal to `std`; the exceptions are the pure `ops::byte(pos, value)` and `ops::signextend(byte, value)`, which are public and re-exported as `std::evm::byte` and `std::evm::signextend`.
 
 ## Log Intrinsics
 
@@ -241,13 +270,13 @@ fn emit_transfer(from: own Address, to: own Address, value: u256) uses (log: mut
 
 | Intrinsic | Description |
 |-----------|-------------|
-| `ctx.value()` | ETH (in wei) sent with the current call |
+| `ctx.value()` | ETH sent with the current call, as `Wei` |
 
 ### Usage
 
 ```fe
 fn deposit() uses (ctx: Ctx) {
-    let amount = ctx.value()
+    let amount: Wei = ctx.value()
     // Process deposit...
     //<hide>
     let _ = amount
@@ -274,7 +303,7 @@ fn get_recent_block_hash(block_num: u256) -> u256 uses (ctx: Ctx) {
 `Call::send_value` sends ETH with empty calldata and copies no returndata. It returns a `RawCallOutcome`; check `success()` explicitly. A failed transfer does not automatically revert the caller.
 
 ```fe
-fn pay(recipient: Address, amount: u256) uses (ctx: Ctx, call: mut Call) {
+fn pay(recipient: Address, amount: Wei) uses (ctx: Ctx, call: mut Call) {
     let outcome = call.send_value(addr: recipient, gas: ctx.gas(), value: amount)
     assert!(outcome.success(), "payment failed")
 }
@@ -294,7 +323,7 @@ msg Query {
 }
 
 fn bounded_balance(token: Address, account: Address) -> u256 uses (call: Call) {
-    let mut ret = MemBuffer::with_capacity(32)
+    var ret = MemBuffer::with_capacity(32)
     let outcome = call.try_static_into(
         addr: token, gas: 100000,
         message: Query::BalanceOf { account }, ret: mut ret,
@@ -329,7 +358,7 @@ use core::ptr::MemSpan
 fn refuses_unavailable_gas() uses (call: mut Call) {
     let outcome = call.call_with_min_gas(
         addr: Address::zero(), minimum: (1 << 255), reserved: 10000,
-        value: 0, args: MemSpan::empty(),
+        value: Wei::zero(), args: MemSpan::empty(),
     )
     match outcome {
         Result::Err(_) => {},
@@ -351,10 +380,10 @@ fn address_helpers() {
         deployer: Address::zero(), salt: 0,
         init_code_hash: 0xbc36789e7a1e281436464229828f817d6612f7b477d66591ff96a9e064bcc98a,
     )
-    assert!(predicted.inner == 0x4d1a2e2bb4f88f0250f26ffff098b0b30b26bf38)
+    assert!(predicted.word() == 0x4d1a2e2bb4f88f0250f26ffff098b0b30b26bf38)
     assert!(keccak_words([1, 2]) != keccak_words([2, 1]))
     let address = Address::from_word_truncate((1 << 200) | 0xabc)
-    assert!(address.inner == 0xabc)
+    assert!(address.word() == 0xabc)
     assert!(checksum_address(Address::zero()) == "0x0000000000000000000000000000000000000000")
 }
 ```
@@ -377,23 +406,23 @@ fn arithmetic_helpers() {
 }
 ```
 
-The bit-counting helpers accept `u256` and return 256 for zero. On the EVM, `leading_zeros` uses the CLZ instruction; deploying code that uses it requires an Osaka-compatible chain. Fe 26.4’s EVM tests use Osaka rules.
+The bit-counting helpers accept `u256` and return 256 for zero. On the EVM, `leading_zeros` uses the CLZ instruction; deploying code that uses it requires an Osaka-compatible chain. Fe 26.5’s EVM tests use Osaka rules.
 
 ## Merkle Proofs
 
 `std::evm::merkle` supports sorted-pair proofs (`verify` / `process_proof`) and positional proofs (`verify_indexed` / `process_indexed_proof`). Proof nodes are ordered from the leaf's sibling towards the root. The helpers read a `MemSlice<u256>`, `DynArray<u256>`, or `DynArray<Bytes32>` in place.
 
 ```fe
-use std::abi::MemVec
+use std::abi::DynArray
 use std::evm::{keccak_words, merkle}
 
 #[test]
 fn verifies_merkle_paths() {
     let leaf = keccak_words([7])
     let sibling = keccak_words([8])
-    let mut nodes = MemVec<u256>::zeroed(1)
-    nodes.set(index: 0, value: sibling)
-    let proof = nodes.to_dyn_array()
+    var nodes = MemVec<u256>::new()
+    nodes.push(sibling)
+    let proof = DynArray::from_slice(nodes.as_slice())
 
     let sorted_root = merkle::hash_pair_sorted(leaf, sibling)
     assert!(merkle::verify(proof, root: sorted_root, leaf))

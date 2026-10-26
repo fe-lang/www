@@ -122,9 +122,6 @@ pub struct TokenStorage {
 
 impl TokenStorage {
     fn do_transfer(mut self, from: Address, to: Address, amount: u256) -> bool uses (log: mut Log) {
-        //<hide>
-        let _ = (from, to, amount, log)
-        //</hide>
         true
     }
 }
@@ -240,14 +237,14 @@ impl TokenStorage {
         self.balances.set(key: to, value: self.balances.get(key: to) + amount)
         self.total_supply = self.total_supply + amount
 
-        log.emit(event: Transfer { from: Address { inner: 0 }, to, amount })
+        log.emit(event: Transfer { from: Address::zero(), to, amount })
     }
 
     fn burn(mut self, from: Address, amount: u256) uses (log: mut Log) {
         self.balances.set(key: from, value: self.balances.get(key: from) - amount)
         self.total_supply = self.total_supply - amount
 
-        log.emit(event: Transfer { from, to: Address { inner: 0 }, amount })
+        log.emit(event: Transfer { from, to: Address::zero(), amount })
     }
 }
 ```

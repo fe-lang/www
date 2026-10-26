@@ -75,8 +75,8 @@ pub contract Example uses (ctx: Ctx) {
 
 #[test]
 fn test_with_evm() uses (evm: mut Evm) {
-    let addr = evm.create2<Example>(value: 0, args: (), salt: 0)
-    assert!(addr.inner != 0)
+    let addr = evm.create2<Example>(value: Wei::zero(), args: (), salt: 0)
+    assert!(addr.word() != 0)
 }
 ```
 

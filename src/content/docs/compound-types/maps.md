@@ -5,10 +5,6 @@ description: Key-value storage for smart contracts
 
 Maps provide key-value storage for smart contracts. In Fe, maps are implemented as `StorageMap<K, V>` in the standard library, designed specifically for contract storage.
 
-:::note[Temporary Implementation]
-The current `StorageMap` is a minimal implementation that will be replaced with a more advanced `Map` type in the near future. The new implementation will offer additional features and a more ergonomic API. The concepts covered here will still apply, but the exact syntax may change.
-:::
-
 ## StorageMap Basics
 
 `StorageMap<K, V>` stores key-value pairs in contract storage:
@@ -32,7 +28,7 @@ pub struct Token {
 }
 ```
 
-Map entries live in contract storage. The map value is a handle carrying a layout salt, not an in-memory collection. Normally declare maps in contract fields so the compiler assigns their layout parameters.
+A map is a **storage collection**: it lives at its place in contract storage and is never copied or moved. A struct that holds a map is *state-only*: it is reached through a contract field, a `mut` or view parameter, or an effect, never constructed as a value. Declare maps in contract fields (directly or inside a storage struct) and the compiler assigns their slots.
 
 ## Map Operations
 
@@ -54,7 +50,7 @@ impl Token {
 }
 ```
 
-If a key hasn't been set, `get` returns the default value for the value type (typically zero for numeric types).
+If a key hasn't been set, `get` returns the zero value for the value type (zero for numbers, `false`, the zero address).
 
 ### Writing Values
 
@@ -76,9 +72,70 @@ impl Token {
 
 Note that the `self` parameter must be `mut` to modify storage.
 
+### Indexing
+
+`map[key]` names the entry's place directly, so it can be read, assigned, and updated in place like any other place:
+
+```fe
+pub struct Token {
+    balances: StorageMap<Address, u256>,
+}
+
+impl Token {
+    pub fn balance_of(self, owner: Address) -> u256 {
+        self.balances[owner]
+    }
+
+    pub fn mint(mut self, to: Address, amount: u256) {
+        self.balances[to] += amount
+    }
+}
+```
+
+`map[key].field += 1` reads and writes a single field of a struct value, and `let entry = mut map[key]` binds a mutable access to the entry.
+
+### Removing Values
+
+`remove(key)` zeroes the entry, so it reads as if it was never set:
+
+```fe
+//<hide>
+pub struct Token {
+    balances: StorageMap<Address, u256>,
+}
+//</hide>
+impl Token {
+    pub fn burn_all(mut self, owner: Address) {
+        self.balances.remove(owner)
+    }
+}
+```
+
+## Nested Maps
+
+A map's value can itself be a map, like Solidity's `mapping(address => mapping(address => uint256))`. Index twice to reach an inner entry:
+
+```fe
+pub struct Allowances {
+    allowed: StorageMap<Address, StorageMap<Address, u256>>,
+}
+
+impl Allowances {
+    pub fn allowance(self, owner: Address, spender: Address) -> u256 {
+        self.allowed[owner][spender]
+    }
+
+    pub fn approve(mut self, owner: Address, spender: Address, amount: u256) {
+        self.allowed[owner][spender] = amount
+    }
+}
+```
+
+The inner map derives its slot from the outer entry, exactly as Solidity nests mappings.
+
 ## Composite Keys
 
-Use tuples as keys for multi-dimensional mappings:
+Tuples can also be used as keys:
 
 ```fe
 pub struct Token {
@@ -109,20 +166,17 @@ Map keys must implement the `StorageKey` trait. Common key types include:
 
 ## Value Type Requirements
 
-Map values must implement `std::evm::word::WordRepr`, representing one EVM word. Common value types include:
-
-- Numeric types (`u256`, `i256`, etc.)
-- `bool` and `Address`
+A map's value can be any type that can live in storage: integers, `bool`, `Address`, typed units such as `Wei`, structs (with narrow fields packed like Solidity struct members), arrays, and other maps. The value at `key` is laid out in storage like any value of its type. A value that holds a storage collection, such as a nested map, cannot be `remove`d, since zeroing its slots would leave the inner entries behind.
 
 ## Storage Layout
 
-StorageMap uses a Solidity-compatible storage layout. Each key-value pair is stored at a slot computed as:
+StorageMap uses Solidity's mapping layout. The map itself takes one slot, which is never written, and the value for a key is stored from the slot computed as:
 
 ```
-slot = keccak256(key ++ base_slot)
+slot = keccak256(key ++ map_slot)
 ```
 
-For scalar keys, the key word followed by the salt matches Solidity's mapping-slot derivation. Tuple keys concatenate their components before the salt; this is not the same layout as nested Solidity mappings. Distinct inferred salts separate different fields. Explicitly choosing the same salt deliberately shares the location space.
+For scalar keys this matches Solidity's mapping-slot derivation. Tuple keys concatenate their components before the map slot; this is not the same layout as nested Solidity mappings, so use a nested map when you need Solidity compatibility.
 
 ## Common Patterns
 
@@ -165,8 +219,8 @@ pub contract Ledger {
 
 #[test]
 fn self_transfer_preserves_balance() uses (evm: mut Evm) {
-    let addr = evm.create2<Ledger>(value: 0, args: (), salt: 0)
-    let balance: u256 = evm.call(addr, gas: 200000, value: 0,
+    let addr = evm.create2<Ledger>(value: Wei::zero(), args: (), salt: 0)
+    let balance: u256 = evm.call(addr, gas: 200000, value: Wei::zero(),
         message: LedgerMsg::Transfer { from_id: 1, to_id: 1, amount: 40 })
     assert!(balance == 100)
 }
@@ -234,15 +288,18 @@ impl AccessControl {
 ## Limitations
 
 - **No iteration**: You cannot iterate over all keys in a map. If you need iteration, maintain a separate list of keys.
-- **No deletion**: There's no explicit delete operation. Set a value to its default (e.g., 0) to "remove" an entry.
-- **Persistent entries**: Copying a map handle does not copy its entries. Explicitly constructing handles with the same salt accesses the same mapping.
+- **No copies**: A map is never copied or moved. Pass the struct holding it as a `mut` or view parameter, or as an effect.
+- **Persistent storage only**: Map entries are persistent, so a map cannot live in transient storage.
 
 ## Summary
 
 | Operation | Syntax |
 |-----------|--------|
 | Declare map | `field: StorageMap<K, V>` |
-| Read value | `map.get(key)` |
-| Write value | `map.set(key, value)` |
+| Read value | `map.get(key)` or `map[key]` |
+| Write value | `map.set(key, value)` or `map[key] = value` |
+| Update in place | `map[key] += 1` |
+| Remove value | `map.remove(key)` |
+| Nested map | `StorageMap<K1, StorageMap<K2, V>>`, `map[k1][k2]` |
 | Tuple key | `StorageMap<(K1, K2), V>` |
 | Access tuple key | `map.get((k1, k2))` |

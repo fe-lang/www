@@ -197,43 +197,52 @@ contract Token {
 
 ## Structured Parameters
 
-In Fe 26.4, struct types cannot be used as message fields or return types: structs do not implement the `AbiSize`, `Encode<Sol>`, and `Decode<Sol>` traits that message fields require. Use a tuple at the message boundary (it encodes as a Solidity tuple) and convert it to an internal struct in the handler:
+Mark a struct `#[abi]` to use it as a message field or return type. The compiler derives `AbiSize`, `Encode<Sol>` and `Decode<Sol>` for it, encoding the struct like the Solidity tuple of its fields, so the selector spells it as a tuple:
 
 ```fe
 use std::abi::sol
 
-struct Position {
+#[abi]
+pub struct Position {
+    pub owner: Address,
+    pub amount: u256,
+}
+
+#[event]
+struct Opened {
+    #[indexed]
     owner: Address,
-    amount: u256,
+    position: Position,
 }
 
 msg PositionMsg {
-    #[selector = sol("echo((address,uint256))")]
-    Echo { position: (Address, u256) } -> (Address, u256),
+    #[selector = sol("open((address,uint256))")]
+    Open { position: Position } -> Position,
 }
 
-pub contract PositionEcho {
+pub contract Positions uses (log: mut Log) {
     recv PositionMsg {
-        Echo { position } -> (Address, u256) {
-            let internal = Position { owner: position.0, amount: position.1 }
-            (internal.owner, internal.amount)
+        Open { position } -> Position uses (mut log) {
+            let doubled = Position { owner: position.owner, amount: position.amount * 2 }
+            log.emit(event: Opened { owner: position.owner, position })
+            doubled
         }
     }
 }
 
 #[test]
-fn round_trips_position() uses (evm: mut Evm) {
-    let target = evm.create2<PositionEcho>(value: 0, args: (), salt: 0)
-    let result: (Address, u256) = evm.call(
-        addr: target, gas: 1000000, value: 0,
-        message: PositionMsg::Echo { position: (Address { inner: 7 }, 42) },
+fn round_trips_abi_struct() uses (evm: mut Evm) {
+    let target = evm.create2<Positions>(value: Wei::zero(), args: (), salt: 0)
+    let result: Position = evm.call(
+        addr: target, gas: 1000000, value: Wei::zero(),
+        message: PositionMsg::Open { position: Position { owner: Address::new(7), amount: 21 } },
     )
-    assert!(result.0.inner == 7)
-    assert!(result.1 == 42)
+    assert!(result.owner == Address::new(7))
+    assert!(result.amount == 42)
 }
 ```
 
-The selector describes one tuple argument. Return tuples represent multiple Solidity return values; see [Defining Messages](/messages/defining-messages/).
+`#[abi]` structs can be nested inside other `#[abi]` structs, used in arrays, and used as `#[event]` and `#[error]` fields. A plain struct without `#[abi]` cannot cross the message boundary; either mark it `#[abi]` or use a tuple and convert it in the handler.
 
 ## Summary
 

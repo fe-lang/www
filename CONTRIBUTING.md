@@ -17,7 +17,7 @@ Your content here...
 
 ## Code Examples
 
-The guide targets Fe 26.4. All unignored `fe` blocks are checked with `fe check`; blocks containing `#[test]` are also executed with `fe test`. Standalone examples in `src/examples/` are included. Shell and TOML examples need separate verification.
+The guide targets Fe 26.5. All unignored `fe` blocks are checked with `fe check`; blocks containing `#[test]` are also executed with `fe test`. Standalone examples in `src/examples/` are included. Shell and TOML examples need separate verification.
 
 ### Code Block Conventions
 

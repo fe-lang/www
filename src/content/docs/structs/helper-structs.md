@@ -13,7 +13,6 @@ Group related values into a struct:
 //<hide>
 pub struct TokenStorage {}
 fn transfer(from: u256, to: u256, amount: u256) -> bool uses (store: mut TokenStorage) {
-    let _ = (from, to, amount, store)
     true
 }
 //</hide>
@@ -99,7 +98,6 @@ Create structs for validated data:
 pub struct TokenStorage { pub balances: StorageMap<Address, u256> }
 
 fn transfer(from: Address, to: Address, amount: u256) -> bool uses (store: mut TokenStorage) {
-    let _ = (from, to, amount, store)
     true
 }
 //</hide>
@@ -338,7 +336,6 @@ Helper structs can work alongside effects:
 //<hide>
 pub struct TokenStorage { pub balances: StorageMap<Address, u256> }
 fn transfer(from: Address, to: Address, amount: u256) -> bool uses (store: mut TokenStorage) {
-    let _ = (from, to, amount, store)
     true
 }
 //</hide>
@@ -364,7 +361,7 @@ impl TransferRequest {
 
     fn validate(self) -> bool uses (store: TokenStorage) {
         let balance = store.balances.get(key: self.from)
-        balance >= self.amount && self.to.inner != 0
+        balance >= self.amount && self.to.word() != 0
     }
 }
 ```

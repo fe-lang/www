@@ -17,7 +17,9 @@ A constructor runs for the implementation deployment, not as an initializer for 
 
 ## Storage Compatibility
 
-Do not assume that reordering, adding, or changing Fe fields preserves an existing deployment's layout. Maps use layout parameters as well as ordinary storage slots; changes to nested structs and inferred parameters can affect where values are stored. Fe 26.3 fixed layout collisions involving repeated inferred layout parameters, which makes review especially important when comparing artifacts from older compilers.
+Do not assume that reordering, adding, or changing Fe fields preserves an existing deployment's layout. Fe assigns each contract field a root slot in declaration order, packs narrow struct fields into shared slots the way Solidity packs struct members, and places a map's entries at `keccak256(key ++ slot)`. Reordering fields, inserting a field, or changing a field's width therefore moves data. Pin the slots that must not move with `#[slot(e)]` (see [Contract Storage](/contracts/storage/)).
+
+Fe 26.5 changed the storage layout itself: narrow struct fields now share slots, `StorageMap` values use their type's native layout, storage and transient fields are numbered separately, and map salts are gone. A contract compiled with Fe 26.5 does not read the storage of the same source compiled with an earlier release. Review layouts especially carefully when comparing artifacts from older compilers.
 
 Inspect compiler layout information, pin compiler versions, and test an upgrade against populated old state. Verify balances, allowances, ownership, pause flags, and any nested maps after the transition. Matching ABI signatures is insufficient to establish storage compatibility.
 
@@ -29,7 +31,7 @@ This guide does not provide a validated upgradeable proxy implementation. Until 
 
 ```fe
 use std::abi::sol
-use std::evm::{clones, Create, RawMem}
+use std::evm::{clones, Create}
 
 msg CloneQuery {
     #[selector = sol("answer()")]
@@ -43,15 +45,15 @@ pub contract Implementation {
 }
 
 #[test]
-fn deploys_predicted_clone() uses (evm: mut Evm, create: mut Create, mem: mut RawMem) {
-    let implementation = evm.create2<Implementation>(value: 0, args: (), salt: 0)
+fn deploys_predicted_clone() uses (evm: mut Evm, create: mut Create) {
+    let implementation = evm.create2<Implementation>(value: Wei::zero(), args: (), salt: 0)
     let predicted = clones::predict_deterministic_address(
         implementation, salt: 7, deployer: evm.address(),
     )
-    let proxy = clones::clone_deterministic(implementation, salt: 7, value: 0)
+    let proxy = clones::clone_deterministic(implementation, salt: 7, value: Wei::zero())
     assert!(proxy == predicted)
     let answer: u256 = evm.call(
-        addr: proxy, gas: 1000000, value: 0, message: CloneQuery::Answer {},
+        addr: proxy, gas: 1000000, value: Wei::zero(), message: CloneQuery::Answer {},
     )
     assert!(answer == 42)
 }

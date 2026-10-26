@@ -92,9 +92,6 @@ pub struct Config { pub data: u256 }
 
 fn complex_operation() uses (storage: Storage, logger: Logger, config: Config) {
     // Has access to all three effects
-    //<hide>
-    let _ = (storage, logger, config)
-    //</hide>
 }
 ```
 
@@ -110,9 +107,6 @@ pub struct Logger { pub data: u256 }
 fn transfer() uses (balances: mut Balances, config: Config, log: mut Logger) {
     // balances and log are mutable
     // config is read-only
-    //<hide>
-    let _ = (balances, config, log)
-    //</hide>
 }
 ```
 
@@ -172,7 +166,7 @@ pub struct Cache<T> {
     pub value: T,
 }
 
-fn get_cached<T>() -> T uses (cache: Cache<T>) {
+fn get_cached<T: Copy>() -> T uses (cache: Cache<T>) {
     cache.value
 }
 ```

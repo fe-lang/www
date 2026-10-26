@@ -29,8 +29,8 @@ pub contract MyContract {
 #[test]
 fn test_my_contract() uses (evm: mut Evm) {
     // evm provides the EVM runtime for deploying and calling contracts
-    let addr = evm.create2<MyContract>(value: 0, args: (), salt: 0)
-    assert!(addr.inner != 0)
+    let addr = evm.create2<MyContract>(value: Wei::zero(), args: (), salt: 0)
+    assert!(addr.word() != 0)
 }
 ```
 
@@ -63,10 +63,10 @@ pub contract Counter {
 #[test]
 fn test_deploy() uses (evm: mut Evm) {
     // Deploy with constructor arguments
-    let addr = evm.create2<Counter>(value: 0, args: (5,), salt: 0)
+    let addr = evm.create2<Counter>(value: Wei::zero(), args: (5,), salt: 0)
 
     // The address is non-zero on success
-    assert!(addr.inner != 0)
+    assert!(addr.word() != 0)
 }
 ```
 
@@ -116,15 +116,15 @@ pub contract Counter {
 
 #[test]
 fn test_counter() uses (evm: mut Evm) {
-    let addr = evm.create2<Counter>(value: 0, args: (5,), salt: 0)
+    let addr = evm.create2<Counter>(value: Wei::zero(), args: (5,), salt: 0)
 
     // Call with no return value
-    evm.call(addr: addr, gas: 100000, value: 0, message: CounterMsg::Increment {})
-    evm.call(addr: addr, gas: 100000, value: 0, message: CounterMsg::Increment {})
+    evm.call(addr: addr, gas: 100000, value: Wei::zero(), message: CounterMsg::Increment {})
+    evm.call(addr: addr, gas: 100000, value: Wei::zero(), message: CounterMsg::Increment {})
 
     // Call with return value
     let count: u256 = evm.call(
-        addr: addr, gas: 100000, value: 0,
+        addr: addr, gas: 100000, value: Wei::zero(),
         message: CounterMsg::GetCount {},
     )
     assert!(count == 10)  // 2 increments × step of 5
@@ -169,14 +169,14 @@ pub contract Vault {
 
 #[test]
 fn test_state_persists() uses (evm: mut Evm) {
-    let addr = evm.create2<Vault>(value: 0, args: (), salt: 0)
+    let addr = evm.create2<Vault>(value: Wei::zero(), args: (), salt: 0)
 
-    evm.call(addr: addr, gas: 100000, value: 0, message: VaultMsg::Deposit { amount: 100 })
-    evm.call(addr: addr, gas: 100000, value: 0, message: VaultMsg::Deposit { amount: 200 })
+    evm.call(addr: addr, gas: 100000, value: Wei::zero(), message: VaultMsg::Deposit { amount: 100 })
+    evm.call(addr: addr, gas: 100000, value: Wei::zero(), message: VaultMsg::Deposit { amount: 200 })
 
     // State accumulated across calls
     let bal: u256 = evm.call(
-        addr: addr, gas: 100000, value: 0,
+        addr: addr, gas: 100000, value: Wei::zero(),
         message: VaultMsg::GetBalance {},
     )
     assert!(bal == 300)
@@ -215,16 +215,16 @@ pub contract Counter {
 #[test]
 fn test_multiple_instances() uses (evm: mut Evm) {
     // Deploy two counters with different steps
-    let fast = evm.create2<Counter>(value: 0, args: (10,), salt: 0)
-    let slow = evm.create2<Counter>(value: 0, args: (1,), salt: 1)
+    let fast = evm.create2<Counter>(value: Wei::zero(), args: (10,), salt: 0)
+    let slow = evm.create2<Counter>(value: Wei::zero(), args: (1,), salt: 1)
 
     // Increment both
-    evm.call(addr: fast, gas: 100000, value: 0, message: CounterMsg::Increment {})
-    evm.call(addr: slow, gas: 100000, value: 0, message: CounterMsg::Increment {})
+    evm.call(addr: fast, gas: 100000, value: Wei::zero(), message: CounterMsg::Increment {})
+    evm.call(addr: slow, gas: 100000, value: Wei::zero(), message: CounterMsg::Increment {})
 
     // They have independent state
-    let fast_count: u256 = evm.call(addr: fast, gas: 100000, value: 0, message: CounterMsg::GetCount {})
-    let slow_count: u256 = evm.call(addr: slow, gas: 100000, value: 0, message: CounterMsg::GetCount {})
+    let fast_count: u256 = evm.call(addr: fast, gas: 100000, value: Wei::zero(), message: CounterMsg::GetCount {})
+    let slow_count: u256 = evm.call(addr: slow, gas: 100000, value: Wei::zero(), message: CounterMsg::GetCount {})
     assert!(fast_count == 10)
     assert!(slow_count == 1)
 }

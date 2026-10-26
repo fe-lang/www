@@ -156,9 +156,6 @@ pub struct B { pub data: u256 }
 
 fn needs_both() uses (a: A, b: B) {
     // ...
-    //<hide>
-    let _ = (a, b)
-    //</hide>
 }
 
 fn example() {
@@ -184,7 +181,7 @@ Or provide multiple effects at once:
 //<hide>
 pub struct A { pub data: u256 }
 pub struct B { pub data: u256 }
-fn needs_both() uses (a: A, b: B) { let _ = (a, b) }
+fn needs_both() uses (a: A, b: B) { }
 fn example() {
 let a = A { data: 0 }
 let b = B { data: 0 }
@@ -242,13 +239,10 @@ pub struct Logger { pub data: u256 }
 
 fn helper() uses (config: Config, logger: mut Logger) {
     // Needs both effects
-    //<hide>
-    let _ = (config, logger)
-    //</hide>
 }
 
 fn outer() uses (config: Config) {
-    let mut logger = Logger { data: 0 }
+    var logger = Logger { data: 0 }
 
     // Config comes from uses clause
     // Logger is provided by with

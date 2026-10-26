@@ -151,7 +151,7 @@ See [Receive Blocks](/messages/receive-blocks/) for details on implementing hand
 
 A handler returning a tuple uses Solidity's multiple-return-value encoding. For example, `-> (DynString, u256)` corresponds to `returns (string, uint256)`. The ABI lists two outputs, and the dynamic string's offset is measured from that output parameter list.
 
-Fe 26.4 corrects the encoding of tuples containing dynamic elements: earlier compilers could insert an extra outer offset. Static tuple returns are unchanged. A single `DynString` return still follows the usual single-dynamic-output encoding.
+Since Fe 26.4, tuples containing dynamic elements are encoded correctly: earlier compilers could insert an extra outer offset. Static tuple returns are unchanged. A single `DynString` return still follows the usual single-dynamic-output encoding.
 
 ```fe
 use std::abi::{sol, DynString}
@@ -169,14 +169,14 @@ pub contract Info {
 
 #[test]
 fn multiple_return_values() uses (evm: mut Evm) {
-    let target = evm.create2<Info>(value: 0, args: (), salt: 0)
-    let outcome = evm.try_call(addr: target, gas: 1000000, value: 0, message: InfoMsg::Info {})
+    let target = evm.create2<Info>(value: Wei::zero(), args: (), salt: 0)
+    let outcome = evm.try_call(addr: target, gas: 1000000, value: Wei::zero(), message: InfoMsg::Info {})
     assert!(outcome.success())
     let data = outcome.returndata()
     assert!(data.word_at(0) == 64) // String tail follows the two-word head.
     assert!(data.word_at(32) == 264)
     let (name, version): (DynString, u256) = evm.call(
-        addr: target, gas: 1000000, value: 0, message: InfoMsg::Info {},
+        addr: target, gas: 1000000, value: Wei::zero(), message: InfoMsg::Info {},
     )
     assert!(name == "Fe" && version == 264)
 }

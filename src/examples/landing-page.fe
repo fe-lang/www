@@ -2,6 +2,7 @@
 /// and explicit effects.
 
 use std::abi::sol
+use std::evm::wei
 
 // Enums as error types
 enum VaultError {
@@ -62,8 +63,9 @@ pub contract Vault uses (ctx: Ctx, log: mut Log, call: mut Call) {
         Deposit {} uses (ctx, mut store, mut log) {
             let who = ctx.caller()
             let balance = store.balances.get(key: who)
-            store.balances.set(key: who, value: balance + ctx.value())
-            log.emit(event: Deposited { owner: who, amount: ctx.value() })
+            let amount = ctx.value().as_wei()
+            store.balances.set(key: who, value: balance + amount)
+            log.emit(event: Deposited { owner: who, amount })
         }
 
         // Pattern match on Result for control flow
@@ -74,7 +76,7 @@ pub contract Vault uses (ctx: Ctx, log: mut Log, call: mut Call) {
             match req.validate() {
                 Ok(new_bal) => {
                     store.balances.set(key: who, value: new_bal)
-                    let outcome = call.send_value(addr: who, gas: ctx.gas(), value: amount)
+                    let outcome = call.send_value(addr: who, gas: ctx.gas(), value: wei(amount))
                     assert!(outcome.success(), "withdrawal failed")
                 }
                 Err(VaultError::InsufficientFunds) => { revert_error(InsufficientFunds {}) }
@@ -120,7 +122,7 @@ pub contract VaultClient {
         #[payable]
         VaultClientMsg::Exercise { vault } uses (ctx: Ctx, call: mut Call) {
             call.call(addr: vault, gas: 300000, value: ctx.value(), message: VaultMsg::Deposit {})
-            call.call(addr: vault, gas: 300000, value: 0, message: VaultMsg::Withdraw { amount: 40 })
+            call.call(addr: vault, gas: 300000, value: Wei::zero(), message: VaultMsg::Withdraw { amount: 40 })
         }
         #[payable]
         _ {}
@@ -129,26 +131,26 @@ pub contract VaultClient {
 
 #[test(balance = 1000)]
 fn withdrawal_transfers_eth() uses (evm: mut Evm) {
-    let vault = evm.create2<Vault>(value: 0, args: (), salt: 0)
-    let client = evm.create2<VaultClient>(value: 0, args: (), salt: 0)
-    evm.call(addr: client, gas: 1000000, value: 100, message: VaultClientMsg::Exercise { vault })
-    let remaining: u256 = evm.call(addr: vault, gas: 100000, value: 0,
+    let vault = evm.create2<Vault>(value: Wei::zero(), args: (), salt: 0)
+    let client = evm.create2<VaultClient>(value: Wei::zero(), args: (), salt: 0)
+    evm.call(addr: client, gas: 1000000, value: wei(100), message: VaultClientMsg::Exercise { vault })
+    let remaining: u256 = evm.call(addr: vault, gas: 100000, value: Wei::zero(),
         message: VaultMsg::BalanceOf { addr: client })
     assert!(remaining == 60)
-    assert!(evm.balance(vault) == 60)
-    assert!(evm.balance(client) == 40)
+    assert!(evm.balance(vault) == wei(60))
+    assert!(evm.balance(client) == wei(40))
 }
 
 #[test(balance = 1000)]
 fn rejected_payment_restores_balance() uses (evm: mut Evm) {
-    let vault = evm.create2<Vault>(value: 0, args: (), salt: 0)
-    evm.call(addr: vault, gas: 300000, value: 100, message: VaultMsg::Deposit {})
+    let vault = evm.create2<Vault>(value: Wei::zero(), args: (), salt: 0)
+    evm.call(addr: vault, gas: 300000, value: wei(100), message: VaultMsg::Deposit {})
     // The test harness has no payable fallback and rejects the ETH payment.
-    let outcome = evm.try_call(addr: vault, gas: 300000, value: 0,
+    let outcome = evm.try_call(addr: vault, gas: 300000, value: Wei::zero(),
         message: VaultMsg::Withdraw { amount: 40 })
     assert!(!outcome.success())
-    let remaining: u256 = evm.call(addr: vault, gas: 100000, value: 0,
+    let remaining: u256 = evm.call(addr: vault, gas: 100000, value: Wei::zero(),
         message: VaultMsg::BalanceOf { addr: evm.address() })
     assert!(remaining == 100)
-    assert!(evm.balance(vault) == 100)
+    assert!(evm.balance(vault) == wei(100))
 }

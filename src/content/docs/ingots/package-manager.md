@@ -110,7 +110,7 @@ See [Dependencies](/ingots/dependencies/) to learn how to add external ingots to
 
 ## Experimental Native Executables
 
-The compiler also has an experimental native backend for programs with `pub fn main() -> i32`, on x86-64 Linux and AArch64 macOS. Fe 26.4 supports standalone files and whole workspaces, including dependencies. It requires a compiler built with the `cranelift` feature:
+The compiler also has an experimental native backend for programs with `pub fn main() -> i32`, on x86-64 Linux and AArch64 macOS. Fe 26.5 supports standalone files and whole workspaces, including dependencies. It requires a compiler built with the `cranelift` feature:
 
 ```bash
 # Run in the compiler source checkout

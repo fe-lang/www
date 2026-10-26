@@ -10,8 +10,8 @@ This appendix lists all reserved keywords in Fe, organized by category.
 | Keyword | Description |
 |---------|-------------|
 | `const` | Declares a compile-time constant |
-| `let` | Declares a local variable |
-| `mut` | Marks a variable or parameter as mutable |
+| `let` | Declares an immutable local binding |
+| `var` | Declares a mutable local binding, or a mutable owned parameter (`var x: own T`) |
 | `fn` | Declares a function |
 | `struct` | Declares a struct type |
 | `enum` | Declares an enum type |
@@ -30,11 +30,12 @@ This appendix lists all reserved keywords in Fe, organized by category.
 | `if` | Conditional branch |
 | `else` | Alternative branch |
 | `match` | Pattern matching expression |
-| `for` | Loop over a range, array, or other `Seq` value |
+| `for` | Loop over a range, array, or other collection |
 | `while` | Loop while condition is true |
 | `break` | Exit a loop early |
 | `continue` | Skip to next loop iteration |
 | `return` | Return from a function |
+| `yield` | Grant the caller access in a projection, then run code after its last use |
 
 ## Type Keywords
 
@@ -59,12 +60,15 @@ This appendix lists all reserved keywords in Fe, organized by category.
 | `init` | Contract constructor block |
 | `recv` | Message receive block |
 
-## Ownership & Reference Keywords
+## Ownership & Access Keywords
 
 | Keyword | Description |
 |---------|-------------|
 | `own` | Takes ownership of a value |
-| `ref` | Creates a read-only reference |
+| `mut` | Grants mutable access to a place (`x: mut T`, `mut self`, `let h = mut p.x`) |
+| `ref` | Grants read access to a place (`let r = ref p.x`, `for ref x in xs`) |
+| `mut?` | Makes a function usable at either `ref` or `mut` |
+| `unsafe` | Marks an `unsafe fn`, `unsafe { .. }` block, `unsafe` field, trait or impl |
 
 ## Module Keywords
 
@@ -73,6 +77,7 @@ This appendix lists all reserved keywords in Fe, organized by category.
 | `use` | Import items from other modules |
 | `mod` | Declares a module |
 | `ingot` | Refers to the current ingot root |
+| `super` | Refers to the parent module |
 
 ## Other Keywords
 
@@ -87,7 +92,8 @@ These identifiers have special meaning in certain contexts:
 
 | Keyword | Context | Description |
 |---------|---------|-------------|
-| `where` | Generic bounds | Introduces where clauses |
+| `where` | Generic bounds | Introduces where clauses and const predicates |
+| `shape` | Traits | Declares an associated shape or a shape parameter |
 | `_` | Patterns | Wildcard pattern, ignores value |
 
 ## Quick Reference by Category
@@ -96,7 +102,7 @@ These identifiers have special meaning in certain contexts:
 ```fe ignore
 const MAX_SUPPLY: u256 = 1000000
 let balance = 0
-let mut counter = 0
+var counter = 0
 fn transfer() { }
 struct Token { }
 enum Status { }
@@ -150,19 +156,17 @@ The following keywords are reserved and may not be used as identifiers:
 - `dyn`
 - `move`
 - `static`
-- `super`
-- `unsafe`
 - `crate`
 
 ## Summary
 
 Fe has approximately 40 keywords covering:
 - **13** declaration keywords
-- **8** control flow keywords
+- **9** control flow keywords
 - **4** type keywords
 - **2** effect keywords
 - **2** contract keywords
-- **2** ownership/reference keywords
-- **3** module keywords
+- **5** ownership/access keywords
+- **4** module keywords
 - **2** other keywords
-- **2** contextual keywords
+- **3** contextual keywords

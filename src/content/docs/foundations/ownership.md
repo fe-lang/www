@@ -1,44 +1,79 @@
 ---
 title: Ownership & Mutability
-description: Understanding mut, own, and ref in Fe
+description: Understanding var, mut, own, and ref in Fe
 ---
 
-Fe uses three keywords to control how values are accessed and passed around: **`mut`** for mutability, **`own`** for ownership transfer, and **`ref`** for read-only borrows. Together they give you fine-grained control over who can read, modify, or consume a value.
+Fe has **mutable value semantics**: every value has exactly one owner, and a reference is never a value. Code reaches data owned by someone else through an **access**. An access exists only as a parameter, a binding, or the result of a projection, and it ends at its last use.
+
+Four keywords control how values are bound and passed around:
+
+- **`var`** declares a mutable value
+- **`mut`** grants mutable access to someone else's place
+- **`ref`** grants read access to someone else's place
+- **`own`** transfers ownership of a value
 
 ## Immutability by Default
 
-Variables in Fe are immutable by default. Once bound, their value cannot change:
+Bindings in Fe are immutable by default. Once bound, their value cannot change:
 
 ```fe
 #[test]
 fn test_immutable_by_default() {
     let x: u256 = 10
-    // x = 20  would be a compile error — x is immutable
+    // x = 20  would be a compile error: x is immutable
     assert!(x == 10)
 }
 ```
 
-## `mut` — Mutability
+## `var`: Mutable Values
 
-The `mut` keyword appears in several positions, always meaning the same thing: *this value can be modified*.
-
-### Mutable Variables
-
-Add `mut` to a `let` binding to allow reassignment:
+Declare a mutable value with `var` instead of `let`:
 
 ```fe
 #[test]
-fn test_mut_variable() {
-    let mut x: u256 = 10
+fn test_var() {
+    var x: u256 = 10
     x = 20
     x += 5
     assert!(x == 25)
 }
 ```
 
-### Mutable Parameters
+:::note
+`let mut x = ...` is not Fe. Write `var x = ...` for a mutable value, or `let x = mut p` for a mutable access to `p` (see [Access Bindings](#access-bindings)).
+:::
 
-A function can declare a parameter as `mut` to modify the caller's value. The caller must explicitly pass `mut` at the call site:
+## Parameter Modes
+
+A parameter's mode says how the function may use the argument:
+
+| Mode | Syntax | Call site | Meaning |
+|------|--------|-----------|---------|
+| View | `x: T` | `f(x: value)` | Read the caller's value |
+| Mutable | `x: mut T` | `f(x: mut value)` | Modify the caller's place for the duration of the call |
+| Owned | `x: own T` | `f(x: value)` | Take the value; the caller loses it (unless it is `Copy`) |
+
+### View (the Default)
+
+Without a keyword, a parameter is a read-only view of the caller's value. The function can read it but cannot modify or keep it:
+
+```fe
+fn total(xs: [u256; 4]) -> u256 {
+    xs[0] + xs[1] + xs[2] + xs[3]
+}
+
+#[test]
+fn test_view_parameter() {
+    let xs: [u256; 4] = [1, 2, 3, 4]
+    assert!(total(xs) == 10)
+    // xs is still fully usable
+    assert!(xs[0] == 1)
+}
+```
+
+### `mut` Parameters
+
+A `mut` parameter modifies the caller's place. The caller must explicitly pass `mut` at the call site:
 
 ```fe
 //<hide>
@@ -58,7 +93,7 @@ fn bump_nonce(n: mut u8) {
 
 #[test]
 fn test_mut_parameter() {
-    let mut x: u256 = 7
+    var x: u256 = 7
     double_in_place(v: mut x)
     // The caller sees the modification
     assert!(x == 14)
@@ -66,85 +101,19 @@ fn test_mut_parameter() {
 
 #[test]
 fn test_mut_param_on_field() {
-    let mut w = Wallet { balance: 100, nonce: 1 }
+    var w = Wallet { balance: 100, nonce: 1 }
     bump_nonce(n: mut w.nonce)
     assert!(w.nonce == 2)
 }
 ```
 
 Key rules:
-- The caller must write `double_in_place(v: mut x)` — the label and `mut` at the call site make the mutation visible and intentional
-- The variable being passed must itself be `mut`
+- The caller must write `double_in_place(v: mut x)`: the label and `mut` at the call site make the mutation visible and intentional
+- The place being passed must itself be mutable (a `var`, or something reached through a `mut` access)
 
-### `mut self` — Mutable Methods
+### `own` Parameters
 
-Methods that modify struct fields use `mut self`:
-
-```fe
-struct Point {
-    x: u256,
-    y: u256,
-}
-
-impl Point {
-    fn translate(mut self, dx: u256, dy: u256) {
-        self.x += dx
-        self.y += dy
-    }
-}
-
-#[test]
-fn test_mut_self() {
-    let mut p = Point { x: 1, y: 2 }
-    p.translate(dx: 10, dy: 20)
-    // Modifications are visible on p
-    assert!(p.x == 11)
-    assert!(p.y == 22)
-}
-```
-
-### Mutable Borrow Handles
-
-You can create a **mutable handle** to a variable or field with `mut`. Writes through the handle are reflected on the original:
-
-```fe
-//<hide>
-struct Point {
-    x: u256,
-    y: u256,
-}
-//</hide>
-
-#[test]
-fn test_mut_borrow_handle() {
-    let mut x: u256 = 0
-    let handle: mut u256 = mut x
-    handle = 5
-    handle += 1
-    // Modifications through the handle are visible on x
-    assert!(x == 6)
-}
-
-#[test]
-fn test_disjoint_field_borrows() {
-    let mut p = Point { x: 0, y: 0 }
-    // Can borrow different fields simultaneously
-    let hx: mut u256 = mut p.x
-    let hy: mut u256 = mut p.y
-    hx = 100
-    hy = 200
-    assert!(p.x == 100)
-    assert!(p.y == 200)
-}
-```
-
-Fe allows simultaneous mutable borrows of *different* fields of the same struct — this is safe because the fields are disjoint.
-
-## `own` — Ownership Transfer
-
-The `own` keyword transfers ownership of a value. After passing a value as `own`, the caller can no longer use it — the value has *moved*.
-
-### `own` on Parameters
+An `own` parameter transfers ownership of the value. After passing a value that is not `Copy` as `own`, the caller can no longer use it: the value has *moved*.
 
 ```fe
 //<hide>
@@ -163,11 +132,51 @@ fn test_own_parameter() {
     let p = Point { x: 10, y: 20 }
     let sum = consume_point(p)
     assert!(sum == 30)
-    // p has been moved — using it here would be a compile error
+    // p has been moved: using it here would be a compile error
 }
 ```
 
-### `own self` — Consuming Methods
+An owned parameter is immutable unless it is declared `var x: own T`:
+
+```fe
+fn increment(var value: own u256) -> u256 {
+    value += 1
+    value
+}
+```
+
+## Receivers
+
+Methods take `self` in the same three modes.
+
+### `mut self`: Mutable Methods
+
+Methods that modify struct fields use `mut self`:
+
+```fe
+struct Point {
+    x: u256,
+    y: u256,
+}
+
+impl Point {
+    fn translate(mut self, dx: u256, dy: u256) {
+        self.x += dx
+        self.y += dy
+    }
+}
+
+#[test]
+fn test_mut_self() {
+    var p = Point { x: 1, y: 2 }
+    p.translate(dx: 10, dy: 20)
+    // Modifications are visible on p
+    assert!(p.x == 11)
+    assert!(p.y == 22)
+}
+```
+
+### `own self`: Consuming Methods
 
 A method with `own self` consumes the receiver. This is useful for "finalization" patterns:
 
@@ -195,9 +204,9 @@ fn test_own_self() {
 }
 ```
 
-### `mut own self` — Modify and Consume
+### `var own self`: Modify and Consume
 
-Combine `mut` and `own` to modify the value before consuming it:
+An owned receiver is immutable unless it is declared `var own self`:
 
 ```fe
 //<hide>
@@ -208,7 +217,7 @@ struct Point {
 //</hide>
 
 impl Point {
-    fn scale_and_consume(mut own self, factor: u256) -> Point {
+    fn scale_and_consume(var own self, factor: u256) -> Point {
         self.x *= factor
         self.y *= factor
         self
@@ -216,7 +225,7 @@ impl Point {
 }
 
 #[test]
-fn test_mut_own_self() {
+fn test_var_own_self() {
     let p = Point { x: 2, y: 3 }
     let p2 = p.scale_and_consume(factor: 10)
     assert!(p2.x == 20)
@@ -224,52 +233,46 @@ fn test_mut_own_self() {
 }
 ```
 
-## `ref` — Read-Only References
+## Access Bindings
 
-The `ref` keyword creates a read-only reference. At first glance it looks similar to the default view mode (no keyword) — both give read-only access. The difference becomes clear when you need to **store** a reference.
-
-### Copy vs Reference: Seeing the Difference
-
-When you store a value in a struct field normally, it is **copied**. If the original changes afterwards, the copy is stale:
+A binding can hold an access instead of a value. The marker goes on the initializer: `let h = mut p.x` binds a mutable access to `p.x`, and `let r = ref p.y` binds a read access to `p.y`. Writes through a `mut` access reach the original place:
 
 ```fe
-struct Data {
+//<hide>
+struct Point {
     x: u256,
     y: u256,
 }
+//</hide>
 
-struct Snapshot {
-    x: u256,
-    y: u256,
-}
-
-fn take_snapshot(d: Data) -> Snapshot {
-    Snapshot { x: d.x, y: d.y }  // copies the values
+#[test]
+fn test_mut_access() {
+    var x: u256 = 0
+    let handle = mut x
+    handle = 5
+    handle += 1
+    // Modifications through the access are visible on x
+    assert!(x == 6)
 }
 
 #[test]
-fn test_copy_goes_stale() {
-    let mut d = Data { x: 10, y: 20 }
-
-    // Take a snapshot — copies the current values
-    let snap = take_snapshot(d)
-
-    // Swap the fields on the original
-    let tmp = d.x
-    d.x = d.y
-    d.y = tmp
-
-    // The snapshot is stale — it still has the old values
-    assert!(snap.x == 10)
-    assert!(snap.y == 20)
-
-    // The original has been swapped
-    assert!(d.x == 20)
-    assert!(d.y == 10)
+fn test_disjoint_field_accesses() {
+    var p = Point { x: 0, y: 0 }
+    // Different fields can be accessed mutably at the same time
+    let hx = mut p.x
+    let hy = mut p.y
+    hx = 100
+    hy = 200
+    assert!(p.x == 100)
+    assert!(p.y == 200)
 }
 ```
 
-With `ref`, you don't get a copy — you get a **reference to the original**. The compiler enforces this at the type level. You cannot accidentally put a plain `u256` into a `ref u256` field:
+An access is open from its binding to its last use. While it is open, no other access may overlap it unless both only read. Accesses to *different* fields of the same struct never overlap, so Fe allows mutable access to both at once.
+
+### Copies vs. Accesses
+
+A plain `let` always binds a **value**. Reading a `Copy` value through a plain `let` takes a copy, which does not change when the original does:
 
 ```fe
 //<hide>
@@ -279,131 +282,181 @@ struct Data {
 }
 //</hide>
 
-struct LiveView {
-    x: ref u256,  // must hold a reference, not a copy
-    y: ref u256,
-}
-
-fn live_view(d: ref Data) -> LiveView {
-    LiveView { x: ref d.x, y: ref d.y }  // stores references
-}
-
 #[test]
-fn test_ref_is_not_a_copy() {
-    let d = Data { x: 10, y: 20 }
+fn test_copy_is_independent() {
+    var d = Data { x: 10, y: 20 }
 
-    let live = live_view(d: ref d)
+    // A copy of the current value
+    let old_x = d.x
 
-    // live.x and live.y point to d's fields — they are NOT copies.
-    // The compiler guarantees this: writing `LiveView { x: d.x }` would
-    // be a type error ("expected `ref u256`, but `u256` is given").
-    assert!(live.x == d.x)
-    assert!(live.y == d.y)
+    d.x = 99
+
+    // The copy still has the old value
+    assert!(old_x == 10)
+    assert!(d.x == 99)
 }
 ```
 
-Because `ref` borrows prevent mutation (Fe's borrow checker disallows writing to data while a `ref` exists), you cannot demonstrate the "ref sees mutation" pattern at runtime. Instead, Fe gives you a stronger guarantee: the type system ensures that `ref` fields can **only** hold references, never accidental copies. If you need a frozen snapshot, you copy explicitly. If you need a live view, you use `ref`.
-
-### When `ref` is Essential: Zero-Copy Wrappers
-
-Consider building a `Slice` that represents a window into an existing array. The slice should not copy the data — it should reference it:
+A `ref` access reads the original place in place instead. While it is open, the place cannot be written:
 
 ```fe
-struct Slice {
-    source: ref [u256; 8],  // reference to the original array
-    start: usize,
-    len: usize,
+//<hide>
+struct Data {
+    x: u256,
+    y: u256,
 }
-
-fn slice(arr: ref [u256; 8], start: usize, len: usize) -> Slice {
-    Slice { source: arr, start, len }
-}
-
-fn sum_slice(s: Slice) -> u256 {
-    let mut total: u256 = 0
-    let mut i: usize = 0
-    while i < s.len {
-        total += s.source[s.start + i]
-        i += 1
-    }
-    total
-}
+//</hide>
 
 #[test]
-fn test_slice_no_copy() {
-    let arr: [u256; 8] = [10, 20, 30, 40, 50, 60, 70, 80]
-
-    // Create two slices over the same array — no data is copied
-    let first_half = slice(arr: ref arr, start: 0, len: 4)
-    let second_half = slice(arr: ref arr, start: 4, len: 4)
-
-    assert!(sum_slice(s: first_half) == 100)   // 10+20+30+40
-    assert!(sum_slice(s: second_half) == 260)  // 50+60+70+80
-
-    // arr is still fully usable
-    assert!(arr[0] == 10)
+fn test_ref_access() {
+    var d = Data { x: 10, y: 20 }
+    let r = ref d.y
+    // d.y = 0  would be rejected here: `r` is still in use
+    assert!(r == 20)
+    // r's last use has passed, so d.y can be written again
+    d.y = 0
+    assert!(d.y == 0)
 }
 ```
 
-With `source: [u256; 8]` instead of `source: ref [u256; 8]`, every `Slice` would contain a full copy of the 8-element array. With `ref`, both slices point to the same original — zero copies, guaranteed by the type system.
+### Accesses Are Not Values
 
-### `ref` vs View: Summary
+`ref` and `mut` are not types. An access cannot be stored in a struct field, in storage, passed as `own`, or returned from an ordinary function. A struct always holds values, never references into other data.
 
-| | View (no keyword) | `ref` |
-|---|---|---|
-| Can read values | Yes | Yes |
-| Can modify values | No | No |
-| Is a type (`ref T`) | No | Yes |
-| Can store in struct fields | No | Yes |
-| Forwards to `ref` param | Needs `ref` at call site | Passes directly |
+To give a caller access to part of a value, write a **projection**: a function whose return type is `ref T` or `mut T`.
 
-Use **view** (the default) when you just need to read a value. Use **`ref`** when you need to store a reference in a struct or pass it through a chain of functions that all expect `ref`.
+```fe
+struct Pair {
+    a: u256,
+    b: u256,
+}
+
+impl Pair {
+    fn larger(mut self) -> mut u256 {
+        if self.a >= self.b { mut self.a } else { mut self.b }
+    }
+}
+
+#[test]
+fn test_projection() {
+    var p = Pair { a: 3, b: 7 }
+    let big = mut p.larger()
+    big += 1
+    assert!(p.b == 8)
+}
+```
+
+A projection's result binds like a place: `let x = mut p.larger()` holds the access, while a plain `let` of a `ref` result of a `Copy` type takes a copy. Memory views such as `MemSlice` are the built-in way to work with part of a buffer without copying it.
+
+### `mut?`: One Method for Both Modes
+
+A method that should work for both reading and writing can be written once with `mut?`. It is used at `ref` unless the caller asks for `mut`: by assigning to its result, binding it with `mut`, or passing it on as `mut`:
+
+```fe
+struct Slots {
+    words: [u256; 4],
+}
+
+impl Slots {
+    fn at(mut? self, _ i: usize) -> mut? u256 {
+        mut? self.words[i]
+    }
+}
+
+#[test]
+fn maybe_mut() {
+    var s = Slots { words: [1, 2, 3, 4] }
+    let x = s.at(1)          // used at `ref`: reads a copy
+    s.at(2) = 30             // used at `mut`: writes in place
+    let h = mut s.at(3)
+    h += 1
+    assert!(x == 2)
+    assert!(s.words[2] == 30 && s.words[3] == 5)
+}
+```
+
+Many `core` and `std` methods are `mut?`. For example, `MemVec::as_slice` and `MemBuffer::span` give a read-only view by default and a writable one when taken at `mut`: `let s = mut buffer.span()`.
+
+## Patterns
+
+In a pattern, the marker goes on each bound name: `x` takes a value, `var x` a mutable value, `ref x` a read access, and `mut x` a mutable access.
+
+```fe
+//<hide>
+struct Point {
+    x: u256,
+    y: u256,
+}
+//</hide>
+
+#[test]
+fn test_pattern_markers() {
+    var p = Point { x: 1, y: 2 }
+    let Point { mut x, y } = p
+    x += y
+    assert!(p.x == 3)
+
+    let (var a, b): (u256, u256) = (10, 20)
+    a += b
+    assert!(a == 30)
+}
+```
+
+A marker on the initializer of a destructuring pattern, such as `let (a, b) = mut t`, is an error. Mark each name instead.
+
+## Moving Out
+
+A value reached through a view, a `ref` access, an effect, or storage cannot be moved out; bind it `ref` to read it in place. A move out of a `mut` access leaves a hole that must be filled before the access ends. `core::mem::replace` and `core::mem::take` do both in one call, as does `take()` on an `Option`.
 
 ## Summary
 
 | Keyword | Position | Meaning |
 |---------|----------|---------|
-| `mut` | `let mut x` | Variable can be reassigned |
-| `mut` | `fn f(v: mut T)` | Function can modify caller's value |
+| `var` | `var x = e` | Mutable value |
+| `var` | `fn f(var v: own T)` | Owned parameter that can be modified |
+| `var` | `fn f(var own self)` | Method can modify and consume the receiver |
+| `mut` | `fn f(v: mut T)` | Function can modify the caller's place |
 | `mut` | `fn f(mut self)` | Method can modify struct fields |
-| `mut` | `let h: mut T = mut x` | Mutable handle (borrow) to `x` |
-| `own` | `fn f(v: own T)` | Function takes ownership, caller loses access |
+| `mut` | `let h = mut x` | Mutable access to `x` |
+| `mut` | `fn f(mut self) -> mut T` | Projection granting mutable access |
+| `mut?` | `fn f(mut? self) -> mut? T` | Usable at `ref` or at `mut` |
+| `own` | `fn f(v: own T)` | Function takes ownership, caller loses the value |
 | `own` | `fn f(own self)` | Method consumes the receiver |
-| `mut own` | `fn f(mut own self)` | Method can modify and consume the receiver |
-| `ref` | `fn f(v: ref T)` | Function gets read-only reference |
-| `ref` | `source: ref T` | Struct field holds a reference |
+| `ref` | `let r = ref x` | Read access to `x` |
+| `ref` | `fn f(self) -> ref T` | Projection granting read access |
 
 ### Default Behavior
 
-Without any keyword, Fe parameters use **view** mode: the function can read the value but cannot modify or consume it. This is the most restrictive — and safest — default.
+Without any keyword, a parameter is a **view**: the function can read the value but cannot modify, keep or consume it. This is the most restrictive, and safest, default.
 
 ### Choosing the Right Mode
 
 - Use **no keyword** (view) when you just need to read a value
-- Use **`ref`** when you need to store a reference in a struct or forward it through multiple functions
 - Use **`mut`** when the function needs to modify a value in place
 - Use **`own`** when the function needs to take full ownership of a value
+- Use **`var`** for local values (and owned parameters) you want to change
 
-## Borrows Through Aggregates
+## Loops Over Collections
 
-The borrow checker tracks references through structs, tuples, arrays, pointer aliases, and helper calls. Moving a reference into an aggregate does not end its borrow, and destructuring the aggregate does not make overlapping mutable access legal. Finish using a borrowed view before modifying its source.
-
-Array iteration in these examples uses copyable elements. For a struct containing only copyable fields, implement `Copy` explicitly when the example needs to copy values out of the array:
+A `for` loop binds each element the way a `let` binds a projection's result. A plain name copies a `Copy` element, `ref` reads a non-`Copy` element in place, and `mut` modifies the element in place:
 
 ```fe
 struct Reading { value: u256 }
-impl Copy for Reading {}
 
 #[test]
 fn sums_readings() {
-    let readings = [Reading { value: 2 }, Reading { value: 3 }]
-    let mut sum = 0
-    for reading in readings {
+    var readings = [Reading { value: 2 }, Reading { value: 3 }]
+    var sum = 0
+    for ref reading in readings {
         sum += reading.value
     }
     assert!(sum == 5)
-    assert!(readings[0].value == 2)
+
+    for mut reading in readings {
+        reading.value *= 10
+    }
+    assert!(readings[0].value == 20)
 }
 ```
 
-Do not add `Copy` to a resource-owning type merely to bypass a move diagnostic. Use a borrowed view or explicit ownership transfer appropriate to that type.
+Do not add `Copy` to a resource-owning type merely to bypass a move diagnostic. Use a `ref` binding or explicit ownership transfer appropriate to that type.

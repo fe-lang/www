@@ -38,9 +38,6 @@ pub struct Balances {
 fn transfer(from: u256, to: u256, amount: u256) uses (balances: mut Balances) {
     // This function can only access Balances
     // and can modify it (mut)
-    //<hide>
-    let _ = (from, to, amount, balances)
-    //</hide>
 }
 ```
 
@@ -71,7 +68,7 @@ fn get_count() -> u256 uses (counter: Counter) {
 
 // Caller must provide the effect
 fn main() {
-    let mut counter = Counter { value: 0 }
+    var counter = Counter { value: 0 }
 
     // Provide the effect with 'with'
     with (Counter = counter) {
