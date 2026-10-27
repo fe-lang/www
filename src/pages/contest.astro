@@ -44,6 +44,7 @@ const criteria = [
     <link rel="preconnect" href="https://fonts.googleapis.com" />
     <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin />
     <link href="https://fonts.googleapis.com/css2?family=Ubuntu+Sans:wght@400;500;600;700;800&display=swap" rel="stylesheet" />
+    <script defer src="https://cloud.umami.is/script.js" data-website-id="3a2884db-bde9-480f-99b0-d43feee064f9"></script>
   </head>
   <body>
     <a class="skip" href="#main">Skip to content</a>
@@ -63,8 +64,8 @@ const criteria = [
             <p class="lead">A new language.<br />A different way to build.</p>
             <p class="intro">A useful library, a clever protocol, a strange experiment. Whatever your idea, build it with Fe.</p>
             <div class="actions">
-              <a class="button primary" href={registration}>Register your project <span aria-hidden="true">↗</span></a>
-              <a class="button secondary" href={submission}>Submit a project <span aria-hidden="true">↗</span></a>
+              <a class="button primary" href={registration} data-umami-event="contest-register" data-umami-event-position="hero">Register your project <span aria-hidden="true">↗</span></a>
+              <a class="button secondary" href={submission} data-umami-event="contest-submit" data-umami-event-position="hero">Submit a project <span aria-hidden="true">↗</span></a>
             </div>
             <p class="micro">Solo or team. Fully online. AI assistance welcome.</p>
           </div>
@@ -96,8 +97,8 @@ const criteria = [
               <div><p class="eyebrow ink">FROM IDEA TO ENTRY</p><h2 id="entry-title">Three weeks.<br />Make them count.</h2><p>New to Fe? You’re welcome here. Start with a small idea, get it working, and show us what you learned.</p><a class="text-link" href={`${base}getting-started/first-contract/`}>Write your first Fe contract <span aria-hidden="true">→</span></a></div>
               <ol class="entry-steps">
                 <li><span class="number">01</span><div><h3>Explore now. Build from November 3.</h3><p>Read the <a href={`${base}getting-started/installation/`}>installation guide</a> and experiment with Fe. The build window opens on November 3 at 00:00 UTC. Only substantial work completed during the contest window will be judged. Any Fe release from 26.5.0 on is allowed. The <a href="https://github.com/fe-lang/builders-challenge-starter">starter repository</a> gives you a tested project, CI, and a README template to begin with.</p></div></li>
-                <li><span class="number">02</span><div><h3>Register by November 17.</h3><p>Tell us your project idea, team, and contact email. Your idea can evolve; you don’t need a finished project. We’ll email your project ID and private submission link.</p><a class="text-link" href={registration}>Open registration <span aria-hidden="true">↗</span></a></div></li>
-                <li><span class="number">03</span><div><h3>Submit by November 24.</h3><p>Use your personal submission link to send your public repository and exact commit. You can submit again before the deadline; the latest valid submission counts.</p><a class="text-link" href={submission}>Open submission form <span aria-hidden="true">↗</span></a></div></li>
+                <li><span class="number">02</span><div><h3>Register by November 17.</h3><p>Tell us your project idea, team, and contact email. Your idea can evolve; you don’t need a finished project. We’ll email your project ID and private submission link.</p><a class="text-link" href={registration} data-umami-event="contest-register" data-umami-event-position="steps">Open registration <span aria-hidden="true">↗</span></a></div></li>
+                <li><span class="number">03</span><div><h3>Submit by November 24.</h3><p>Use your personal submission link to send your public repository and exact commit. You can submit again before the deadline; the latest valid submission counts.</p><a class="text-link" href={submission} data-umami-event="contest-submit" data-umami-event-position="steps">Open submission form <span aria-hidden="true">↗</span></a></div></li>
               </ol>
             </div>
           </section>
@@ -163,7 +164,7 @@ const criteria = [
               <details><summary>Will I receive feedback? Will my project be featured?</summary><p>Individual feedback is not guaranteed. We reserve the right to publicly showcase any submitted project, including entries that do not win a prize.</p></details>
             </div>
           </section>
-          <section class="wrap final-cta"><div><p class="eyebrow">YOUR NEXT IDEA, IN FE</p><h2>Let’s see what<br />you can build.</h2></div><div><a class="button white" href={registration}>Register your project <span aria-hidden="true">↗</span></a><a class="submission-link" href={submission}>Already registered? Submit your project →</a></div></section>
+          <section class="wrap final-cta"><div><p class="eyebrow">YOUR NEXT IDEA, IN FE</p><h2>Let’s see what<br />you can build.</h2></div><div><a class="button white" href={registration} data-umami-event="contest-register" data-umami-event-position="cta">Register your project <span aria-hidden="true">↗</span></a><a class="submission-link" href={submission} data-umami-event="contest-submit" data-umami-event-position="cta">Already registered? Submit your project →</a></div></section>
         </div>
       </main>
       <footer class="wrap footer"><a class="brand" href={base}><img src={`${base}fe-logo.svg`} width="32" height="32" alt="Fe" /><span>Fe Builders Challenge · 2026</span></a><div><a href={`${base}getting-started/what-is-fe/`}>Documentation</a><a href="https://fe-lang.zulipchat.com">Zulip</a><a href="https://github.com/argotorg/fe">GitHub</a></div></footer>
