@@ -67,7 +67,7 @@ In a workspace with multiple ingots, test a specific member:
 
 ```bash
 # Test a specific ingot by name
-fe test --ingot my-lib path/to/workspace/
+fe test --ingot my_lib path/to/workspace/
 ```
 
 ## Debugging Options
