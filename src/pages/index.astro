@@ -155,6 +155,7 @@ const installCommands = [
       <nav id="menu" class="hidden px-2 pt-2 pb-4 text-center sm:flex sm:p-0 sm:text-left">
         <a href={`${base}getting-started/what-is-fe/`} class="transition duration-100 ease-in-out block text-sm text-indigo-100 px-2 py-2 hover:bg-indigo-700 hover:text-white rounded-md sm:mt-0 sm:ml-2 sm:px-4" title="Get started">Get started</a>
         <a href={`${base}getting-started/key-concepts/`} class="transition duration-100 ease-in-out mt-1 text-sm text-indigo-100 block px-2 py-2 hover:bg-indigo-700 hover:text-white rounded-md sm:mt-0 sm:ml-2 sm:px-4" title="Learn">Learn</a>
+        <a href={docUrl} class="transition duration-100 ease-in-out mt-1 text-sm text-indigo-100 block px-2 py-2 hover:bg-indigo-700 hover:text-white rounded-md sm:mt-0 sm:ml-2 sm:px-4" title="Standard library API reference">API</a>
         <a href="https://fe-lang.zulipchat.com/join/dqvssgylulrmjmp2dx7vcbrq" class="transition duration-100 ease-in-out mt-1 text-sm text-indigo-100 block px-2 py-2 hover:bg-indigo-700 hover:text-white rounded-md sm:mt-0 sm:ml-2 sm:px-4" title="Community">Community</a>
         <a href="https://blog.fe-lang.org" class="transition duration-100 ease-in-out mt-1 text-sm text-indigo-100 block px-2 py-2 hover:bg-indigo-700 hover:text-white rounded-md sm:mt-0 sm:ml-2 sm:px-4" title="Blog">Blog</a>
         <button id="theme-toggle" class="theme-toggle sm:ml-2" title="Toggle dark mode" aria-label="Toggle dark mode"></button>
@@ -298,6 +299,7 @@ const installCommands = [
             <fe-code-block lang="fe" line-numbers data-file="landing-page.fe"
               src="/docs/docs.json" base={docUrl} link-filter="core::*,std::*">{displayCode}</fe-code-block>
           </div>
+          <p class="mt-2 text-xs text-gray-600">Click any <code>std</code> or <code>core</code> name to open it in the <a class="underline" href={docUrl}>API reference</a>.</p>
         </div>
       </div>
     </section>
@@ -365,6 +367,7 @@ const installCommands = [
             <li><a class="block py-1 text-gray-400 hover:text-indigo-400 transition-colors" href={`${base}getting-started/installation/`} title="Installation">Installation</a></li>
             <li><a class="block py-1 text-gray-400 hover:text-indigo-400 transition-colors" href={`${base}getting-started/what-is-fe/`} title="Documentation">Documentation</a></li>
             <li><a class="block py-1 text-gray-400 hover:text-indigo-400 transition-colors" href={`${base}examples/erc20/`} title="Examples">Examples</a></li>
+            <li><a class="block py-1 text-gray-400 hover:text-indigo-400 transition-colors" href={docUrl} title="API Reference">API Reference</a></li>
           </ul>
         </div>
         <div>
