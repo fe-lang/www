@@ -68,6 +68,11 @@ export default defineConfig({
 					],
 				},
 				{
+					label: 'Standard Library API',
+					link: docUrl,
+					attrs: { target: '_blank', rel: 'noopener' },
+				},
+				{
 					label: 'Part 2: Language Foundations',
 					items: [
 						{ label: 'Primitive Types', slug: 'foundations/primitive-types' },
@@ -200,11 +205,6 @@ export default defineConfig({
 						{ label: 'Voting Contract', slug: 'examples/voting' },
 						{ label: 'Simple DEX', slug: 'examples/dex' },
 					],
-				},
-				{
-					label: 'API Reference',
-					link: docUrl,
-					attrs: { target: '_blank', rel: 'noopener' },
 				},
 				{
 					label: 'Appendices',
