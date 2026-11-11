@@ -110,12 +110,11 @@ See [Dependencies](/ingots/dependencies/) to learn how to add external ingots to
 
 ## Experimental Native Executables
 
-The compiler also has an experimental native backend for programs with a `pub fn main()`, on x86-64 Linux and AArch64 macOS. Fe 26.6 supports standalone files and whole workspaces, including dependencies. It requires a compiler built with the `cranelift` feature:
+The compiler also has an experimental native backend for programs with a `pub fn main()`, on x86-64 Linux and AArch64 macOS. Fe 26.6 supports standalone files and whole workspaces, including dependencies. The release binaries include it:
 
 ```bash
-# Run in the compiler source checkout
-cargo build --release -p fe --features cranelift
-./target/release/fe build --backend native hello.fe
+fe build --backend native hello.fe
+./out/hello
 ```
 
-This is separate from deploying EVM contracts. Native builds require the additional compiler feature; `fe test --backend native` executes native tests. `std::io` provides host character I/O, and `std::native` includes checked process-argument access through `Args`, process CPU timing, and an explicitly owned `ByteBuffer` with fallible growth and explicit `release`.
+This is separate from deploying EVM contracts. `fe test --backend native` executes native tests, and `target = "native"` in `fe.toml` makes native the default for a project. A native `main` and native tests receive host capabilities as effects from `std::native::Host`, for example `pub fn main() -> i32 uses (args: Args, out: mut Stdout)`: `std::io` provides standard input, output and error, `std::env` command-line arguments and environment variables, and `std::fs`, `std::process` and `std::time` give access to files, child processes and clocks on Linux and macOS.
