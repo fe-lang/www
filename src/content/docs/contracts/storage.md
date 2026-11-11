@@ -298,8 +298,8 @@ contract OwnableToken uses (ctx: Ctx) {
 ## Storage Layout
 
 Fe computes storage slots automatically, compatible with Solidity's layout rules:
-- Each `mut` contract field gets its own root slot, in declaration order
-- Inside a struct, fields narrower than a word share slots the way Solidity packs struct members
+- Contract fields are laid out in declaration order, and consecutive fields narrower than a word share a slot, as Solidity packs state variables
+- Inside structs, tuples and map entries, narrow fields share slots the way Solidity packs struct members; `Address` takes 20 bytes and `FixedBytes<N>` takes `N`
 - A `StorageMap` keeps the entry for `key` at `keccak256(key ++ slot)`, like a Solidity mapping
 - Storage and transient fields are numbered separately, so a transient field never moves a persistent one
 

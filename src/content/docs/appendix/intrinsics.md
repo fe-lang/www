@@ -126,7 +126,7 @@ use std::evm::crypto
 use std::abi::Bytes
 
 fn hash_bytes(data: Bytes) -> u256 {
-    crypto::keccak256(data.payload_span())
+    crypto::keccak256(data.span())
 }
 
 #[test]
@@ -136,7 +136,7 @@ fn hashes_empty_bytes() {
 }
 ```
 
-`payload_span()` excludes the ABI length word. `encoded_span()` includes the ABI representation and hashes different bytes.
+`span()` excludes the ABI length word. `encoded_span()` includes the ABI representation and hashes different bytes.
 
 For tightly packed encoding, Fe also provides `std::evm::packed::{encode_packed, keccak_packed, Packed}`. For EIP-712, use `crypto::eip712_digest(domain_separator, struct_hash)` after constructing the domain separator and struct hash according to your schema. Packed encoding is distinct from ordinary ABI encoding; concatenating multiple variable-length values can be ambiguous.
 
@@ -401,12 +401,13 @@ use core::num::{mul_div, mul_div_ceil, leading_zeros, trailing_zeros}
 fn arithmetic_helpers() {
     assert!(mul_div(1 << 200, 1 << 100, 1 << 100) == 1 << 200)
     assert!(mul_div_ceil(10, 10, 6) == 17)
-    assert!(leading_zeros(0) == 256)
-    assert!(trailing_zeros(8) == 3)
+    assert!(leading_zeros(0 as u256) == 256)
+    assert!(trailing_zeros(8 as u256) == 3)
+    assert!(leading_zeros(1 as u8) == 7)
 }
 ```
 
-The bit-counting helpers accept `u256` and return 256 for zero. On the EVM, `leading_zeros` uses the CLZ instruction; deploying code that uses it requires an Osaka-compatible chain. Fe 26.5’s EVM tests use Osaka rules.
+The bit-counting helpers are generic over the integer type and return its bit width for zero, so an untyped literal needs a type such as `0 as u256`. On the EVM, `leading_zeros` uses the CLZ instruction; deploying code that uses it requires an Osaka-compatible chain. Fe 26.6’s EVM tests use Osaka rules.
 
 ## Merkle Proofs
 

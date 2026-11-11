@@ -67,7 +67,7 @@ impl AbiSize for Transfer {
 
 // Encoding: write each field as a 32-byte word into the frame
 impl Encode<Sol> for Transfer {
-    fn encode(own self, _ out: AbiFrame) {
+    fn encode(self, _ out: AbiFrame) {
         out.store_word(at: 0, value: self.to.word())
         out.store_word(at: 32, value: self.amount)
     }
